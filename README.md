@@ -55,7 +55,19 @@ src/core/                   engine pieces shared by all simulations
 src/sims/                   one file per simulation module (+ index.js registry)
 src/ui/                     camera, chart and application UI
 tests/                      node:test suites (physics checks + interaction contract)
-docs/ARCHITECTURE.md        how the pieces fit, how to add a simulation, roadmap
+docs/                       PRD, TRD, system design, module guide, test plan, roadmap, user guide, ADRs
 ```
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) to add your own simulation.
+## Documentation
+
+| Document | Purpose |
+|---|---|
+| [Product Requirements (PRD)](docs/PRD.md) | Vision, users, goals, requirements, metrics |
+| [Technical Requirements (TRD)](docs/TRD.md) | Measurable technical requirements and their status |
+| [System Design](docs/SYSTEM_DESIGN.md) | Architecture, components, data flow, module internals |
+| [Module Guide](docs/MODULE_GUIDE.md) | How to add a new simulation |
+| [Test Plan](docs/TEST_PLAN.md) | Test strategy, inventory, release checklist |
+| [Roadmap](docs/ROADMAP.md) | Milestones and future simulations |
+| [User Guide](docs/USER_GUIDE.md) | How to use the tools, experiments to try, glossary |
+| [Architecture Decision Records](docs/adr/) | Key technical decisions |
+| [Contributing](CONTRIBUTING.md) | Workflow and conventions |
