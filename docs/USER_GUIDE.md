@@ -27,8 +27,20 @@
 Other shortcuts: `Space` play/pause · `.` single step · `f` fit view · `Esc` deselect ·
 `Del` remove the selected object.
 
-Links: the address bar keeps `#simulation/scenario` (e.g. `#weather/storm`), so you can
-bookmark or share a scenario.
+## Undo, save and share
+
+| Button | Shortcut | What it does |
+|---|---|---|
+| ↶ Undo / ↷ Redo | `Ctrl+Z` / `Ctrl+Shift+Z` (or `Ctrl+Y`) | Step back or forward through your interventions: tool uses, inspector edits, deletions (40 steps) |
+| Save | `Ctrl+S` | Download the entire world (every object, parameter and the clock) as a `.json` file |
+| Load | | Open a saved `.json` file; it switches to the right simulation automatically |
+| Share link | | Copy a link to this simulation, scenario and any parameters you changed |
+| Export CSV | | Download the statistics recorded while the simulation ran, for spreadsheets or analysis |
+
+Links look like `#weather/storm?sun=2&wind=8`, and you can edit them by hand. A saved file
+captures *everything*; a link captures the setup, and the scenario replays the same way.
+
+On touch screens, pinch with two fingers to zoom and drag with two fingers to pan.
 
 ## Simulations and experiments to try
 

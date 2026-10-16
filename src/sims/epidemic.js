@@ -1,6 +1,7 @@
 import { Simulation } from '../core/simulation.js';
 import { SpatialHash } from '../core/spatial-hash.js';
 import { clamp, TAU } from '../core/math.js';
+import { pick } from '../core/serialize.js';
 
 export const STATES = {
   S: { label: 'Susceptible', color: '#7fb2ff' },
@@ -91,6 +92,19 @@ export class EpidemicSim extends Simulation {
       const p = this.rng.pick(this.people.filter((q) => q.state === 'S'));
       p.state = 'I';
     }
+  }
+
+  saveState() {
+    return {
+      hubs: this.hubs,
+      people: this.people.map((p) => pick(p, ['id', 'x', 'y', 'hx', 'hy', 'vx', 'vy', 'state', 't', 'still', 'trip'])),
+    };
+  }
+
+  loadState(st) {
+    this.hubs = st.hubs;
+    this.people = st.people.filter((p) => STATES[p.state]).map((p) => ({ ...p, alive: true }));
+    nextId = Math.max(nextId, ...this.people.map((p) => p.id + 1));
   }
 
   tick(dt) {

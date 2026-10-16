@@ -70,7 +70,10 @@ suite. Out of scope for v1: back-end services, accounts, persistence, analytics.
 | FT-21 | The inspector refreshes live (≤ 300 ms) without overwriting a field the user is editing | M | Met |
 | FT-22 | Stats refresh at 4 Hz; the chart samples at 4 Hz while running, keeping the last 400 samples | I | Met |
 | FT-23 | Camera supports pan, zoom-at-cursor and fit-to-bounds, and y-up worlds (`meta.yUp`) | M | Met |
-| FT-24 | URL hash `#sim/scenario` loads that simulation and scenario | M | Met |
+| FT-24 | URL hash `#sim/scenario?param=value` loads that simulation, scenario and parameters (typed and clamped) | T | Met |
+| FT-25 | Save and load full world state as JSON; loading a save for another simulation switches to it | T (e2e) | Met |
+| FT-26 | Undo/redo (≥ 40 steps) of every user intervention: tools, inspector edits and deletions | T (e2e) | Met |
+| FT-27 | Export recorded statistics (up to 20 000 samples) as CSV | T (e2e) | Met |
 
 ## 5. Scientific model requirements
 
@@ -123,7 +126,7 @@ Reference machine: mid-range laptop (4-core, integrated GPU), Chromium, default 
 | UA-1 | All controls are native, labelled form elements | I | Met |
 | UA-2 | Keyboard shortcuts: Space, `.`, `f`, `1`–`6`, Esc, Del | M | Met |
 | UA-3 | Layout adapts below 900 px width | M | Met |
-| UA-4 | Touch input via Pointer Events (single-pointer tools) | M | Partial: no pinch-zoom yet |
+| UA-4 | Touch input via Pointer Events: single-pointer tools, pinch-zoom and two-finger pan | M | Met |
 | UA-5 | Colour is not the only carrier of information for state (labels in inspector and stats) | I | Met |
 
 ## 9. Security and privacy
@@ -133,7 +136,7 @@ Reference machine: mid-range laptop (4-core, integrated GPU), Chromium, default 
 | SP-1 | No network calls at runtime, no cookies, no personal data collected | I | Met |
 | SP-2 | Dev server rejects path traversal outside the project root | I | Met |
 | SP-3 | No use of `eval`, `innerHTML` with user data, or dynamic code loading | I | Met |
-| SP-4 | Future shared-world files must be validated against a schema before loading | — | Planned |
+| SP-4 | Loaded world files are validated (format, version, simulation id, typed and known parameters, grid sizes, known element/state values) before use | T | Met |
 
 ## 10. Maintainability and quality
 
@@ -143,7 +146,8 @@ Reference machine: mid-range laptop (4-core, integrated GPU), Chromium, default 
 | MQ-2 | Every registered module is covered automatically by `tests/contract.test.js` | T | Met |
 | MQ-3 | Each module has at least one physics or behaviour test against a known result | T | Met |
 | MQ-4 | Code style: ES modules, no globals (except `window.app` for debugging), JSDoc on module classes | I | Met |
-| MQ-5 | CI runs tests on every pull request | — | Planned |
+| MQ-5 | CI runs unit and browser tests on every push to `main` and every pull request | I | Met |
+| MQ-6 | Every module round-trips through `serialize` → JSON → `deserialize`, and the restored world evolves identically | T | Met |
 
 ## 11. Traceability (PRD → TRD)
 

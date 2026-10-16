@@ -19,14 +19,17 @@
 | Unit / model | `node:test` + `node:assert` | `tests/*.test.js` | Every change (`npm test`) |
 | Contract | `node:test`, loops over the registry | `tests/contract.test.js` | Every change |
 | Behaviour / scenario | `node:test`, runs scenarios for N steps | per-module test files | Every change |
-| Browser smoke | Playwright (Chromium) | ad hoc script (to be added as `tests/e2e/`) | Before release / in CI |
+| Serialization | `node:test`, loops over the registry | `tests/serialize.test.js` | Every change |
+| Browser end-to-end | Playwright (Chromium) via `node:test` | `tests/e2e/app.e2e.mjs` | CI on every push / PR (`npm run test:e2e`) |
 | Manual exploratory | Checklist below | — | Before release |
 | Performance | Frame-time readout (`ms/frame` in the top bar) and headless timing | — | Before release |
 
 Run everything with:
 
 ```bash
-npm test
+npm test                     # unit, behaviour, contract, serialization
+npm install --no-save playwright && npx playwright install chromium
+npm run test:e2e             # real-browser tests
 ```
 
 ## 3. Automated test inventory
@@ -59,7 +62,16 @@ npm test
 | | epidemic spreads, and vaccination slows it | SM-15 |
 | `contract.test.js` | per module: meta, params, every spawn kind, pick, describe, setProperty, locate, move, impulse (with and without target), energy ±, removeAt, stats, chart keys, every scenario | AR-1, FT-10…15 |
 
-Current result: **30 tests, 30 passing.**
+| `serialize.test.js` | typed arrays round-trip through base64 | MQ-6 |
+| | per module: save → JSON → load reproduces the world **and its future** | MQ-6, FT-25 |
+| | per module: rejects foreign or newer save files | SP-4 |
+| `persistence.test.js` | share links round-trip; link parameters typed, clamped and filtered | FT-24 |
+| | diffParams, CSV escaping | FT-27 |
+| | undo/redo stack order and limit | FT-26 |
+| `e2e/app.e2e.mjs` | per module: every tool in the real UI with no console errors | FT-13, RR-* |
+| | undo/redo an added object; save → load a file; shared link parameters; CSV download | FT-24…27 |
+
+Current result: **48 unit tests and 10 browser tests, all passing.**
 
 ## 4. Browser smoke test
 
@@ -98,7 +110,5 @@ browser dev-tools performance profiles on the reference machine.
 
 ## 8. Planned improvements
 
-- Move the Playwright smoke script into `tests/e2e/` with an `npm run test:e2e` script.
-- CI workflow (GitHub Actions) running unit and e2e tests on pull requests.
 - Long-run soak tests (10⁴ steps) checking bounded memory and finite state.
 - Visual regression snapshots for each scenario.

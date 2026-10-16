@@ -39,6 +39,10 @@ body {
 .brand { font-size: 15px; margin-right: 8px; }
 .clock { margin-left: auto; font-variant-numeric: tabular-nums; }
 .speed { display: flex; align-items: center; gap: 6px; }
+.group { display: inline-flex; gap: 4px; padding-left: 8px; border-left: 1px solid var(--border); }
+.status { color: #8fe3a1; font-size: 12px; }
+.status.error { color: var(--danger); }
+button:disabled { opacity: 0.4; cursor: default; }
 
 .panel { overflow-y: auto; background: var(--panel); padding: 4px 12px 16px; }
 .panel.left { grid-area: left; border-right: 1px solid var(--border); }

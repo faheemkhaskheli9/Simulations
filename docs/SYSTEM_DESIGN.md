@@ -205,12 +205,31 @@ Full authoring guidance is in the [Module Guide](MODULE_GUIDE.md).
 ## 6. Data model and state
 
 All state is in memory and owned by the active module. Switching simulations
-discards the previous instance. There is **no persistence in v1**.
+discards the previous instance.
 
-**Planned persistence (M2):** each module implements `serialize(): object` and
-`deserialize(obj)`. Worlds are stored as versioned JSON
-`{ schema: 1, sim: "gravity", seed, time, params, state }`, saved as a file,
-kept in local storage, or compressed into a share URL. Input is validated before loading (TRD SP-4).
+**Persistence.** Modules implement `saveState()` / `loadState(state)`. The base class
+wraps them in `serialize()` / `deserialize()`, which produce versioned JSON:
+
+```json
+{ "format": "simulations-world", "version": 1, "sim": "weather", "scenario": "storm",
+  "time": 43200, "rng": 123456789, "params": { … }, "state": { … } }
+```
+
+- Entities are saved as plain fields; object references (atom bonds) become id lists.
+- Grids (weather, ecosystem) are typed arrays encoded as base64 (`src/core/serialize.js`).
+- The RNG state is saved, so a restored world evolves **identically** (tested).
+- `deserialize` validates the format, version and simulation id, accepts only declared
+  parameters of the right type, and checks grid sizes and enum values (element, health state).
+
+**Undo/redo** (`src/ui/history.js`) stores a snapshot from `serialize()` before every user
+intervention (tool press, inspector edit, deletion), up to 40 deep.
+
+**Share links** (`src/ui/persistence.js`) encode the simulation, the scenario and only the
+parameters that differ from the scenario defaults: `#gravity/solar?gScale=2&trails=false`.
+Because scenarios are seeded, this reproduces the starting world exactly. Full world state
+is shared as a saved file.
+
+**CSV export** writes the samples recorded at 4 Hz (time + every numeric statistic, up to 20 000 rows).
 
 ## 7. Performance design
 
@@ -247,8 +266,9 @@ untrusted input and must be schema-validated.
 ## 10. Testing strategy
 
 Unit and behaviour tests run on Node's built-in runner; a contract test exercises every
-registered module with every tool and scenario; Playwright smoke tests run in a
-real browser. See the [Test Plan](TEST_PLAN.md).
+registered module with every tool and scenario; a serialization test round-trips every
+module; Playwright end-to-end tests (`tests/e2e/`) drive the real UI. GitHub Actions runs
+both on every push and pull request. See the [Test Plan](TEST_PLAN.md).
 
 ## 11. Deployment
 
@@ -263,6 +283,6 @@ to GitHub Pages.
 | New phenomenon | New `Simulation` subclass + registry entry ([Module Guide](MODULE_GUIDE.md)) |
 | Shared physics (e.g. rigid bodies, fluids) | New helpers in `src/core/` reused by modules |
 | Coupled multi-scale worlds | Future "composite" module that hosts sub-simulations and exchanges fluxes |
-| Persistence and sharing | `serialize` / `deserialize` on the contract |
+| Persistence and sharing | `saveState` / `loadState` on the contract (implemented) |
 | Faster physics | Worker / WebGPU back-ends behind the same `step` |
 | 3D | `View3D` plus an optional `render3D` on modules |

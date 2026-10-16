@@ -1,6 +1,10 @@
 import { View } from './view.js';
 import { Chart } from './chart.js';
 import { fmt } from '../core/math.js';
+import { History } from './history.js';
+import { buildHash, coerceParams, diffParams, download, parseHash, toCSV } from './persistence.js';
+
+const MAX_SAMPLES = 20000;
 
 const TOOLS = [
   { id: 'inspect', label: 'Inspect', key: '1', hint: 'Click an object to see and edit its properties.' },
@@ -36,6 +40,9 @@ export class App {
     this.lastSample = 0;
     this.lastInspect = 0;
     this.frameMs = 0;
+    this.history = new History();
+    this.samples = [];
+    this.touches = new Map();
     this.buildChrome();
     this.bindInput();
     window.addEventListener('resize', () => this.resize());
@@ -76,6 +83,18 @@ export class App {
       tools.append(b);
     }
     $('#brush').addEventListener('input', (e) => { $('#brush-label').textContent = `${e.target.value}px`; });
+
+    $('#undo').addEventListener('click', () => this.undo());
+    $('#redo').addEventListener('click', () => this.redo());
+    $('#save').addEventListener('click', () => this.saveWorld());
+    $('#load').addEventListener('click', () => $('#load-file').click());
+    $('#load-file').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      e.target.value = '';
+      if (file) this.loadWorld(await file.text(), file.name);
+    });
+    $('#share').addEventListener('click', () => this.shareLink());
+    $('#csv').addEventListener('click', () => this.exportCSV());
   }
 
   bindInput() {
@@ -94,11 +113,18 @@ export class App {
     window.addEventListener('keydown', (e) => {
       this.pointer.shift = e.shiftKey;
       if (e.target.closest('input, select, textarea')) return;
+      if (e.ctrlKey || e.metaKey) {
+        const k = e.key.toLowerCase();
+        if (k === 'z' && !e.shiftKey) { e.preventDefault(); this.undo(); }
+        else if (k === 'y' || (k === 'z' && e.shiftKey)) { e.preventDefault(); this.redo(); }
+        else if (k === 's') { e.preventDefault(); this.saveWorld(); }
+        return;
+      }
       if (e.code === 'Space') { e.preventDefault(); this.setRunning(!this.running); }
       else if (e.key === '.') this.stepOnce();
       else if (e.key === 'f') this.fitView();
       else if (e.key === 'Escape') this.select(null);
-      else if (e.key === 'Delete' && this.selected) { this.sim.remove(this.selected); this.select(null); }
+      else if (e.key === 'Delete' && this.selected) { this.checkpoint(); this.sim.remove(this.selected); this.select(null); }
       else {
         const t = TOOLS.find((x) => x.key === e.key);
         if (t) this.setTool(t.id);
@@ -108,10 +134,14 @@ export class App {
   }
 
   routeFromHash() {
-    const [simId, scenarioId] = location.hash.replace(/^#/, '').split('/');
+    const { simId, scenarioId, params } = parseHash(location.hash);
     const S = this.simulations.find((s) => s.meta.id === simId) ?? this.simulations[0];
     if (!this.sim || this.sim.constructor !== S) this.loadSim(S, scenarioId);
     else if (scenarioId && scenarioId !== this.sim.scenarioId) this.loadScenario(scenarioId);
+    // Parameters from a shared link override the scenario defaults.
+    const typed = coerceParams(this.sim.paramDefs, params);
+    for (const [k, v] of Object.entries(typed)) this.sim.setParam(k, v);
+    if (Object.keys(typed).length) this.syncParams();
   }
 
   loadSim(S, scenarioId) {
@@ -129,7 +159,7 @@ export class App {
     kinds.replaceChildren(...this.sim.spawnKinds.map((k) => el('option', { value: k.id, textContent: k.label })));
     $('#energy-label').textContent = `${this.sim.energyTool.label} / ${this.sim.energyTool.negLabel}`;
     this.buildParams();
-    this.resetChart();
+    this.resetRecording();
     this.fitView();
     this.renderInspector(true);
     this.setTool(this.tool);
@@ -142,9 +172,126 @@ export class App {
     const hash = `${this.sim.meta.id}/${id}`;
     if (location.hash.slice(1) !== hash) history.replaceState(null, '', `#${hash}`);
     this.syncParams();
-    this.resetChart();
+    this.resetRecording();
     this.fitView();
     this.renderInspector(true);
+  }
+
+  /** Clear chart, recorded samples and undo history (a new world starts). */
+  resetRecording() {
+    this.history.clear();
+    this.samples = [];
+    this.resetChart();
+    this.updateHistoryButtons();
+  }
+
+  // ---------- undo / redo, save / load, sharing ----------
+
+  checkpoint() {
+    try {
+      this.history.checkpoint(this.sim.serialize());
+    } catch (err) {
+      console.warn('Undo snapshot failed', err);
+    }
+    this.updateHistoryButtons();
+  }
+
+  restore(snapshot) {
+    this.sim.deserialize(snapshot);
+    this.selected = null;
+    this.syncParams();
+    this.renderInspector(true);
+    this.updateHistoryButtons();
+  }
+
+  undo() {
+    if (!this.history.canUndo) return;
+    this.restore(this.history.undo(this.sim.serialize()));
+    this.status('Undone');
+  }
+
+  redo() {
+    if (!this.history.canRedo) return;
+    this.restore(this.history.redo(this.sim.serialize()));
+    this.status('Redone');
+  }
+
+  updateHistoryButtons() {
+    $('#undo').disabled = !this.history.canUndo;
+    $('#redo').disabled = !this.history.canRedo;
+  }
+
+  status(message, isError = false) {
+    const s = $('#status');
+    s.textContent = message;
+    s.classList.toggle('error', isError);
+    clearTimeout(this.statusTimer);
+    this.statusTimer = setTimeout(() => { s.textContent = ''; }, isError ? 6000 : 2500);
+  }
+
+  saveWorld() {
+    const data = this.sim.serialize();
+    const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+    download(`${data.sim}-${data.scenario}-${stamp}.json`, JSON.stringify(data));
+    this.status('World saved');
+  }
+
+  loadWorld(text, name = 'file') {
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      this.status(`${name} is not valid JSON`, true);
+      return;
+    }
+    const S = this.simulations.find((s) => s.meta.id === data?.sim);
+    if (!S) {
+      this.status(`${name} is not a Simulations save file`, true);
+      return;
+    }
+    const previous = this.sim;
+    try {
+      if (this.sim.constructor !== S) this.loadSim(S);
+      this.sim.deserialize(data);
+    } catch (err) {
+      if (previous.constructor !== this.sim.constructor) this.loadSim(previous.constructor);
+      this.status(`Could not load ${name}: ${err.message}`, true);
+      return;
+    }
+    $('#scenario-select').value = this.sim.scenarioId;
+    history.replaceState(null, '', buildHash(this.sim.meta.id, this.sim.scenarioId));
+    this.selected = null;
+    this.syncParams();
+    this.resetRecording();
+    this.fitView();
+    this.renderInspector(true);
+    this.status(`Loaded ${name}`);
+  }
+
+  async shareLink() {
+    const S = this.sim.constructor;
+    const reference = new S();
+    reference.loadScenario(this.sim.scenarioId);
+    const hash = buildHash(this.sim.meta.id, this.sim.scenarioId, diffParams(this.sim.params, reference.params));
+    const url = `${location.href.split('#')[0]}${hash}`;
+    history.replaceState(null, '', hash);
+    try {
+      await navigator.clipboard.writeText(url);
+      this.status('Link copied to clipboard');
+    } catch {
+      this.status('Link is in the address bar');
+    }
+  }
+
+  exportCSV() {
+    if (!this.samples.length) {
+      this.status('Nothing recorded yet. Let the simulation run first.', true);
+      return;
+    }
+    const stats = this.sim.stats().filter((s) => typeof s.value === 'number');
+    const columns = [{ key: 'time', label: `Time (${this.sim.timeUnit})` }, ...stats.map((s) => ({ key: s.key, label: s.label }))];
+    download(`${this.sim.meta.id}-${this.sim.scenarioId}-stats.csv`, toCSV(this.samples, columns), 'text/csv');
+    this.status(`Exported ${this.samples.length} rows`);
   }
 
   resetChart() {
@@ -280,20 +427,21 @@ export class App {
       if (f.type === 'readonly') input = el('span', { className: 'ro', textContent: f.value });
       else if (f.type === 'action') {
         input = el('button', { textContent: f.label });
-        input.addEventListener('click', () => { this.sim.setProperty(this.selected, f.key, true); this.renderInspector(true); });
+        input.addEventListener('click', () => { this.checkpoint(); this.sim.setProperty(this.selected, f.key, true); this.renderInspector(true); });
         input.dataset.key = f.key;
         return el('div', { className: 'field action' }, input);
       } else if (f.type === 'select') {
         input = el('select');
         for (const o of f.options) input.append(el('option', { value: o.value, textContent: o.label }));
         input.value = f.value;
-        input.addEventListener('change', () => this.sim.setProperty(this.selected, f.key, input.value));
+        input.addEventListener('change', () => { this.checkpoint(); this.sim.setProperty(this.selected, f.key, input.value); });
       } else {
         const isNum = f.type === 'number';
         input = el('input', { type: isNum ? 'number' : 'text', value: isNum ? +Number(f.value).toPrecision(5) : f.value, step: f.step ?? 'any' });
         input.addEventListener('change', () => {
           const v = isNum ? parseFloat(input.value) : input.value;
           if (isNum && !Number.isFinite(v)) return;
+          this.checkpoint();
           this.sim.setProperty(this.selected, f.key, v);
         });
       }
@@ -301,7 +449,7 @@ export class App {
       return el('label', { className: 'field' }, el('span', { textContent: f.label }), input);
     });
     const del = el('button', { className: 'danger', textContent: 'Remove object' });
-    del.addEventListener('click', () => { this.sim.remove(this.selected); this.select(null); });
+    del.addEventListener('click', () => { this.checkpoint(); this.sim.remove(this.selected); this.select(null); });
     box.replaceChildren(el('h3', { className: 'inspector-title', textContent: info.title }), ...rows, del);
   }
 
@@ -329,17 +477,29 @@ export class App {
   onDown(e) {
     this.canvas.setPointerCapture(e.pointerId);
     const [sx, sy] = this.localPos(e);
+    if (e.pointerType === 'touch') {
+      this.touches.set(e.pointerId, { x: sx, y: sy });
+      if (this.touches.size === 2) {
+        // Second finger: switch from the current tool to pinch-zoom / two-finger pan.
+        this.pointer.down = false;
+        this.dragTarget = null;
+        this.forceStart = null;
+        return;
+      }
+    }
     const [wx, wy] = this.view.toWorld(sx, sy);
     Object.assign(this.pointer, { x: sx, y: sy, down: true, button: e.button, shift: e.shiftKey, startX: sx, startY: sy, inside: true });
     if (e.button !== 0) return; // right/middle drag pans
     const tol = 10 / this.view.scale;
     const sim = this.sim;
+    if (['add', 'remove', 'force', 'energy'].includes(this.tool)) this.checkpoint();
     switch (this.tool) {
       case 'inspect':
         this.select(sim.pick(wx, wy, tol));
         break;
       case 'move': {
         const t = sim.pick(wx, wy, tol);
+        if (t) this.checkpoint();
         this.dragTarget = t;
         if (t) this.select(t);
         break;
@@ -363,6 +523,18 @@ export class App {
 
   onMove(e) {
     const [sx, sy] = this.localPos(e);
+    if (this.touches.has(e.pointerId) && this.touches.size === 2) {
+      const [a, b] = [...this.touches.values()];
+      const before = { d: Math.hypot(a.x - b.x, a.y - b.y), mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2 };
+      this.touches.set(e.pointerId, { x: sx, y: sy });
+      const [c, d] = [...this.touches.values()];
+      const mx = (c.x + d.x) / 2, my = (c.y + d.y) / 2;
+      const dist = Math.hypot(c.x - d.x, c.y - d.y);
+      if (before.d > 0 && dist > 0) this.view.zoomAt(mx, my, dist / before.d);
+      this.view.pan(mx - before.mx, my - before.my);
+      return;
+    }
+    if (this.touches.has(e.pointerId)) this.touches.set(e.pointerId, { x: sx, y: sy });
     const p = this.pointer;
     const dx = sx - p.x, dy = sy - p.y;
     Object.assign(p, { x: sx, y: sy, inside: true, shift: e.shiftKey });
@@ -381,6 +553,7 @@ export class App {
   }
 
   onUp(e) {
+    this.touches.delete(e.pointerId);
     const p = this.pointer;
     if (p.down && p.button === 0 && this.tool === 'force' && this.forceStart) {
       const [sx, sy] = this.localPos(e);
@@ -422,7 +595,11 @@ export class App {
       this.lastStats = now;
       const stats = this.renderStats();
       if (this.running) {
-        this.chart.push(Object.fromEntries(stats.map((s) => [s.key, s.value])));
+        const row = { time: +this.sim.time.toPrecision(8) };
+        for (const s of stats) if (typeof s.value === 'number') row[s.key] = s.value;
+        this.chart.push(row);
+        this.samples.push(row);
+        if (this.samples.length > MAX_SAMPLES) this.samples.shift();
       }
       this.chart.draw();
     }

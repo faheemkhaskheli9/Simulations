@@ -1,5 +1,6 @@
 import { Simulation } from '../core/simulation.js';
 import { fmt, TAU } from '../core/math.js';
+import { pick } from '../core/serialize.js';
 
 // Units: length = AU, time = years, mass = solar masses  =>  G = 4π².
 export const G_SI_UNITS = 4 * Math.PI * Math.PI;
@@ -199,6 +200,20 @@ export class GravitySim extends Simulation {
 
   bounds() {
     return this.view;
+  }
+
+  saveState() {
+    return {
+      view: this.view,
+      bodies: this.bodies.map((b) => pick(b, ['id', 'kind', 'name', 'x', 'y', 'vx', 'vy', 'm', 'radius', 'color', 'px'])),
+    };
+  }
+
+  loadState(st) {
+    this.view = st.view;
+    this.bodies = st.bodies.map((b) => ({ ...this.makeBody(b.kind, b.x, b.y, b.vx, b.vy), ...b, trail: [], alive: true }));
+    nextId = Math.max(nextId, ...this.bodies.map((b) => b.id + 1));
+    this.accDirty = true;
   }
 
   computeAcc() {

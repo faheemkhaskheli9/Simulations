@@ -1,6 +1,7 @@
 import { Simulation } from '../core/simulation.js';
 import { blackbodyColor, clamp, fmt, rgb, TAU } from '../core/math.js';
 import { evolve, mainSequenceLifetime, sampleSalpeter } from './stellar-model.js';
+import { pick } from '../core/serialize.js';
 
 let nextId = 1;
 
@@ -104,6 +105,23 @@ export class StarsSim extends Simulation {
       P.myrPerSecond = 200;
       for (let i = 0; i < 300; i++) this.makeStar(sampleSalpeter(this.rng, 0.1, 3), 100 + this.rng.gaussian(0, 16), 60 + this.rng.gaussian(0, 16), 9000 + this.rng.range(0, 500));
     }
+  }
+
+  saveState() {
+    return {
+      supernovae: this.supernovae,
+      stars: this.stars.map((s) => pick(s, ['id', 'name', 'mass', 'age', 'x', 'y', 'vx', 'vy'])),
+      nebulae: this.nebulae.map((n) => pick(n, ['id', 'name', 'x', 'y', 'mass', 'r', 'trigger', 'blobs'])),
+      shocks: this.shocks,
+    };
+  }
+
+  loadState(st) {
+    this.supernovae = st.supernovae || 0;
+    this.stars = st.stars.map((s) => ({ ...s, alive: true, state: evolve(s.mass, s.age) }));
+    this.nebulae = st.nebulae.map((n) => ({ ...n, alive: true }));
+    this.shocks = st.shocks || [];
+    nextId = Math.max(nextId, ...this.stars.map((s) => s.id + 1), ...this.nebulae.map((n) => n.id + 1));
   }
 
   step(dt) {
