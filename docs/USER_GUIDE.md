@@ -59,6 +59,14 @@ Units: light-years, million years. Energy tool = *feed matter / compress gas* / 
 - Use Energy on a nebula to compress it and trigger a burst of star formation.
 - The **HR diagram** (bottom right) plots luminosity against temperature; the selected star is white.
 
+### Atomic Structure
+Energy tool = *shine light* (excite electrons) / *stimulate emission*.
+- **Hydrogen:** hold the Energy tool on the atom and watch the spectrum strip fill with Lyman (UV) and Balmer (visible) lines.
+- Set *Photon energy* to 8 (ionising UV) to knock electrons off. The ion then recaptures electrons and glows.
+- Add **protons** to change the element, **neutrons** to make isotopes. Carbon-14 is radioactive and decays to nitrogen-14.
+- **Uranium-238:** follow the alpha-decay chain in the *Decay history* statistic.
+- Inspect the nucleus to read its binding energy per nucleon (iron-56 is the most tightly bound).
+
 ### Atoms & Molecules
 Units: reduced molecular units; temperature shown in Kelvin. Energy tool = *heat* / *cool*.
 - **Argon condensing:** droplets form at 60 K. Raise *Target temperature* to boil them.
@@ -66,6 +74,13 @@ Units: reduced molecular units; temperature shown in Kelvin. Energy tool = *heat
 - **Hydrogen + oxygen:** watch the *Molecules* statistic for H₂ and H₂O.
 - Inspect an atom and change its **Element** to transmute it.
 - Turn on *Gravity* to see a gas stratify into an atmosphere.
+
+### Mechanics Lab
+Units: metres, seconds, kilograms. Energy tool = *shake* / *brake*.
+- **Newton's cradle:** momentum passes through the row. Inspect a ball and halve its mass.
+- **Double pendulum:** nudge it slightly with Force and compare. Tiny differences grow fast (chaos).
+- Add *Ball on a spring to nearest* or a *Rope*, then build your own contraption.
+- Set **Restitution** to 0 for clay, 1 for a perfect bounce. Watch total energy in the stats.
 
 ### Weather & Atmosphere
 A 32 km wide, 16 km tall slice of the sky. Energy tool = *heat air* / *cool air*.
@@ -75,6 +90,20 @@ A 32 km wide, 16 km tall slice of the sky. Energy tool = *heat air* / *cool air*
 - **Thunderstorm:** a towering cloud that rains out and spreads under the tropopause.
 - Add moist air or a lake; raise mountains; heat a bubble near the ground to start convection.
 - Switch *Display* to see temperature anomaly, humidity or wind speed.
+
+### Global Climate
+Energy tool = *heat region* / *cool region*. Left half of the globe: temperature; right half: surface and ice.
+- Raise **CO₂** from 280 to 560 ppm and wait for the new equilibrium (about 3 °C warmer).
+- **Snowball Earth:** the faint young Sun freezes the planet. Set the Sun back to 1361 W/m² and it *stays* frozen, because ice reflects sunlight (hysteresis). How much CO₂ does it take to thaw?
+- Set the **axial tilt** to 0° or 90° and watch the seasons change.
+- Use Add to paint ice sheets, deserts or forests on latitude bands.
+
+### Cell Biology
+Energy tool = *feed ATP* / *poison (drain ATP)*.
+- **Respiration:** glucose enters through yellow transporters and is burned in mitochondria with oxygen. CO₂ diffuses out.
+- **Fresh water:** water rushes in and the cell bursts. **Syrup:** the cell shrinks and wrinkles.
+- **Resting potential:** pumps (red) keep K⁺ inside and Na⁺ outside, giving about −65 mV. Poison the cell and watch it run down.
+- Inspect a membrane protein and set *Working* to No to block it.
 
 ### Ecosystem & Evolution
 Energy tool = *feed / fertilise* / *drought / starve*.
@@ -122,3 +151,12 @@ the legend.
 | Tropopause | Boundary (~11 km) above which the stable stratosphere stops storms rising |
 | SEIR | Susceptible → Exposed → Infectious → Recovered disease model |
 | Mutation | Random change in an offspring's genes |
+| Emission spectrum | The set of wavelengths an element emits when its electrons fall to lower energy levels |
+| Isotope | Atoms of the same element with different numbers of neutrons |
+| Alpha / beta decay | A nucleus emitting a helium nucleus (α), or turning a neutron into a proton (β⁻) or vice versa (β⁺) |
+| Restitution | How bouncy a collision is: 0 = sticks, 1 = no energy lost |
+| Albedo | Fraction of sunlight a surface reflects (ice ≈ 0.6, ocean ≈ 0.06) |
+| Climate sensitivity | Long-term warming for a doubling of CO₂ |
+| Osmosis | Water moving across a membrane toward the side with more dissolved particles |
+| Membrane potential | Voltage across a cell membrane, set by ion gradients |
+| ATP | The cell's energy currency |

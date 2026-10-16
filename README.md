@@ -10,7 +10,7 @@ It runs in the browser with no dependencies and no build step.
 
 ```bash
 npm start          # serves http://localhost:8080  (or: node server.js 3000)
-npm test           # runs the physics and contract tests (Node ≥ 18)
+npm test           # runs the physics, contract and save/load tests (Node ≥ 18)
 ```
 
 ## Simulations
@@ -19,8 +19,12 @@ npm test           # runs the physics and contract tests (Node ≥ 18)
 |---|---|---|---|
 | Space | **Gravity & Orbits** (`gravity`) | N-body gravity in AU / years / solar masses with a symplectic leapfrog integrator. Collisions merge bodies; thousands of test particles for galaxies and asteroid belts. | Solar System, Earth–Moon, binary star with a circumbinary planet, figure-eight three-body orbit, spiral galaxy with a dark-matter halo, galaxy collision. Fling planets, drop in a black hole, change G. |
 | Space | **Stellar Life Cycles** (`stars`) | Star formation in nebulae (Salpeter IMF), main-sequence → giant → white dwarf / neutron star / black hole, supernova shock waves that trigger new star formation, and a live Hertzsprung–Russell diagram. | Feed a star mass, change its age, compress a nebula, watch a 40 M☉ star collapse. |
+| Matter | **Atomic Structure** (`atom`) | Protons, neutrons and electron shells (aufbau order), a screened hydrogen-like model for electron energies, photon absorption/emission with a live emission spectrum, ionisation and recombination, semi-empirical nuclear binding and α/β decay. | Shine light on hydrogen to see the Balmer lines, strip electrons to make ions, add neutrons to carbon until it becomes radioactive, follow the uranium-238 decay chain. |
 | Matter | **Atoms & Molecules** (`atoms`) | 2D molecular dynamics: Lennard-Jones forces, Coulomb ions, covalent bonding with valence rules, thermostat, pressure. | Condense argon, melt a salt crystal, make water from H + O, transmute an atom into another element. |
+| Classical | **Mechanics Lab** (`mechanics`) | Balls, anchors, rigid rods and springs under gravity with drag; position-based dynamics and momentum-conserving collisions. | Newton's cradle, chaotic double pendulum, projectiles, spring oscillators, a rope bridge, a billiards break. Change masses, bounciness and stiffness. |
 | Earth | **Weather & Atmosphere** (`weather`) | 32 km × 16 km vertical slice of the atmosphere: stable-fluids dynamics, buoyancy, day/night solar heating, evaporation, condensation with latent heat, rain/snow, terrain and a tropopause. | Cumulus on a sunny day, sea breeze, orographic rain, a thunderstorm. Raise mountains, add lakes or moist air, heat a bubble, push the wind. |
+| Earth | **Global Climate** (`climate`) | Latitude-resolved energy-balance model: seasonal sunlight and axial tilt, CO₂ greenhouse forcing, ice–albedo feedback and poleward heat transport (~3 K warming per CO₂ doubling). | Raise CO₂, dim the Sun into a Snowball Earth and try to escape it, remove the axial tilt, paint deserts, forests or ice sheets. |
+| Life | **Cell Biology** (`cell`) | Diffusing molecules and a selectively permeable membrane: channels and transporters, osmosis (swelling, bursting, shrinking), mitochondria making ATP, Na⁺/K⁺ pumps and the membrane potential. | Put the cell in fresh water or syrup, block the glucose transporters, poison the mitochondria, drain ATP and watch the gradients run down. |
 | Life | **Ecosystem & Evolution** (`ecosystem`) | Plants, herbivores and carnivores with heritable, mutating genes (speed, size, senses, fertility) and energy budgets, giving predator–prey cycles and natural selection. | Edit genes, cause droughts or fertilise land, change climate, compare fertile islands with a desert. |
 | Life | **Epidemic Spread** (`epidemic`) | Agent-based SEIR disease model with mobility hubs, distancing, quarantine, vaccination, mortality and waning immunity. | Vaccinate regions, seed outbreaks, flatten the curve. |
 

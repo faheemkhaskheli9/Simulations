@@ -96,6 +96,20 @@ Each module must reproduce the listed reference behaviour.
 | SM-13 | Ecosystem | Reproduction passes mutated genes to offspring; genes clamp to valid ranges | T | Met |
 | SM-14 | Ecosystem | Herbivores die out without plants (energy conservation sanity check) | T | Met |
 | SM-15 | Epidemic | An outbreak infects > 50 people in the default town; 60 % vaccination reduces total infections | T | Met |
+| SM-16 | Atomic Structure | Hydrogen lines: Lyman-α 121.6 nm (±0.5), H-α 656.3 nm and H-β 486.1 nm (±1.5); ionisation energy 13.6 eV | T | Met |
+| SM-17 | Atomic Structure | Ground configurations follow the aufbau order (e.g. Fe: …4s² 3d⁶) | T | Met |
+| SM-18 | Atomic Structure | Binding energy per nucleon of Fe-56 is 8.8 ± 0.15 MeV and exceeds O-16 and U-238 | T | Met |
+| SM-19 | Atomic Structure | Common stable isotopes are stable; C-14 β⁻ → N-14, U-238 α, free neutron β⁻, C-10 β⁺ | T | Met |
+| SM-20 | Atomic Structure | Excited hydrogen emits only hydrogen lines; non-ionising light never ionises; ions recombine | T | Met |
+| SM-21 | Mechanics | Equal-mass elastic collision swaps velocities, conserving momentum | T | Met |
+| SM-22 | Mechanics | Free fall follows ½gt² (±2 cm after 1 s); pendulum period 2π√(L/g) and spring period 2π√(m/k) within 2 % | T | Met |
+| SM-23 | Mechanics | Rods stay within 1 cm of their length | T | Met |
+| SM-24 | Climate | Global-mean insolation equals S₀/4; polar night has zero insolation; CO₂ doubling forcing 3.7 W/m² | T | Met |
+| SM-25 | Climate | Pre-industrial global mean 12–16 °C with an ice edge at 60–85°; CO₂ doubling warms 2–4.5 K | T | Met |
+| SM-26 | Climate | Snowball Earth persists after the Sun returns to today's value (hysteresis) | T | Met |
+| SM-27 | Cell | Resting membrane potential between −50 and −90 mV (GHK) | T | Met |
+| SM-28 | Cell | Isotonic cell keeps its size; hypotonic swells and bursts; hypertonic shrinks | T | Met |
+| SM-29 | Cell | O₂ crosses the membrane freely; glucose only via transporters; mitochondria make ATP and CO₂; without ATP the Na⁺ gradient runs down | T | Met |
 
 ## 6. Performance requirements
 
@@ -104,7 +118,7 @@ Reference machine: mid-range laptop (4-core, integrated GPU), Chromium, default 
 | ID | Requirement | Verification | Status |
 |---|---|---|---|
 | PR-1 | First render ≤ 2 s after page load on a local server | B | Met |
-| PR-2 | Simulation step + render ≤ 16 ms/frame for Gravity, Stars, Atoms, Ecosystem, Epidemic | B | Met (0.1–4 ms step time measured headless) |
+| PR-2 | Simulation step + render ≤ 16 ms/frame for every module except Weather | B | Met (0.1–4 ms step time measured headless) |
 | PR-3 | Weather ≤ 33 ms/frame at default settings | B | Met at the limit (~20–25 ms measured headless); optimisation on roadmap |
 | PR-4 | Galaxy scenarios support ≥ 1 500 test particles interactively | B | Met |
 | PR-5 | Memory stays bounded during long runs (trails, chart, populations capped) | I | Met |
@@ -153,7 +167,7 @@ Reference machine: mid-range laptop (4-core, integrated GPU), Chromium, default 
 
 | PRD | TRD |
 |---|---|
-| G1 Breadth, FR-30…35 | SM-1…SM-15 |
+| G1 Breadth, FR-30…39 | SM-1…SM-29 |
 | G2 Interactivity, FR-10…15 | AR-1, FT-10…15 |
 | G3 Experimentation, FR-20…22 | FT-20…22 |
 | G4 Plausibility | SM-*, RR-1 |

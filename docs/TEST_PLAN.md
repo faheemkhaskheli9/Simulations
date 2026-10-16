@@ -60,6 +60,21 @@ npm run test:e2e             # real-browser tests
 | | herbivores starve without plants | SM-14 |
 | | gene edits are clamped | SM-13, FT-12 |
 | | epidemic spreads, and vaccination slows it | SM-15 |
+| `atom.test.js` | hydrogen Lyman-α, H-α, H-β and 13.6 eV ionisation | SM-16 |
+| | aufbau configurations | SM-17 |
+| | binding energy per nucleon peaks near iron | SM-18 |
+| | stability and decay modes; C-14 decays to N-14 | SM-19 |
+| | photons emitted only at hydrogen lines; ionisation and recombination; no ionisation by visible light | SM-20 |
+| `mechanics.test.js` | elastic collision swaps velocities | SM-21 |
+| | free fall, pendulum period, spring period | SM-22 |
+| | rods stay rigid; cradle keeps its energy; removing a ball removes its links | SM-23, FT-13 |
+| `climate.test.js` | insolation mean and polar night; CO₂ forcing | SM-24 |
+| | pre-industrial climate; climate sensitivity | SM-25 |
+| | snowball hysteresis | SM-26 |
+| | painting ice cools; heating a band warms it | FT-13 |
+| `cell.test.js` | resting membrane potential | SM-27 |
+| | swelling, bursting, shrinking; stable isotonic volume | SM-28 |
+| | selective permeability; ATP production; gradient rundown without ATP | SM-29 |
 | `contract.test.js` | per module: meta, params, every spawn kind, pick, describe, setProperty, locate, move, impulse (with and without target), energy ±, removeAt, stats, chart keys, every scenario | AR-1, FT-10…15 |
 
 | `serialize.test.js` | typed arrays round-trip through base64 | MQ-6 |
@@ -71,7 +86,7 @@ npm run test:e2e             # real-browser tests
 | `e2e/app.e2e.mjs` | per module: every tool in the real UI with no console errors | FT-13, RR-* |
 | | undo/redo an added object; save → load a file; shared link parameters; CSV download | FT-24…27 |
 
-Current result: **48 unit tests and 10 browser tests, all passing.**
+Current result: **86 unit tests and 14 browser tests, all passing.**
 
 ## 4. Browser smoke test
 

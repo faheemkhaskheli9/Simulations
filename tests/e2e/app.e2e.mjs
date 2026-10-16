@@ -10,7 +10,7 @@ const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || 'playwright')
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const PORT = 8000 + Math.floor(Math.random() * 900);
 const BASE = `http://localhost:${PORT}/`;
-const SIMS = ['gravity', 'stars', 'atoms', 'weather', 'ecosystem', 'epidemic'];
+const SIMS = ['gravity', 'stars', 'atom', 'atoms', 'mechanics', 'weather', 'climate', 'cell', 'ecosystem', 'epidemic'];
 
 let server, browser;
 

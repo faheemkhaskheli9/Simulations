@@ -202,6 +202,31 @@ Full authoring guidance is in the [Module Guide](MODULE_GUIDE.md).
 - **Disease:** SEIR + V + D; transmission probability β·Δt per contact within radius; incubation and infectious periods; fatality rate; optional waning immunity.
 - **Tools:** energy = vaccinate (+) / infect (−).
 
+### 5.7 Atomic Structure (`atom.js`)
+- **State:** Z, N and a list of electrons `{ n, ground, angle }`; transient photon/α/β particles for display only.
+- **Electrons:** ground shells from the aufbau (Madelung) order; level energies `E = −13.6·Z_eff²/n²` eV with screening (1 per inner electron, 0.35 per same-shell electron), exact for hydrogen.
+- **Light:** each absorbed photon lifts the outermost electron to a random level up to the chosen maximum (above level 7 it ionises). Excited electrons decay at a set rate to a lower level with a vacancy, emitting λ = hc/ΔE into the spectrum. Positive ions recapture electrons at the top level.
+- **Nucleus:** Weizsäcker semi-empirical binding energy; decay mode from the distance to the valley of stability `Z₀ = A/(1.98 + 0.0155 A^⅔)` with a band that widens with A; α for A > 209.
+
+### 5.8 Mechanics Lab (`mechanics.js`)
+- **State:** balls `{ m, r, e, fixed }` and links (rods, springs) by reference.
+- **Step:** springs as explicit forces → gravity and drag → position prediction → 4 iterations of rod projection (position-based dynamics) → velocities from positions → 3 passes of pairwise impulse collisions with restitution → walls.
+- **Units:** metres, seconds, kilograms; energies and momentum in SI.
+
+### 5.9 Global Climate (`climate.js`)
+- **Grid:** 60 equal-area bands uniform in x = sin(latitude).
+- **Equation:** `C ∂T/∂t = Q(x,t)(1 − α(T)) − (A − 5.35 ln(CO₂/280) + B·T) + ∂/∂x[D(1 − x²) ∂T/∂x]` with C = 12.7 W·yr/m²/K, A = 202.2 W/m², B = 2.09 W/m²/K, D = 0.43 W/m²/K.
+- **Insolation:** daily-mean top-of-atmosphere formula with declination `δ = obliquity·sin(2πt)`, or the annual mean.
+- **Albedo:** ice-free surface value (per painted surface) blending smoothly into ice albedo around −10 °C.
+- **Integration:** explicit Euler with a diffusion-stable step (~0.01 yr). Scenarios spin up for 30 years.
+
+### 5.10 Cell Biology (`cell.js`)
+- **State:** particles `{ sp, x, y }`, membrane proteins `{ type, angle, active }`, mitochondria, ATP count, impermeant contents, radius.
+- **Transport:** Brownian steps `σ = √(2·D·T/310·Δt)`. Crossing the membrane needs bilayer permeability or a matching active protein nearby; otherwise the step is rejected.
+- **Osmosis:** `dA/dt ∝ Lp·(c_in − c_out)` using σ-weighted (reflection coefficient) solute concentrations; the cell lyses beyond the strength limit.
+- **Metabolism:** glucose in a mitochondrion + 2 O₂ → 30 ATP + 2 CO₂ (each particle stands for many molecules), or 2 ATP + lactate without oxygen. Pumps spend 1 ATP to move 3 Na⁺ out and 2 K⁺ in.
+- **Membrane potential:** Goldman–Hodgkin–Katz with P_K : P_Na = 1 : 0.04.
+
 ## 6. Data model and state
 
 All state is in memory and owned by the active module. Switching simulations
@@ -243,8 +268,9 @@ is shared as a saved file.
 | Throttled UI work (stats 4 Hz, inspector ~3 Hz) | app |
 | Bounded buffers (trails 200 points, chart 400 samples, population caps) | gravity, chart, ecosystem |
 
-Measured step time (headless Chromium): gravity 0.1–0.6 ms, stars ~0.1 ms, atoms ~3–4 ms,
-ecosystem ~3 ms, epidemic ~0.6 ms, weather ~20–25 ms at default settings.
+Measured step time (headless Chromium): gravity 0.1–0.6 ms, stars ~0.1 ms, atomic structure < 0.1 ms,
+atoms ~3–4 ms, mechanics ~0.2 ms, climate ~0.1 ms, cell ~0.2–0.4 ms, ecosystem ~3 ms,
+epidemic ~0.6 ms, weather ~20–25 ms at default settings.
 
 **Scaling plan:** move `step()` into a Web Worker (state in transferable typed
 arrays), add GPU compute (WebGPU) for grids and particles, and use Barnes–Hut for gravity.
