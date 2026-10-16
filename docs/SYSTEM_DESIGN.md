@@ -57,6 +57,9 @@ flowchart LR
 | `src/ui/app.js` | Application controller: routing, main loop, tools, parameter UI, inspector, stats, overlays |
 | `src/ui/view.js` | 2D camera: world↔screen transforms, pan, zoom-at-cursor, fit, y-up support |
 | `src/ui/chart.js` | Multi-series time chart, normalised per series |
+| `src/ui/lesson-panel.js` | Learn catalogue dialog, active-lesson card, completion storage |
+| `src/lessons/runner.js` | `LessonRunner`: evaluates step checks and challenge fail rules against a live simulation (no DOM, so it runs in Node tests) |
+| `src/lessons/index.js` | Lesson and challenge catalogue (data + predicate functions) |
 | `src/core/simulation.js` | `Simulation` base class and default contract implementations |
 | `src/core/random.js` | Seedable PRNG (mulberry32) with uniform, gaussian, pick, chance |
 | `src/core/spatial-hash.js` | Uniform grid for O(n) neighbour queries |

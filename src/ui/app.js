@@ -2,6 +2,8 @@ import { View } from './view.js';
 import { Chart } from './chart.js';
 import { fmt } from '../core/math.js';
 import { History } from './history.js';
+import { LessonPanel } from './lesson-panel.js';
+import { LESSONS } from '../lessons/index.js';
 import { buildHash, coerceParams, diffParams, download, parseHash, toCSV } from './persistence.js';
 
 const MAX_SAMPLES = 20000;
@@ -44,6 +46,7 @@ export class App {
     this.samples = [];
     this.touches = new Map();
     this.buildChrome();
+    this.lessons = new LessonPanel(this, LESSONS);
     this.bindInput();
     window.addEventListener('resize', () => this.resize());
     window.addEventListener('hashchange', () => this.routeFromHash());
@@ -154,6 +157,12 @@ export class App {
 
   routeFromHash() {
     const { simId, scenarioId, params } = parseHash(location.hash);
+    // #learn/<lesson-id> opens a lesson directly.
+    if (simId === 'learn' && this.lessons.find(scenarioId)) {
+      if (!this.sim) this.loadSim(this.simulations.find((s) => s.meta.id === this.lessons.find(scenarioId).sim));
+      this.lessons.start(scenarioId);
+      return;
+    }
     const S = this.simulations.find((s) => s.meta.id === simId) ?? this.simulations[0];
     if (!this.sim || this.sim.constructor !== S) this.loadSim(S, scenarioId);
     else if (scenarioId && scenarioId !== this.sim.scenarioId) this.loadScenario(scenarioId);
@@ -182,6 +191,7 @@ export class App {
     this.fitView();
     this.renderInspector(true);
     this.setTool(this.tool);
+    this.lessons.onSimChanged();
   }
 
   loadScenario(id) {
@@ -621,6 +631,7 @@ export class App {
         if (this.samples.length > MAX_SAMPLES) this.samples.shift();
       }
       this.chart.draw();
+      this.lessons.tick();
     }
     if (now - this.lastInspect > 300) {
       this.lastInspect = now;

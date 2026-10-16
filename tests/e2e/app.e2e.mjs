@@ -120,3 +120,42 @@ test('model & assumptions dialog describes the current simulation', async () => 
   assert.deepEqual(errors, []);
   await page.close();
 });
+
+test('lessons: catalogue starts a lesson that advances on real interactions', async () => {
+  const { page, errors } = await openPage('#gravity');
+  await page.click('#learn');
+  const items = page.locator('#learn-dialog .lesson-item');
+  assert.ok(await items.count() >= 9);
+  await items.filter({ hasText: 'Light from atoms' }).locator('button').click();
+  await page.waitForFunction(() => window.app.sim.meta.id === 'atom');
+  assert.match(await page.locator('#lesson').textContent(), /Step 1 of 3/);
+  // Step 1: add photons with the Add tool.
+  const [cx, cy] = await center(page);
+  await page.keyboard.press('3');
+  await page.selectOption('#kind-select', 'photon');
+  for (let i = 0; i < 12 && /Step 1/.test(await page.locator('#lesson').textContent()); i++) {
+    await page.mouse.click(cx, cy);
+    await page.waitForTimeout(700);
+  }
+  assert.match(await page.locator('#lesson').textContent(), /Step 2 of 3/);
+  // Leaving for another simulation ends the lesson.
+  await page.selectOption('#sim-select', 'gravity');
+  await page.waitForFunction(() => window.app.sim.meta.id === 'gravity');
+  assert.ok(await page.locator('#lesson').isHidden());
+  assert.deepEqual(errors, []);
+  await page.close();
+});
+
+test('lessons: #learn/<id> links open a lesson; manual steps finish with Next', async () => {
+  const { page, errors } = await openPage('#learn/osmosis');
+  await page.waitForFunction(() => window.app.lessons.runner?.lesson.id === 'osmosis');
+  assert.equal(await page.evaluate(() => window.app.sim.scenarioId), 'hypotonic');
+  assert.match(page.url(), /#cell\/hypotonic$/);
+  // Jump to the end via the runner, then the last check completes it.
+  await page.evaluate(() => { const r = window.app.lessons.runner; r.index = r.total - 2; r.advance(window.app.sim); });
+  await page.selectOption('#scenario-select', 'hypertonic');
+  await page.waitForSelector('.lesson-done', { timeout: 20000 });
+  assert.ok(await page.evaluate(() => JSON.parse(localStorage.getItem('simulations.completedLessons')).includes('osmosis')));
+  assert.deepEqual(errors, []);
+  await page.close();
+});

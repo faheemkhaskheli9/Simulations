@@ -110,6 +110,18 @@ dialog ul, dialog ol { margin: 0; padding-left: 20px; }
 dialog li { margin: 4px 0; }
 ol.equations li { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
 
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.lesson { margin-top: 12px; padding: 10px 12px; border: 1px solid var(--accent); border-radius: 8px; background: var(--panel-2); }
+.lesson-head h2 { margin: 0 0 2px; color: var(--text); text-transform: none; letter-spacing: 0; font-size: 14px; }
+.lesson-text { margin: 8px 0; }
+.lesson-done { color: #8fe3a1; font-weight: 600; }
+.lesson-failed { color: var(--danger); font-weight: 600; }
+.lesson details { margin: 6px 0; }
+.lesson-buttons { display: flex; gap: 6px; margin-top: 8px; }
+.lesson-list { list-style: none; padding: 0; }
+.lesson-item { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px dashed var(--border); }
+
 [hidden] { display: none !important; }
 
 @media (max-width: 900px) {

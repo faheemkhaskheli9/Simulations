@@ -14,6 +14,7 @@
     <strong class="brand">⚛ Simulations</strong>
     <select id="sim-select" aria-label="Simulation"></select>
     <select id="scenario-select" aria-label="Scenario"></select>
+    <button id="learn" title="Guided lessons and challenges">🎓 Learn</button>
     <button id="play">❚❚ Pause</button>
     <button id="step" title="Advance one frame [.]">Step</button>
     <button id="reset" title="Reload the current scenario">Reset</button>
@@ -66,6 +67,7 @@
   </main>
 
   <aside class="panel right">
+    <section id="lesson" class="lesson" hidden aria-live="polite"></section>
     <section>
       <h2>Inspector</h2>
       <div id="inspector"></div>
@@ -82,6 +84,14 @@
       <button aria-label="Close">✕</button>
     </form>
     <div id="model-body"></div>
+  </dialog>
+
+  <dialog id="learn-dialog" aria-labelledby="learn-title">
+    <form method="dialog" class="dialog-head">
+      <h2 id="learn-title">Learn</h2>
+      <button aria-label="Close">✕</button>
+    </form>
+    <div id="learn-body"></div>
   </dialog>
 
   <script type="module" src="src/main.js"></script>
