@@ -1,6 +1,7 @@
 import { Simulation } from '../core/simulation.js';
 import { SpatialHash } from '../core/spatial-hash.js';
 import { clamp, TAU } from '../core/math.js';
+import { pick } from '../core/serialize.js';
 
 // Reduced molecular-dynamics units: length σ≈3 Å, energy ε, mass in amu.
 // One reduced temperature unit ≈ 120 K (the argon well depth).
@@ -132,6 +133,29 @@ export class AtomsSim extends Simulation {
       fill(['Ar'], 120);
       fill(['Ne'], 120);
     }
+  }
+
+  saveState() {
+    return {
+      pressure: this.pressure,
+      atoms: this.atoms.map((a) => ({ ...pick(a, ['id', 'el', 'x', 'y', 'vx', 'vy', 'charge']), bonds: a.bonds.map((b) => b.id) })),
+    };
+  }
+
+  loadState(st) {
+    const byId = new Map();
+    this.atoms = st.atoms.filter((a) => ELEMENTS[a.el]).map((a) => {
+      const at = { ...a, fx: 0, fy: 0, bonds: [], alive: true };
+      byId.set(at.id, at);
+      return at;
+    });
+    for (const a of st.atoms) {
+      const at = byId.get(a.id);
+      if (at) at.bonds = a.bonds.map((id) => byId.get(id)).filter(Boolean);
+    }
+    this.pressure = st.pressure || 0;
+    nextId = Math.max(nextId, ...this.atoms.map((a) => a.id + 1));
+    this.forcesReady = false;
   }
 
   placeRandom(el, x0, y0, x1, y1) {

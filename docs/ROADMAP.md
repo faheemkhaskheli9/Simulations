@@ -16,13 +16,15 @@ along two tracks: the **platform** (persistence, performance, 3D, education) and
 - [x] Gravity & Orbits, Stellar Life Cycles, Atoms & Molecules, Weather & Atmosphere, Ecosystem & Evolution, Epidemic Spread
 - [x] Node test suite + contract test; product and technical documentation
 
-### M2 Persistence and sharing (P1)
-- [ ] `serialize` / `deserialize` on the contract; save and load worlds as JSON files
-- [ ] Share links that include the world state (compressed in the URL)
-- [ ] Undo / redo of user interventions
-- [ ] CSV export of chart data
-- [ ] CI: run tests on every PR; deploy `main` to GitHub Pages
-- [ ] Pinch-zoom and two-finger pan on touch devices
+### M2 Persistence and sharing (P1, done)
+- [x] `serialize` / `deserialize` on the contract; save and load worlds as JSON files
+- [x] Share links with simulation, scenario and changed parameters (`#gravity/solar?gScale=2`)
+- [ ] Share links that embed the full world state (too large for URLs today; needs compression or hosting)
+- [x] Undo / redo of user interventions
+- [x] CSV export of recorded statistics
+- [x] CI: unit and browser tests on every push and PR (`.github/workflows/test.yml`)
+- [ ] Deploy `main` to GitHub Pages
+- [x] Pinch-zoom and two-finger pan on touch devices
 
 ### M3 Catalogue expansion (P1–P2)
 
@@ -72,4 +74,4 @@ along two tracks: the **platform** (persistence, performance, 3D, education) and
 | Atoms | 2D, no angle potentials beyond 1–3 repulsion; simplified bond chemistry | Angle terms, reaction energetics |
 | Stars | Analytic tracks, no binaries | Binary evolution, mass transfer |
 | Gravity | O(N²) for massive bodies | Barnes–Hut |
-| Platform | No persistence, analytics, CI | M2 |
+| Platform | No analytics; no hosted deployment | M2 follow-up |

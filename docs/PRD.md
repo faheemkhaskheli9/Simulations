@@ -98,8 +98,8 @@ Priority: **P0** must have (MVP) · **P1** should have · **P2** could have.
 | FR-5 | Deep links `#<simulation>/<scenario>` | P1 | Done |
 | FR-6 | Keyboard shortcuts for tools and playback | P1 | Done |
 | FR-7 | Responsive layout usable on tablets / narrow screens | P1 | Done (basic) |
-| FR-8 | Save / load / share a full world state as a file or link | P1 | Planned |
-| FR-9 | Undo / redo of user interventions | P2 | Planned |
+| FR-8 | Save / load a full world state as a file; share a link with simulation, scenario and parameters | P1 | Done |
+| FR-9 | Undo / redo of user interventions | P2 | Done |
 
 ### 6.2 Universal interaction tools (every simulation)
 | ID | Tool | Requirement | Priority | Status |
@@ -117,7 +117,7 @@ Priority: **P0** must have (MVP) · **P1** should have · **P2** could have.
 | FR-20 | Per-simulation global parameters (sliders, incl. log scale; toggles; selects) editable live | P0 | Done |
 | FR-21 | Live statistics panel | P0 | Done |
 | FR-22 | Time-series chart of key statistics | P0 | Done |
-| FR-23 | Export statistics as CSV | P1 | Planned |
+| FR-23 | Export statistics as CSV | P1 | Done |
 | FR-24 | Parameter sweeps / scripted experiments | P2 | Planned |
 
 ### 6.4 Simulation catalogue (MVP)
@@ -168,7 +168,7 @@ Detailed and measurable versions are in the [TRD](TRD.md).
 | Phase | Scope | Status |
 |---|---|---|
 | **M1 MVP** | Shell, universal tools, six modules, tests, docs | Complete |
-| **M2 Persistence and sharing** | Save/load worlds, share links with state, CSV export, undo | Next |
+| **M2 Persistence and sharing** | Save/load worlds, share links, CSV export, undo/redo, CI | Complete |
 | **M3 Catalogue expansion** | Atomic structure, cell biology, climate, classical mechanics | Planned |
 | **M4 Scale and fidelity** | Web Workers, WebGL/WebGPU, Barnes–Hut, 3D views | Planned |
 | **M5 Education** | Guided lessons, challenges, teacher mode | Planned |

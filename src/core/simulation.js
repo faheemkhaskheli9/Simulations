@@ -1,4 +1,5 @@
 import { Random } from './random.js';
+import { SAVE_FORMAT, SAVE_VERSION } from './serialize.js';
 
 /**
  * Base class for every simulation module.
@@ -102,6 +103,47 @@ export class Simulation {
   /** Live statistics: [{key, label, value, unit?}]. */
   stats() {
     return [];
+  }
+
+  /** Module-specific world state as JSON-safe data. Override together with loadState. */
+  saveState() {
+    throw new Error(`${this.meta.id} does not support saving`);
+  }
+
+  loadState() {
+    throw new Error(`${this.meta.id} does not support loading`);
+  }
+
+  /** Full snapshot: parameters, clock, RNG and world state. */
+  serialize() {
+    return {
+      format: SAVE_FORMAT,
+      version: SAVE_VERSION,
+      sim: this.meta.id,
+      scenario: this.scenarioId,
+      time: this.time,
+      rng: this.rng.state,
+      params: { ...this.params },
+      state: this.saveState(),
+    };
+  }
+
+  deserialize(data) {
+    if (!data || data.format !== SAVE_FORMAT) throw new Error('Not a Simulations save file');
+    if (data.version > SAVE_VERSION) throw new Error('Save file is from a newer version');
+    if (data.sim !== this.meta.id) throw new Error(`Save is for "${data.sim}", not "${this.meta.id}"`);
+    // Only accept known parameters, with the declared type.
+    for (const d of this.paramDefs) {
+      const v = data.params?.[d.key];
+      if (v === undefined) continue;
+      const ok = d.type === 'checkbox' ? typeof v === 'boolean' : d.type === 'select' ? d.options.some((o) => o.value === v) : Number.isFinite(v);
+      if (ok) this.params[d.key] = v;
+    }
+    this.scenarioId = data.scenario ?? this.scenarioId;
+    this.time = Number.isFinite(data.time) ? data.time : 0;
+    if (Number.isFinite(data.rng)) this.rng.state = data.rng >>> 0;
+    this.loadState(data.state);
+    for (const d of this.paramDefs) this.onParamChange(d.key, this.params[d.key]);
   }
 
   formatTime() {

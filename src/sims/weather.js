@@ -1,5 +1,6 @@
 import { Simulation } from '../core/simulation.js';
 import { clamp, fmt } from '../core/math.js';
+import { decodeInto, encodeTyped } from '../core/serialize.js';
 
 const G = 9.81;
 const LV_CP = 2488; // latent heat of vaporisation / specific heat (K per kg/kg)
@@ -155,6 +156,18 @@ export class WeatherSim extends Simulation {
         this.qvEnv[j] = this.rh0 * Math.max(0.1, 1 - (0.8 * j) / this.NY) * qsat(T, this.pressure(j));
       }
     }
+  }
+
+  saveState() {
+    const st = { rh0: this.rh0, precip: this.precip, qvEnv: encodeTyped(this.qvEnv) };
+    for (const f of ['u', 'v', 'th', 'qv', 'qc', 'qr', 'p', 'terrain', 'water']) st[f] = encodeTyped(this[f]);
+    return st;
+  }
+
+  loadState(st) {
+    for (const f of ['u', 'v', 'th', 'qv', 'qc', 'qr', 'p', 'terrain', 'water', 'qvEnv']) decodeInto(this[f], st[f]);
+    this.rh0 = st.rh0;
+    this.precip = st.precip || 0;
   }
 
   /** Bilinear sample of field f at fractional cell coords (periodic in x). */

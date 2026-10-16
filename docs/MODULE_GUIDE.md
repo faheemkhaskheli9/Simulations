@@ -101,6 +101,16 @@ export class PendulumSim extends Simulation {
     else p[key] = value;
   }
 
+  // Save/load, undo and redo all build on these two methods.
+  saveState() {
+    return { items: this.items.map(({ id, L, th, w }) => ({ id, L, th, w })) };
+  }
+
+  loadState(st) {
+    this.items = st.items.map((p) => ({ ...p, alive: true }));
+    nextId = Math.max(nextId, ...this.items.map((p) => p.id + 1));
+  }
+
   stats() {
     const E = this.items.reduce((s, p) => s + 0.5 * (p.L * p.w) ** 2 + this.params.g * p.L * (1 - Math.cos(p.th)), 0);
     return [
@@ -123,7 +133,8 @@ export const SIMULATIONS = [/* … */, PendulumSim];
 ## 3. Test it
 
 `tests/contract.test.js` automatically runs your module through every tool and
-scenario. Add a behaviour test against a known result (for the pendulum: the
+scenario, and `tests/serialize.test.js` checks that save → load reproduces your world and
+its future exactly. Add a behaviour test against a known result (for the pendulum: the
 small-angle period equals 2π√(L/g)):
 
 ```js
@@ -153,6 +164,7 @@ Run `npm test`, then `npm start` and open `http://localhost:8080/#pendulum/singl
 | `move(e, x, y)` | Called repeatedly while dragging |
 | `impulse(e\|null, x, y, dx, dy)` | Drag vector in world units; handle `e = null` as a regional push |
 | `energy(x, y, r, amount)` | Called every frame while held; `amount` is signed and already scaled by frame time |
+| `saveState()` / `loadState(state)` | JSON-safe world state. Replace object references with ids; encode typed arrays with `encodeTyped`/`decodeInto` from `src/core/serialize.js`; validate enum values. Parameters, time and RNG are saved by the base class. Powers Save/Load and Undo/Redo |
 | `stats()`, `chartKeys` | `[{ key, label, value, color? }]`; chart keys must exist in stats |
 | `energyTool`, `timeUnit`, `background`, `formatTime()` | Labels and cosmetics |
 
@@ -163,6 +175,7 @@ Run `npm test`, then `npm start` and open `http://localhost:8080/#pendulum/singl
 - [ ] Every tool does something sensible, or is a harmless no-op
 - [ ] Inspector values are clamped in `setProperty`
 - [ ] Entities carry `alive`; `locate` returns `null` after removal
+- [ ] `saveState`/`loadState` round-trip exactly (the serialization test enforces this)
 - [ ] Physical units in labels
 - [ ] Behaviour test against a known result
 - [ ] Listed in the README catalogue and the [Roadmap](ROADMAP.md)

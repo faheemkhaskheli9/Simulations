@@ -15,6 +15,18 @@
     <button id="step" title="Advance one frame [.]">Step</button>
     <button id="reset" title="Reload the current scenario">Reset</button>
     <button id="fit" title="Fit the view [f]">Fit view</button>
+    <span class="group">
+      <button id="undo" title="Undo [Ctrl+Z]" disabled>↶ Undo</button>
+      <button id="redo" title="Redo [Ctrl+Shift+Z]" disabled>↷ Redo</button>
+    </span>
+    <span class="group">
+      <button id="save" title="Save the world to a file [Ctrl+S]">Save</button>
+      <button id="load" title="Load a saved world">Load</button>
+      <input id="load-file" type="file" accept=".json,application/json" hidden />
+      <button id="share" title="Copy a link to this simulation, scenario and parameters">Share link</button>
+      <button id="csv" title="Download the recorded statistics as CSV">Export CSV</button>
+    </span>
+    <span id="status" class="status" role="status" aria-live="polite"></span>
     <label class="speed">Speed <input id="speed" type="range" min="-3" max="3" step="0.25" value="0" /> <span id="speed-label">1×</span></label>
     <span id="clock" class="clock"></span>
     <span id="perf" class="muted small"></span>

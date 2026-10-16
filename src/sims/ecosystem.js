@@ -1,6 +1,7 @@
 import { Simulation } from '../core/simulation.js';
 import { SpatialHash } from '../core/spatial-hash.js';
 import { clamp, TAU } from '../core/math.js';
+import { decodeInto, encodeTyped, pick } from '../core/serialize.js';
 
 const GENES = {
   speed: { label: 'Speed', min: 0.3, max: 4, herb: 1.2, carn: 1.5 },
@@ -112,6 +113,29 @@ export class EcosystemSim extends Simulation {
         c.genes.speed = 2.4;
       }
     }
+  }
+
+  saveState() {
+    return {
+      grass: encodeTyped(this.grass),
+      fertile: encodeTyped(this.fertile),
+      births: this.births,
+      deaths: this.deaths,
+      animals: this.animals.map((a) => ({ ...pick(a, ['id', 'species', 'x', 'y', 'heading', 'energy', 'age', 'generation', 'rest']), genes: { ...a.genes } })),
+    };
+  }
+
+  loadState(st) {
+    decodeInto(this.grass, st.grass);
+    decodeInto(this.fertile, st.fertile);
+    this.births = st.births || 0;
+    this.deaths = st.deaths || 0;
+    this.animals = st.animals.map((a) => {
+      const genes = {};
+      for (const [k, d] of Object.entries(GENES)) genes[k] = clamp(Number(a.genes?.[k]) || d.herb, d.min, d.max);
+      return { ...a, genes, alive: true };
+    });
+    nextId = Math.max(nextId, ...this.animals.map((a) => a.id + 1));
   }
 
   grassAt(x, y) {
