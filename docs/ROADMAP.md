@@ -26,26 +26,26 @@ along two tracks: the **platform** (persistence, performance, 3D, education) and
 - [ ] Deploy `main` to GitHub Pages
 - [x] Pinch-zoom and two-finger pan on touch devices
 
-### M3 Catalogue expansion (P1–P2)
+### M3 Catalogue expansion (P1 done, P2–P3 next)
 
-| Scale | Module | Key phenomena | Priority |
-|---|---|---|---|
-| Subatomic / atomic | **Atomic Structure** | Bohr and orbital models, electron transitions and emission spectra, ionisation | P1 |
-| Nuclear | **Nuclear Physics** | Radioactive decay chains, half-life, fission chain reactions, fusion | P2 |
-| Molecular | **Chemical Reactions** | Reaction kinetics, equilibrium, catalysts, acids and bases | P2 |
-| Cellular | **Cell Biology** | Diffusion and osmosis, membrane transport, enzyme kinetics, mitosis | P1 |
-| Cellular | **Bacterial Colonies** | Growth on nutrients, antibiotic resistance, quorum sensing | P2 |
-| Organism | **Human Body** | Heart and circulation, neurons and action potentials, immune response | P2 |
-| Organism | **Plant Growth** | Photosynthesis, phototropism, L-system morphology | P3 |
-| Classical | **Mechanics Lab** | Rigid bodies, springs, pendulums, collisions, friction | P1 |
-| Classical | **Waves & Optics** | Interference, diffraction, refraction, lenses | P2 |
-| Classical | **Electromagnetism** | Fields of charges and currents, circuits, induction | P2 |
-| Classical | **Fluid Dynamics** | Flow around obstacles, turbulence, buoyancy | P2 |
-| Planetary | **Global Climate** | Energy balance, greenhouse gases, ice-albedo feedback, seasons | P1 |
-| Planetary | **Plate Tectonics** | Convection, plates, volcanoes, earthquakes | P3 |
-| Planetary | **Oceans & Tides** | Tidal forces, currents, the water cycle, erosion | P3 |
-| Stellar | **Stellar Interior** | Hydrostatic equilibrium, fusion chains, energy transport | P3 |
-| Cosmic | **Cosmology** | Expansion, dark energy, large-scale structure formation | P3 |
+| Scale | Module | Key phenomena | Priority | Status |
+|---|---|---|---|---|
+| Subatomic / atomic | **Atomic Structure** | Shell model, electron transitions and emission spectra, ionisation, isotopes, α/β decay | P1 | ✅ Done |
+| Nuclear | **Nuclear Physics** | Half-life statistics with many nuclei, fission chain reactions, fusion | P2 | Partly covered by Atomic Structure (decay chains) |
+| Molecular | **Chemical Reactions** | Reaction kinetics, equilibrium, catalysts, acids and bases | P2 | |
+| Cellular | **Cell Biology** | Diffusion and osmosis, membrane transport, respiration, membrane potential | P1 | ✅ Done (mitosis and enzyme kinetics still to come) |
+| Cellular | **Bacterial Colonies** | Growth on nutrients, antibiotic resistance, quorum sensing | P2 | |
+| Organism | **Human Body** | Heart and circulation, neurons and action potentials, immune response | P2 | |
+| Organism | **Plant Growth** | Photosynthesis, phototropism, L-system morphology | P3 | |
+| Classical | **Mechanics Lab** | Springs, pendulums, rods, ropes, collisions | P1 | ✅ Done (rigid polygons still to come) |
+| Classical | **Waves & Optics** | Interference, diffraction, refraction, lenses | P2 | |
+| Classical | **Electromagnetism** | Fields of charges and currents, circuits, induction | P2 | |
+| Classical | **Fluid Dynamics** | Flow around obstacles, turbulence, buoyancy | P2 | |
+| Planetary | **Global Climate** | Energy balance, greenhouse gases, ice-albedo feedback, seasons | P1 | ✅ Done |
+| Planetary | **Plate Tectonics** | Convection, plates, volcanoes, earthquakes | P3 | |
+| Planetary | **Oceans & Tides** | Tidal forces, currents, the water cycle, erosion | P3 | |
+| Stellar | **Stellar Interior** | Hydrostatic equilibrium, fusion chains, energy transport | P3 | |
+| Cosmic | **Cosmology** | Expansion, dark energy, large-scale structure formation | P3 | |
 
 ### M4 Scale and fidelity (P2)
 - [ ] Run physics in Web Workers (typed-array state, transferable buffers)
@@ -74,4 +74,8 @@ along two tracks: the **platform** (persistence, performance, 3D, education) and
 | Atoms | 2D, no angle potentials beyond 1–3 repulsion; simplified bond chemistry | Angle terms, reaction energetics |
 | Stars | Analytic tracks, no binaries | Binary evolution, mass transfer |
 | Gravity | O(N²) for massive bodies | Barnes–Hut |
+| Climate | 1D zonal model; small polar ice caps are unstable, so Arctic ice vanishes abruptly near 420 ppm | Land/ocean split, sea-ice thermodynamics |
+| Atomic Structure | Screened hydrogen-like energies are only accurate for hydrogen and hydrogen-like ions; stability rule misses some odd-odd nuclei (e.g. Co-60) | Tabulated levels and nuclide data |
+| Cell Biology | Each particle stands for many molecules; time is accelerated; no cell division yet | Mitosis, enzyme kinetics |
+| Mechanics | Circles only; no friction model beyond rolling damping | Rigid polygons, Coulomb friction |
 | Platform | No analytics; no hosted deployment | M2 follow-up |

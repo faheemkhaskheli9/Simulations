@@ -129,7 +129,11 @@ Priority: **P0** must have (MVP) · **P1** should have · **P2** could have.
 | FR-33 | Weather & Atmosphere | Convection, cloud formation, rain/snow, day/night, sea breeze, orographic rain, storms | Done |
 | FR-34 | Ecosystem & Evolution | Food chain, population cycles, heritable mutating genes, environmental pressure | Done |
 | FR-35 | Epidemic Spread | SEIR dynamics, distancing, quarantine, vaccination, mortality, waning immunity | Done |
-| FR-36+ | Further modules (atomic structure, cells, human body, climate, tectonics, classical mechanics, EM, cosmology) | See [Roadmap](ROADMAP.md) | Planned |
+| FR-36 | Atomic Structure | Shells and configurations, emission spectra, ionisation, isotopes, radioactive decay | Done |
+| FR-37 | Mechanics Lab | Collisions, pendulums, springs, ropes; energy and momentum readouts | Done |
+| FR-38 | Global Climate | Seasons, CO₂ forcing, ice–albedo feedback and tipping points, surface painting | Done |
+| FR-39 | Cell Biology | Diffusion, selective permeability, osmosis, respiration, ion pumps, membrane potential | Done |
+| FR-40+ | Further modules (human body, chemistry, waves, EM, tectonics, cosmology…) | See [Roadmap](ROADMAP.md) | Planned |
 
 ## 7. Non-functional requirements (summary)
 
