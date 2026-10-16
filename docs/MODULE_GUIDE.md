@@ -23,6 +23,12 @@ export class PendulumSim extends Simulation {
     category: 'Classical',          // groups the simulation picker
     description: 'Simple pendulums under gravity with damping.',
     yUp: false,                     // true if world y is "up" (e.g. altitude)
+    model: {                        // shown in the "Model & assumptions" dialog
+      summary: 'Ideal pendulums in SI units.',
+      equations: ['θ¨ = −(g/L)·sin θ − b·θ˙'],
+      assumptions: ['Massless rigid rods; pivots are frictionless.'],
+      references: ['Halliday, Resnick & Walker, Fundamentals of Physics'],
+    },
   };
 
   constructor(opts) {
@@ -151,7 +157,7 @@ Run `npm test`, then `npm start` and open `http://localhost:8080/#pendulum/singl
 
 | Member | Notes |
 |---|---|
-| `static meta` | `id`, `title`, `category`, `description`, `yUp` |
+| `static meta` | `id`, `title`, `category`, `description`, `yUp`, `model` (`summary`, `equations`, `assumptions`, `references`; required by the contract test) |
 | `defineParams(defs)` | `{ key, label, type: 'range'\|'checkbox'\|'select', min, max, step, log, value, options }`; values in `this.params`; react in `onParamChange(key, value)` |
 | `scenarios`, `loadScenario(id)` | Call `super.loadScenario(id)` first; seed `this.rng` |
 | `step(dt)` | `dt` = real seconds × UI speed (≤ 0.4 s). Map to simulated time, sub-step, update `this.time` |

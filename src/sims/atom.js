@@ -99,6 +99,26 @@ export class AtomSim extends Simulation {
     category: 'Matter',
     description:
       'Build atoms from protons, neutrons and electrons. Shine light to excite electrons and watch them emit the element’s spectral lines, strip electrons to make ions, or add neutrons until the nucleus becomes radioactive and decays.',
+    model: {
+      summary: 'One atom: a nucleus of protons and neutrons plus electrons in shells, with photon absorption and emission and radioactive decay.',
+      equations: [
+        'E_n ≈ −13.6 eV · Z_eff² / n² (screened hydrogen-like levels)',
+        'λ = hc / ΔE ≈ 1240 nm·eV / ΔE',
+        'B(A,Z) = a_V·A − a_S·A^{2/3} − a_C·Z(Z−1)/A^{1/3} − a_A·(A−2Z)²/A ± δ (Weizsäcker)',
+      ],
+      assumptions: [
+        'Electrons fill subshells in Madelung (aufbau) order; exceptions such as Cr and Cu are ignored.',
+        'Energy levels are exact only for hydrogen and hydrogen-like ions; other elements are approximate.',
+        'Stability and decay mode (α, β⁻, β⁺) come from the semi-empirical mass formula and the valley of stability, so a few odd–odd nuclei (e.g. Co-60) are misclassified.',
+        'Decay is random with a tunable speed-up; real half-lives are not tabulated.',
+        'Orbits are drawn as rings for clarity; real electrons are probability clouds.',
+      ],
+      references: [
+        'Bohr (1913), hydrogen spectrum',
+        'von Weizsäcker (1935), semi-empirical mass formula',
+        'NIST Atomic Spectra Database (for comparing real lines)',
+      ],
+    },
   };
 
   constructor(opts) {

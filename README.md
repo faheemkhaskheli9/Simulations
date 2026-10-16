@@ -44,7 +44,8 @@ Every simulation exposes the same tools, so you learn the controls once:
 Other controls: mouse wheel zooms, right-drag pans, `Space` plays/pauses, `.` steps one frame,
 `f` fits the view, `Del` removes the selected object. The URL hash (`#weather/storm`) links
 directly to a simulation and scenario. Each module also has global parameters (left panel),
-live statistics, and a time-series chart.
+live statistics, a time-series chart, and a **Model & assumptions** dialog listing its equations,
+simplifications and references.
 
 ## Project layout
 

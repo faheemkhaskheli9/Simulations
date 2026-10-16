@@ -41,6 +41,26 @@ export class GravitySim extends Simulation {
     category: 'Space',
     description:
       'N-body gravity: planets, moons, stars, black holes and galaxies. Fling bodies, add new ones in orbit, change masses, or turn on a dark-matter halo to flatten galactic rotation curves.',
+    model: {
+      summary: 'Newtonian N-body gravity in astronomical units (AU, years, solar masses), so G = 4π² and Earth orbits in one year.',
+      equations: [
+        'a_i = Σ_j G m_j (r_j − r_i) / (|r_j − r_i|² + ε²)^{3/2}',
+        'Kick–drift–kick leapfrog: v += a·dt/2; x += v·dt; v += a·dt/2',
+      ],
+      assumptions: [
+        'Point masses in a 2D plane; no relativity, tides or radiation pressure.',
+        'Plummer softening ε avoids infinite forces at close approach.',
+        'Colliding bodies merge, conserving mass and momentum (inelastic).',
+        'Test particles (galaxy stars, asteroids) feel gravity but exert none.',
+        'An optional flat-rotation-curve halo stands in for dark matter.',
+        'Direct O(N²) sum between massive bodies.',
+      ],
+      references: [
+        'Hockney & Eastwood, Computer Simulation Using Particles (1988), leapfrog integration',
+        'Chenciner & Montgomery (2000), the figure-eight three-body orbit',
+        'Toomre & Toomre (1972), galactic bridges and tails',
+      ],
+    },
   };
 
   constructor(opts) {

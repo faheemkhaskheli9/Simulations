@@ -45,6 +45,26 @@ export class CellSim extends Simulation {
     category: 'Life',
     description:
       'Inside a living cell: diffusion through the membrane, osmosis that swells or shrinks the cell, ion channels and ATP-powered pumps that create the membrane potential, and mitochondria that burn glucose with oxygen. Add molecules and proteins, poison the cell or feed it.',
+    model: {
+      summary: 'A single animal cell. Each particle stands for many molecules, and time is accelerated.',
+      equations: [
+        'Brownian motion: Δx ~ N(0, 2D·Δt)',
+        'GHK potential: V_m = (RT/F)·ln[(P_K[K⁺]_o + P_Na[Na⁺]_o) / (P_K[K⁺]_i + P_Na[Na⁺]_i)], P_K : P_Na = 1 : 0.04',
+        'Osmosis: water flux ∝ Σ σ·(c_in − c_out); volume follows',
+        'Respiration: glucose + O₂ → ATP + CO₂;  Na⁺/K⁺ pump: 1 ATP moves 3 Na⁺ out and 2 K⁺ in',
+      ],
+      assumptions: [
+        'Gases cross the lipid bilayer; ions and sugars need channels or transporters.',
+        'The cell bursts when its radius exceeds the membrane-strength limit; there is no cytoskeleton or cell wall.',
+        'No cell division, gene expression or enzyme kinetics yet.',
+        'Stoichiometry is simplified (real respiration yields ~30 ATP per glucose).',
+      ],
+      references: [
+        'Goldman (1943); Hodgkin & Katz (1949), membrane potential',
+        'Alberts et al., Molecular Biology of the Cell',
+        'Skou (1957), the Na⁺/K⁺-ATPase',
+      ],
+    },
   };
 
   constructor(opts) {

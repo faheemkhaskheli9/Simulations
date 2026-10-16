@@ -39,6 +39,7 @@
     <section>
       <h2 id="sim-title"></h2>
       <p id="sim-description" class="muted small"></p>
+      <button id="model-btn" class="link" title="Equations, simplifications and references for this simulation">ⓘ Model &amp; assumptions</button>
     </section>
     <section>
       <h2>Tools</h2>
@@ -74,6 +75,14 @@
       <div id="stats"></div>
     </section>
   </aside>
+
+  <dialog id="model-dialog" aria-labelledby="model-title">
+    <form method="dialog" class="dialog-head">
+      <h2 id="model-title"></h2>
+      <button aria-label="Close">✕</button>
+    </form>
+    <div id="model-body"></div>
+  </dialog>
 
   <script type="module" src="src/main.js"></script>
 </body>

@@ -95,6 +95,25 @@ export class App {
     });
     $('#share').addEventListener('click', () => this.shareLink());
     $('#csv').addEventListener('click', () => this.exportCSV());
+    $('#model-btn').addEventListener('click', () => this.showModel());
+    $('#model-dialog').addEventListener('click', (e) => { if (e.target.id === 'model-dialog') e.target.close(); });
+  }
+
+  /** Open the "Model & assumptions" dialog for the current simulation. */
+  showModel() {
+    const { title, model } = this.sim.meta;
+    $('#model-title').textContent = `${title}: model & assumptions`;
+    const section = (heading, items, tag = 'ul') => items?.length
+      ? [el('h3', { textContent: heading }), el(tag, {}, ...items.map((t) => el('li', { textContent: t })))]
+      : [];
+    $('#model-body').replaceChildren(
+      el('p', { textContent: model?.summary ?? 'No model notes yet for this simulation.' }),
+      ...section('Equations', model?.equations, 'ol'),
+      ...section('Simplifications', model?.assumptions),
+      ...section('Further reading', model?.references),
+    );
+    $('#model-body').querySelector('ol')?.classList.add('equations');
+    $('#model-dialog').showModal();
   }
 
   bindInput() {
@@ -112,7 +131,7 @@ export class App {
     }, { passive: false });
     window.addEventListener('keydown', (e) => {
       this.pointer.shift = e.shiftKey;
-      if (e.target.closest('input, select, textarea')) return;
+      if (e.target.closest('input, select, textarea, dialog')) return;
       if (e.ctrlKey || e.metaKey) {
         const k = e.key.toLowerCase();
         if (k === 'z' && !e.shiftKey) { e.preventDefault(); this.undo(); }

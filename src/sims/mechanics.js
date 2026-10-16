@@ -27,6 +27,24 @@ export class MechanicsSim extends Simulation {
     category: 'Classical',
     description:
       'Newtonian mechanics: balls, pendulums, springs, ropes and collisions under gravity. Build contraptions, change masses and bounciness, fling things, and watch momentum and energy being exchanged.',
+    model: {
+      summary: 'Rigid circular balls, fixed anchors, rigid rods and Hookean springs under uniform gravity in SI units.',
+      equations: [
+        'Spring force: F = k(d − L₀) + c·v_rel (Hooke’s law with damping)',
+        'Rods: position-based constraint |x_a − x_b| = L, solved iteratively each substep',
+        'Collisions: impulse j = −(1+e)·v_n / (1/m_a + 1/m_b), conserving momentum',
+        'Linear drag: F = −b·v',
+      ],
+      assumptions: [
+        'Bodies are circles; there are no rigid polygons yet.',
+        'No sliding friction model beyond rolling damping.',
+        'Many substeps per frame keep rods stiff and energy drift small; total energy is conserved only when drag is zero and collisions are perfectly elastic.',
+      ],
+      references: [
+        'Müller et al. (2007), Position Based Dynamics',
+        'Halliday, Resnick & Walker, Fundamentals of Physics',
+      ],
+    },
   };
 
   constructor(opts) {

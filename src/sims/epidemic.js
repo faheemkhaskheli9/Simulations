@@ -26,6 +26,24 @@ export class EpidemicSim extends Simulation {
     category: 'Life',
     description:
       'Disease transmission between individuals (SEIR model). Tune infectiousness, incubation, mortality, distancing and quarantine; vaccinate regions or seed new outbreaks and watch the epidemic curve.',
+    model: {
+      summary: 'Agent-based SEIR epidemic: people travel between home and shared hubs and infect others within a contact radius.',
+      equations: [
+        'P(infection per contact-day) = β·dt for each infectious neighbour within the contact radius',
+        'S → E → I → R (or D with the fatality rate); R → S after the waning period',
+        'Basic reproduction number R₀ ≈ β · contacts per day · infectious period',
+      ],
+      assumptions: [
+        'Fixed incubation and infectious periods (no distributions).',
+        'Everyone is equally susceptible; there are no age groups or households.',
+        'Distancing makes a share of people stay home; quarantine isolates symptomatic cases after one day.',
+        'Vaccination gives full, permanent protection.',
+      ],
+      references: [
+        'Kermack & McKendrick (1927), compartmental epidemic models',
+        'Anderson & May, Infectious Diseases of Humans',
+      ],
+    },
   };
 
   constructor(opts) {

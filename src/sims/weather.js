@@ -29,6 +29,26 @@ export class WeatherSim extends Simulation {
     description:
       'A vertical slice of the atmosphere: sunlight heats the ground, warm air rises, water vapour condenses into clouds and rain. Build mountains and lakes, add moisture, push the wind or heat a bubble of air to trigger a storm.',
     yUp: true,
+    model: {
+      summary: 'A 32 km × 16 km vertical slice of the lower atmosphere (128 × 64 cells of 250 m) solved as a stable fluid with heat and moisture.',
+      equations: [
+        'Semi-Lagrangian advection + pressure projection (incompressible Boussinesq flow)',
+        'Buoyancy: b = g·(θ′/θ₀ + 0.61 q_v − q_c − q_r)',
+        'Condensation when q_v > q_sat(T, p), releasing latent heat L_v/c_p · Δq',
+        'Warm rain: cloud water autoconverts and accretes into falling rain',
+      ],
+      assumptions: [
+        '2D slice: no Coriolis force, fronts or large-scale weather systems.',
+        'Warm-rain microphysics only: no ice, hail or lightning; “snow” is rain falling into sub-freezing air.',
+        'Collocated grid with numerical diffusion; turbulence is not resolved.',
+        'Surface heating follows a prescribed day/night cycle; radiation is not computed.',
+      ],
+      references: [
+        'Stam (1999), Stable Fluids',
+        'Kessler (1969), warm-rain parameterisation',
+        'Houze, Cloud Dynamics',
+      ],
+    },
   };
 
   constructor(opts) {

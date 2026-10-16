@@ -18,6 +18,26 @@ export class StarsSim extends Simulation {
     category: 'Space',
     description:
       'Birth, life and death of stars. Nebulae form clusters, stars evolve into giants, white dwarfs, neutron stars and black holes. Change a star’s mass or age, feed it matter, or compress a nebula to trigger star formation. The HR diagram updates live.',
+    model: {
+      summary: 'A neighbourhood of nebulae and stars. Each star follows an analytic evolutionary track set by its initial mass.',
+      equations: [
+        'Main-sequence lifetime t_MS ≈ 10⁴ Myr · (M/M☉)^−2.5',
+        'L = 4πR²σT⁴ (sets the star’s place on the H–R diagram)',
+        'Salpeter IMF: dN/dM ∝ M^−2.35 (0.1–60 M☉)',
+      ],
+      assumptions: [
+        'Tracks are fitted to be qualitatively right, not precise; there is no stellar-structure solve.',
+        'Phases: main sequence → giant → white dwarf (< 8 M☉), neutron star (< 25 M☉) or black hole.',
+        'White dwarfs cool along a Mestel law, L ∝ t^−7/5.',
+        'Supernova shock waves compress nearby gas, which can trigger star formation.',
+        'Single stars only: no binaries or mass transfer.',
+      ],
+      references: [
+        'Salpeter (1955), the initial mass function',
+        'Mestel (1952), white-dwarf cooling',
+        'Kippenhahn, Weigert & Weiss, Stellar Structure and Evolution',
+      ],
+    },
   };
 
   constructor(opts) {
