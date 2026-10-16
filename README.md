@@ -10,7 +10,7 @@ It runs in the browser with no dependencies and no build step.
 
 ```bash
 npm start          # serves http://localhost:8080  (or: node server.js 3000)
-npm test           # runs the physics, contract and save/load tests (Node ≥ 18)
+npm test           # runs the physics, contract, save/load and lesson tests (Node ≥ 18)
 ```
 
 ## Simulations
@@ -27,6 +27,13 @@ npm test           # runs the physics, contract and save/load tests (Node ≥ 18
 | Life | **Cell Biology** (`cell`) | Diffusing molecules and a selectively permeable membrane: channels and transporters, osmosis (swelling, bursting, shrinking), mitochondria making ATP, Na⁺/K⁺ pumps and the membrane potential. | Put the cell in fresh water or syrup, block the glucose transporters, poison the mitochondria, drain ATP and watch the gradients run down. |
 | Life | **Ecosystem & Evolution** (`ecosystem`) | Plants, herbivores and carnivores with heritable, mutating genes (speed, size, senses, fertility) and energy budgets, giving predator–prey cycles and natural selection. | Edit genes, cause droughts or fertilise land, change climate, compare fertile islands with a desert. |
 | Life | **Epidemic Spread** (`epidemic`) | Agent-based SEIR disease model with mobility hubs, distancing, quarantine, vaccination, mortality and waning immunity. | Vaccinate regions, seed outbreaks, flatten the curve. |
+
+## Lessons and challenges
+
+Press **🎓 Learn** for guided lessons (the greenhouse effect, flattening the curve, light
+from atoms, energy conservation, osmosis, predator–prey) and challenges (stop an outbreak
+with under 30 % vaccinated, escape Snowball Earth, transmute carbon-14). Steps advance by
+themselves when you do what they ask. Link to one with `#learn/<id>`, e.g. `#learn/osmosis`.
 
 ## Interaction model
 
@@ -58,6 +65,7 @@ src/core/                   engine pieces shared by all simulations
   spatial-hash.js           neighbour queries for particle systems
   math.js                   helpers (black-body colour, formatting…)
 src/sims/                   one file per simulation module (+ index.js registry)
+src/lessons/                guided lessons and challenges, and the runner that checks them
 src/ui/                     camera, chart and application UI
 tests/                      node:test suites (physics checks + interaction contract)
 docs/                       PRD, TRD, system design, module guide, test plan, roadmap, user guide, ADRs

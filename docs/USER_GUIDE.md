@@ -42,6 +42,25 @@ captures *everything*; a link captures the setup, and the scenario replays the s
 
 On touch screens, pinch with two fingers to zoom and drag with two fingers to pan.
 
+## Lessons and challenges
+
+Press **🎓 Learn** in the top bar to pick a guided lesson or a challenge.
+
+- **Lessons** walk you through one idea in a few steps, such as the greenhouse effect,
+  flattening an epidemic curve, light from atoms, energy conservation, osmosis or
+  predator–prey balance. Each step tells you what to do and moves on by itself once you
+  have done it; steps that only explain something wait for **Next**.
+- **Challenges** give you a goal and a rule, e.g. *stop the outbreak while vaccinating
+  under 30 % of the town*, and you choose how to get there. Break the rule and you can
+  **Try again**.
+
+The lesson card sits at the top of the right panel. Switching to another simulation ends
+the lesson. Completed lessons get a ✓ in the list (stored in this browser only). Link
+straight to a lesson with `#learn/<id>`, e.g. `#learn/greenhouse`.
+
+Every simulation also has **ⓘ Model & assumptions** under its description, listing the
+equations it solves, what it simplifies and where to read more.
+
 ## Simulations and experiments to try
 
 ### Gravity & Orbits

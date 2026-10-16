@@ -153,6 +153,32 @@ test('small-angle period matches 2π√(L/g)', () => { /* … */ });
 
 Run `npm test`, then `npm start` and open `http://localhost:8080/#pendulum/single`.
 
+## 4. Add a lesson (optional)
+
+Lessons live in `src/lessons/index.js`. Each is data plus small predicates over the
+module's public state, so they need no UI code:
+
+```js
+{
+  id: 'small-swings',                 // also the link: #learn/small-swings
+  type: 'lesson',                     // or 'challenge' (add a fail(ctx) rule)
+  title: 'Small swings keep time',
+  summary: 'A pendulum’s period barely depends on its amplitude.',
+  sim: 'pendulum',
+  scenario: 'single',
+  steps: [
+    { text: 'Watch 10 swings.', check: (c) => c.elapsed >= 20 },
+    { text: 'Set gravity to 1.6 (the Moon).', check: (c) => c.params.g <= 1.7 },
+    { text: 'Slower! Press Next.' },  // no check: waits for Next
+  ],
+}
+```
+
+`ctx` gives `sim`, `params`, `stat(key)` (your `stats()` values), `start` (time, stats
+and params when the step began), `elapsed`, `memo` (per-step scratch) and `selected`.
+Add a scripted solution to `SOLUTIONS` in `tests/lessons.test.js`; the test plays the
+lesson to completion, so a lesson that cannot be finished fails CI.
+
 ## Contract reference
 
 | Member | Notes |
