@@ -90,6 +90,26 @@ button.danger { color: var(--danger); margin-top: 10px; width: 100%; }
 .stat { display: flex; justify-content: space-between; gap: 8px; padding: 3px 0; border-bottom: 1px dashed #1e2742; }
 .stat b { font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
 
+button.link { background: none; border: none; padding: 0; color: var(--accent); font-size: 12px; }
+button.link:hover { text-decoration: underline; }
+
+dialog {
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0 20px 16px;
+  width: min(640px, calc(100vw - 32px));
+  max-height: calc(100vh - 64px);
+}
+dialog::backdrop { background: rgba(0, 0, 0, 0.55); }
+.dialog-head { display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--panel); padding-top: 14px; }
+.dialog-head h2 { font-size: 16px; margin: 0; }
+dialog h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 16px 0 6px; }
+dialog ul, dialog ol { margin: 0; padding-left: 20px; }
+dialog li { margin: 4px 0; }
+ol.equations li { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+
 [hidden] { display: none !important; }
 
 @media (max-width: 900px) {

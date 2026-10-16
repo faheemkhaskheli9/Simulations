@@ -108,3 +108,15 @@ test('statistics export as CSV', async () => {
   assert.ok(lines.length > 3);
   await page.close();
 });
+
+test('model & assumptions dialog describes the current simulation', async () => {
+  const { page, errors } = await openPage('#climate');
+  await page.click('#model-btn');
+  assert.ok(await page.locator('#model-dialog').evaluate((d) => d.open));
+  assert.match(await page.locator('#model-title').textContent(), /Global Climate/);
+  assert.ok(await page.locator('#model-body li').count() >= 6);
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('#model-dialog').evaluate((d) => d.open), false);
+  assert.deepEqual(errors, []);
+  await page.close();
+});

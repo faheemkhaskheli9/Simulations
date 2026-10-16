@@ -7,6 +7,9 @@ for (const S of SIMULATIONS) {
   test(`${S.meta.id}: implements the shared interaction contract`, () => {
     const sim = new S();
     assert.ok(S.meta.title && S.meta.category && S.meta.description);
+    const m = S.meta.model;
+    assert.ok(m?.summary, 'meta.model.summary');
+    for (const k of ['equations', 'assumptions', 'references']) assert.ok(m[k]?.length, `meta.model.${k}`);
     assert.ok(sim.scenarios.length > 0 && sim.spawnKinds.length > 0);
     const b = sim.bounds();
     const cx = b.x + b.w / 2, cy = b.y + b.h / 2, r = b.w / 10;

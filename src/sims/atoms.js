@@ -38,6 +38,25 @@ export class AtomsSim extends Simulation {
     category: 'Matter',
     description:
       'Molecular dynamics with Lennard-Jones forces, ionic charges and covalent bonding. Heat or cool regions to melt, boil or freeze matter, mix elements to form molecules, or transmute atoms in the inspector.',
+    model: {
+      summary: '2D molecular dynamics in reduced units (σ ≈ 3 Å, one temperature unit ≈ 120 K) with van der Waals, ionic and simple covalent interactions.',
+      equations: [
+        'Lennard-Jones: V(r) = 4ε[(σ/r)¹² − (σ/r)⁶], cut off at 2.5σ',
+        'Screened, cut-off Coulomb force between ions',
+        'Velocity-Verlet integration; a Berendsen (velocity-rescaling) thermostat pulls T toward the target',
+        'Pressure from the momentum atoms transfer to the walls',
+      ],
+      assumptions: [
+        'Two dimensions, so densities and phase-change temperatures differ from 3D.',
+        'Covalent bonds are springs that form when atoms with free valence meet gently and break when overstretched; no quantum chemistry or bond-angle terms beyond a soft repulsion between neighbours.',
+        'Reaction energetics are simplified; bonding does not release realistic heat.',
+        'Water, methane and other molecules are built from these rules, not from force fields.',
+      ],
+      references: [
+        'Allen & Tildesley, Computer Simulation of Liquids',
+        'Frenkel & Smit, Understanding Molecular Simulation',
+      ],
+    },
   };
 
   constructor(opts) {

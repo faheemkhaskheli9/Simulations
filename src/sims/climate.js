@@ -41,6 +41,26 @@ export class ClimateSim extends Simulation {
     category: 'Earth',
     description:
       'An energy-balance model of Earth: sunlight, greenhouse gases, ice–albedo feedback and heat transport set the temperature of every latitude. Change CO₂, the Sun or the tilt of the axis, paint deserts, forests or ice, and look for tipping points such as Snowball Earth.',
+    model: {
+      summary: 'A latitude-resolved diffusive energy-balance model of Earth’s zonal-mean surface temperature.',
+      equations: [
+        'C ∂T/∂t = S(x,t)·(1 − α(T)) − (A + B·T) + ∂/∂x[D(1 − x²) ∂T/∂x],  x = sin(latitude)',
+        'A = 202.2 W/m² − ΔF_CO₂,  B = 2.09 W/m²/K',
+        'ΔF_CO₂ = 5.35 · ln(CO₂ / 280 ppm) W/m²',
+        'Albedo α jumps to the ice value where the surface is cold enough to freeze',
+      ],
+      assumptions: [
+        'One dimension (latitude): no land/ocean split, continents, clouds or ocean currents.',
+        'Climate sensitivity is ~3 K per CO₂ doubling, set by B and the ice feedback.',
+        'Ice responds instantly to temperature; small polar caps are unstable, so Arctic ice can vanish abruptly.',
+        'Seasons come from daily-mean insolation with axial tilt; the orbit is circular.',
+      ],
+      references: [
+        'Budyko (1969); Sellers (1969), energy-balance models',
+        'North (1975; 1981), diffusive EBM',
+        'Myhre et al. (1998), CO₂ radiative forcing',
+      ],
+    },
   };
 
   constructor(opts) {

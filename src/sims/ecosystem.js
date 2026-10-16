@@ -25,6 +25,25 @@ export class EcosystemSim extends Simulation {
     category: 'Life',
     description:
       'Predators, prey and plants with heritable genes. Watch population cycles and natural selection; change climate, food supply or mutation rate, edit an animal’s genes, feed regions or cause droughts.',
+    model: {
+      summary: 'Agent-based food web of grass, herbivores and carnivores with heritable, mutating genes.',
+      equations: [
+        'Metabolic cost per day ∝ 0.5·size^0.75 + 0.12·speed² + sensing + effort while chasing or fleeing',
+        'Reproduction when energy exceeds a threshold ∝ size / fertility; offspring genes = parent genes × (1 + mutation noise)',
+        'Grass regrows logistically on a grid, modulated by season and temperature',
+      ],
+      assumptions: [
+        'Asexual reproduction; no mating, social behaviour or disease.',
+        'Predators see prey within their sense radius and catch it with a set efficiency; predator overshoot is common.',
+        'Optional immigration re-seeds extinct species so runs do not end early.',
+        'Selection is emergent: no fitness function is coded.',
+      ],
+      references: [
+        'Lotka (1925); Volterra (1926), predator–prey dynamics',
+        'Kleiber (1932), metabolic scaling',
+        'Grimm & Railsback, Individual-based Modeling and Ecology',
+      ],
+    },
   };
 
   constructor(opts) {

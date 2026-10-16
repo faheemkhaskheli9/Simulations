@@ -59,7 +59,7 @@ along two tracks: the **platform** (persistence, performance, 3D, education) and
 - [ ] Guided lessons that script scenarios, prompts and checkpoints
 - [ ] Challenges ("put a planet in a stable orbit", "stop the epidemic with < 30 % vaccinated")
 - [ ] Teacher mode: lock parameters, presenter view
-- [ ] Per-module "Model & assumptions" panel with references
+- [x] Per-module "Model & assumptions" panel with references
 
 ### M6 Multi-scale worlds (P3)
 - [ ] Composite simulations that couple modules (weather drives the ecosystem; stellar
