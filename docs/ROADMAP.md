@@ -23,7 +23,8 @@ along two tracks: the **platform** (persistence, performance, 3D, education) and
 - [x] Undo / redo of user interventions
 - [x] CSV export of recorded statistics
 - [x] CI: unit and browser tests on every push and PR (`.github/workflows/test.yml`)
-- [ ] Deploy `main` to GitHub Pages
+- [x] Deploy `main` to GitHub Pages (`.github/workflows/pages.yml`; enable *Settings → Pages → Source: GitHub Actions* once)
+- [x] Installable and offline (PWA: web manifest + network-first service worker)
 - [x] Pinch-zoom and two-finger pan on touch devices
 
 ### M3 Catalogue expansion (P1 done, P2–P3 next)
@@ -78,4 +79,4 @@ along two tracks: the **platform** (persistence, performance, 3D, education) and
 | Atomic Structure | Screened hydrogen-like energies are only accurate for hydrogen and hydrogen-like ions; stability rule misses some odd-odd nuclei (e.g. Co-60) | Tabulated levels and nuclide data |
 | Cell Biology | Each particle stands for many molecules; time is accelerated; no cell division yet | Mitosis, enzyme kinetics |
 | Mechanics | Circles only; no friction model beyond rolling damping | Rigid polygons, Coulomb friction |
-| Platform | No analytics; no hosted deployment | M2 follow-up |
+| Platform | No analytics | Privacy-friendly, opt-in usage metrics |

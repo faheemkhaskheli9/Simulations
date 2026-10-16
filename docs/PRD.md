@@ -173,7 +173,7 @@ Detailed and measurable versions are in the [TRD](TRD.md).
 |---|---|---|
 | **M1 MVP** | Shell, universal tools, six modules, tests, docs | Complete |
 | **M2 Persistence and sharing** | Save/load worlds, share links, CSV export, undo/redo, CI | Complete |
-| **M3 Catalogue expansion** | Atomic structure, cell biology, climate, classical mechanics | Planned |
+| **M3 Catalogue expansion** | Atomic structure, cell biology, climate, classical mechanics | P1 complete; P2 modules next |
 | **M4 Scale and fidelity** | Web Workers, WebGL/WebGPU, Barnes–Hut, 3D views | Planned |
 | **M5 Education** | Guided lessons, challenges, teacher mode | Planned |
 
@@ -192,4 +192,4 @@ Detailed and measurable versions are in the [TRD](TRD.md).
 1. Should the long-term product move to 3D by default, or keep 2D as primary with 3D for space only?
 2. Is a guided "lesson" layer in scope for v2, or should it be a separate product?
 3. What licence and contribution model will apply to community modules?
-4. Is there a need for offline / installable (PWA) mode?
+4. ~~Is there a need for offline / installable (PWA) mode?~~ Resolved: the app ships a web manifest and a network-first service worker, so it installs and works offline.

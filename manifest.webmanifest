@@ -1,0 +1,13 @@
+{
+  "name": "Simulations — interactive universe sandbox",
+  "short_name": "Simulations",
+  "description": "Interactive simulations of real-world phenomena, from atoms and cells to weather, climate, stars and galaxies.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0a0d16",
+  "theme_color": "#111626",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
