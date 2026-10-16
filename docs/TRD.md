@@ -156,7 +156,7 @@ Reference machine: mid-range laptop (4-core, integrated GPU), Chromium, default 
 
 | ID | Requirement | Verification | Status |
 |---|---|---|---|
-| MQ-1 | `npm test` runs all suites with Node's built-in test runner | T | Met (30 tests) |
+| MQ-1 | `npm test` runs all suites with Node's built-in test runner | T | Met (`npm test` lists the current count) |
 | MQ-2 | Every registered module is covered automatically by `tests/contract.test.js` | T | Met |
 | MQ-3 | Each module has at least one physics or behaviour test against a known result | T | Met |
 | MQ-4 | Code style: ES modules, no globals (except `window.app` for debugging), JSDoc on module classes | I | Met |

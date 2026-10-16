@@ -298,9 +298,16 @@ both on every push and pull request. See the [Test Plan](TEST_PLAN.md).
 
 ## 11. Deployment
 
-Any static host (GitHub Pages, Netlify, S3 + CDN). There is no build: publish the
-repository root. Recommended: a CI workflow that runs `npm test` and then deploys `main`
-to GitHub Pages.
+Any static host (GitHub Pages, Netlify, S3 + CDN). There is no build: publish
+`index.html`, `styles.css`, `src/`, `manifest.webmanifest`, `sw.js` and `icon.svg`.
+`.github/workflows/pages.yml` runs `npm test` and then deploys `main` to GitHub Pages
+(enable *Settings → Pages → Source: GitHub Actions* once). All asset paths are relative,
+so the app works under a sub-path such as `/Simulations/`.
+
+**Offline / install (PWA).** `manifest.webmanifest` makes the app installable. `sw.js`
+is a network-first service worker: online loads always get the latest deploy, and every
+response is cached as a fallback for offline use. Bump `CACHE` in `sw.js` to evict old
+caches.
 
 ## 12. Evolution and extension points
 
