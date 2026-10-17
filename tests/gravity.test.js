@@ -62,3 +62,14 @@ test('every scenario loads and steps', () => {
     for (const b of sim.bodies) assert.ok(Number.isFinite(b.x) && Number.isFinite(b.vy), `${s.id}: ${b.name}`);
   }
 });
+
+test('galaxy collision stays bound: the cores merge instead of slingshotting apart', () => {
+  const sim = new GravitySim();
+  sim.loadScenario('galaxyCollision');
+  for (let i = 0; i < 1200; i++) sim.step(1 / 60);
+  const cores = sim.bodies.filter((b) => b.m > 0);
+  assert.equal(cores.length, 1, 'cores merged');
+  assert.ok(Math.hypot(cores[0].x, cores[0].y) < 30, `core drifted to ${cores[0].x}, ${cores[0].y}`);
+  const inView = sim.bodies.filter((b) => Math.abs(b.x) < 110 && Math.abs(b.y) < 80).length;
+  assert.ok(inView > 300, `only ${inView} stars left in view`);
+});
