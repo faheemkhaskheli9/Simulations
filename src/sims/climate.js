@@ -5,10 +5,14 @@ import { decodeInto, encodeTyped } from '../core/serialize.js';
 // Diffusive energy-balance climate model (Budyko–Sellers / North 1981).
 // Grid is uniform in x = sin(latitude), so every band has the same area.
 const N = 60;
-const A_OLR = 202.2; // W/m², outgoing longwave at 0 °C
+const A_OLR = 200; // W/m², outgoing longwave at 0 °C
 const B_OLR = 2.09; // W/m²/K, longwave feedback
 const HEAT_CAP = 12.7; // W·yr/m²/K, ~100 m ocean mixed layer
 const ICE_T = -10; // °C, surface temperature where ice forms
+// Width (K) of the smooth ice/no-ice albedo transition. A broad transition stands
+// in for partial and seasonal ice cover and removes the 'small ice cap
+// instability' that made Arctic ice vanish at once near today's CO₂.
+const ICE_WIDTH = 8;
 
 export const SURFACES = {
   ocean: { label: 'Ocean', albedo: 0, color: [40, 90, 160] },
@@ -45,14 +49,14 @@ export class ClimateSim extends Simulation {
       summary: 'A latitude-resolved diffusive energy-balance model of Earth’s zonal-mean surface temperature.',
       equations: [
         'C ∂T/∂t = S(x,t)·(1 − α(T)) − (A + B·T) + ∂/∂x[D(1 − x²) ∂T/∂x],  x = sin(latitude)',
-        'A = 202.2 W/m² − ΔF_CO₂,  B = 2.09 W/m²/K',
+        'A = 200 W/m² − ΔF_CO₂,  B = 2.09 W/m²/K',
         'ΔF_CO₂ = 5.35 · ln(CO₂ / 280 ppm) W/m²',
-        'Albedo α jumps to the ice value where the surface is cold enough to freeze',
+        'Albedo α = α_open + (α_ice − α_open)·½[1 − tanh((T + 10 °C) / 8 K)]: more ice the colder it is',
       ],
       assumptions: [
         'One dimension (latitude): no land/ocean split, continents, clouds or ocean currents.',
         'Climate sensitivity is ~3 K per CO₂ doubling, set by B and the ice feedback.',
-        'Ice responds instantly to temperature; small polar caps are unstable, so Arctic ice can vanish abruptly.',
+        'Ice cover is a smooth function of temperature (an 8 K wide transition), standing in for partial and seasonal sea ice.',
         'Seasons come from daily-mean insolation with axial tilt; the orbit is circular.',
       ],
       references: [
@@ -76,7 +80,7 @@ export class ClimateSim extends Simulation {
       { key: 'co2', label: 'CO₂ (ppm)', type: 'range', min: 100, max: 5000, value: 280, log: true },
       { key: 'solar', label: 'Solar constant (W/m²)', type: 'range', min: 1100, max: 1600, step: 1, value: 1361 },
       { key: 'obliquity', label: 'Axial tilt (°)', type: 'range', min: 0, max: 90, step: 0.5, value: 23.44 },
-      { key: 'transport', label: 'Heat transport (W/m²/K)', type: 'range', min: 0, max: 2, step: 0.01, value: 0.43 },
+      { key: 'transport', label: 'Heat transport (W/m²/K)', type: 'range', min: 0, max: 2, step: 0.01, value: 0.4 },
       { key: 'iceAlbedo', label: 'Ice albedo', type: 'range', min: 0.3, max: 0.8, step: 0.01, value: 0.62 },
       { key: 'baseAlbedo', label: 'Ice-free albedo (clouds etc.)', type: 'range', min: 0.15, max: 0.5, step: 0.005, value: 0.3 },
       { key: 'seasons', label: 'Seasonal cycle', type: 'checkbox', value: true },
@@ -105,7 +109,7 @@ export class ClimateSim extends Simulation {
   loadScenario(id) {
     super.loadScenario(id);
     const P = this.params;
-    Object.assign(P, { co2: 280, solar: 1361, obliquity: 23.44, transport: 0.43, iceAlbedo: 0.62, baseAlbedo: 0.3, seasons: true });
+    Object.assign(P, { co2: 280, solar: 1361, obliquity: 23.44, transport: 0.4, iceAlbedo: 0.62, baseAlbedo: 0.3, seasons: true });
     let T0 = (x) => 30 - 45 * x * x; // warm start
     if (id === 'today') P.co2 = 420;
     else if (id === 'doubled') P.co2 = 560;
@@ -131,7 +135,7 @@ export class ClimateSim extends Simulation {
     const open = clamp(P.baseAlbedo + surf.albedo, 0.05, 0.9);
     if (surf === SURFACES.ice) return Math.max(open, P.iceAlbedo);
     // Smooth transition into sea ice / snow cover around ICE_T.
-    const f = 0.5 * (1 - Math.tanh((T - ICE_T) / 2));
+    const f = 0.5 * (1 - Math.tanh((T - ICE_T) / ICE_WIDTH));
     return open + (P.iceAlbedo - open) * f;
   }
 

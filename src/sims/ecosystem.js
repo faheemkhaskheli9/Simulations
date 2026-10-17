@@ -28,14 +28,16 @@ export class EcosystemSim extends Simulation {
     model: {
       summary: 'Agent-based food web of grass, herbivores and carnivores with heritable, mutating genes.',
       equations: [
-        'Metabolic cost per day ∝ 0.5·size^0.75 + 0.12·speed² + sensing + effort while chasing or fleeing',
+        'Metabolic cost per day ∝ b·size^0.75 + 0.2·speed² + sensing + effort while chasing or fleeing (b = 0.5 for prey, 0.35 for predators, which idle cheaply between meals)',
+        'Energy reserves are capped at max(200·size, 1.25 × breeding threshold): fat stores scale with body size',
+        'Capture odds per tick ∝ size ratio ÷ (1 + rival predators nearby) (predator interference); handling time ∝ prey size',
         'Reproduction when energy exceeds a threshold ∝ size / fertility; offspring genes = parent genes × (1 + mutation noise)',
         'Grass regrows logistically on a grid, modulated by season and temperature',
       ],
       assumptions: [
         'Asexual reproduction; no mating, social behaviour or disease.',
-        'Predators see prey within their sense radius and catch it with a set efficiency; predator overshoot is common.',
-        'Optional immigration re-seeds extinct species so runs do not end early.',
+        'Prey notice a stalking predator with a delay and predators pounce at close range; prey younger than 30 days stay hidden (a refuge). These stabilising mechanisms let both species persist without immigration in the balanced scenario.',
+        'Optional immigration re-seeds species native to the world if they die out (needed in the harsher islands and invasion scenarios).',
         'Selection is emergent: no fitness function is coded.',
       ],
       references: [
@@ -143,7 +145,7 @@ export class EcosystemSim extends Simulation {
       births: this.births,
       deaths: this.deaths,
       native: [...this.native],
-      animals: this.animals.map((a) => ({ ...pick(a, ['id', 'species', 'x', 'y', 'heading', 'energy', 'age', 'generation', 'rest']), genes: { ...a.genes } })),
+      animals: this.animals.map((a) => ({ ...pick(a, ['id', 'species', 'x', 'y', 'heading', 'energy', 'age', 'generation', 'rest', 'fleeing']), genes: { ...a.genes } })),
     };
   }
 
@@ -167,7 +169,7 @@ export class EcosystemSim extends Simulation {
   }
 
   reproThreshold(a) {
-    return ((a.species === 'herbivore' ? 90 : 120) * a.genes.size) / a.genes.fertility;
+    return (150 * a.genes.size) / a.genes.fertility;
   }
 
   season() {
@@ -204,9 +206,12 @@ export class EcosystemSim extends Simulation {
           const d = (o.x - a.x) ** 2 + (o.y - a.y) ** 2;
           if (d < td) { td = d; threat = o; }
         });
-        if (threat) {
+        // Prey react with a delay: each tick there is only a chance they notice the stalker.
+        if (threat && (a.fleeing || this.rng.next() < 0.4)) {
+          a.fleeing = true;
           tx = a.x - threat.x; ty = a.y - threat.y; urgency = 1.15; // adrenaline
         } else {
+          if (!threat) a.fleeing = false;
           // Look in a few directions and head toward the lushest grass.
           let best = this.grass[this.grassAt(a.x, a.y)], bx = 0, by = 0;
           for (let s = 0; s < 6; s++) {
@@ -229,19 +234,27 @@ export class EcosystemSim extends Simulation {
         const hungry = a.rest === 0 && a.energy < 1.2 * this.reproThreshold(a);
         let prey = null, pd = hungry ? g.sense * g.sense : 0;
         this.hash.query(a.x, a.y, g.sense, (o) => {
-          if (o.species !== 'herbivore' || !o.alive) return;
+          // Young prey stay hidden in cover: a refuge that keeps prey from being wiped out.
+          if (o.species !== 'herbivore' || !o.alive || o.age < 30) return;
           const d = (o.x - a.x) ** 2 + (o.y - a.y) ** 2;
           if (d < pd) { pd = d; prey = o; }
         });
         if (prey) {
-          tx = prey.x - a.x; ty = prey.y - a.y; urgency = 1.3; // predators are sprinters
           const reach = 4 + 3 * (g.size + prey.genes.size);
-          // Bigger prey can fight back: success odds depend on size ratio.
-          if (pd < reach * reach && this.rng.next() < clamp(g.size / (prey.genes.size + 0.2), 0.1, 0.95) * dt * 0.8) {
-            prey.alive = false;
-            this.deaths++;
-            a.energy += (prey.energy * 0.5 + 40 * prey.genes.size) * P.huntEfficiency;
-            a.rest = 2;
+          // Predators are sprinters: a burst of speed for the final pounce.
+          tx = prey.x - a.x; ty = prey.y - a.y; urgency = pd < (2.5 * reach) ** 2 ? 1.9 : 1.3;
+          if (pd < reach * reach) {
+            // Bigger prey can fight back: success odds depend on size ratio. Other
+            // predators nearby get in the way (interference), which damps the cycles.
+            let rivals = 0;
+            this.hash.query(a.x, a.y, 30, (o) => { if (o !== a && o.species === 'carnivore' && o.alive) rivals++; });
+            const odds = (clamp(g.size / (prey.genes.size + 0.2), 0.1, 0.95) * dt * 0.8) / (1 + rivals);
+            if (this.rng.next() < odds) {
+              prey.alive = false;
+              this.deaths++;
+              a.energy += (prey.energy * 0.5 + 40 * prey.genes.size) * P.huntEfficiency;
+              a.rest = 2.5 * prey.genes.size; // bigger prey take longer to eat
+            }
           }
         } else urgency = 0.45;
       }
@@ -254,15 +267,17 @@ export class EcosystemSim extends Simulation {
       a.y += Math.sin(a.heading) * v * dt;
       if (a.x < 0 || a.x > this.W) { a.heading = Math.PI - a.heading; a.x = clamp(a.x, 0, this.W); }
       if (a.y < 0 || a.y > this.H) { a.heading = -a.heading; a.y = clamp(a.y, 0, this.H); }
-      // Energy budget: basal metabolism (Kleiber, size^0.75), upkeep of fast
-      // muscles and keen senses, plus the cost of actually moving.
-      a.energy -= dt * meta * (0.5 * Math.pow(g.size, 0.75) + 0.12 * g.speed ** 2 + 0.08 * g.size * (g.speed * urgency) ** 2 + 0.004 * g.sense);
+      // Energy budget: basal metabolism (Kleiber, size^0.75; predators idle cheaply
+      // between meals), upkeep of fast muscles and keen senses, plus moving.
+      a.energy -= dt * meta * ((a.species === 'carnivore' ? 0.35 : 0.5) * Math.pow(g.size, 0.75) + 0.2 * g.speed ** 2 + 0.08 * g.size * (g.speed * urgency) ** 2 + 0.004 * g.sense);
+      // Energy reserves (fat) scale with body size, so small animals can't ride out lean times.
+      a.energy = Math.min(a.energy, Math.max(200 * g.size, 1.25 * this.reproThreshold(a)));
       a.age += dt;
       const lifespan = a.species === 'herbivore' ? 300 : 450;
       if (a.energy <= 0 || a.age > lifespan * g.size ** 0.25) { a.alive = false; this.deaths++; continue; }
       // Asexual reproduction with mutation.
       const threshold = this.reproThreshold(a);
-      if (a.energy > threshold && a.age > (a.species === 'herbivore' ? 25 : 40) && this.animals.length + babies.length < P.maxPop) {
+      if (a.energy > threshold && a.age > (a.species === 'herbivore' ? 50 : 60) && this.animals.length + babies.length < P.maxPop) {
         a.energy *= 0.5;
         const genes = {};
         for (const [k, d] of Object.entries(GENES)) genes[k] = clamp(g[k] * (1 + this.rng.gaussian(0, P.mutation)), d.min, d.max);

@@ -379,14 +379,14 @@ export const LESSONS = [
     id: 'balance-ecosystem',
     type: 'challenge',
     title: 'Balance an ecosystem',
-    summary: 'Keep both foxes and rabbits alive for three years with no animals arriving from outside.',
+    summary: 'Keep foxes and rabbits alive for three years on scattered fertile islands, with no animals arriving from outside.',
     sim: 'ecosystem',
-    scenario: 'balanced',
+    scenario: 'islands',
     params: { immigration: false },
     steps: [
       {
-        text: 'Left alone, the foxes (red) eat too many rabbits and then starve. Keep both species alive for 3 years (1,095 days). You may change parameters, plants and food, and remove animals, but not add any.',
-        hint: 'Watch the Carnivores count. When only a few foxes remain, feed them with the Energy tool to carry them through the lean time until the rabbits recover. Raising Predator energy gain makes them too good at hunting.',
+        text: 'Food grows only on a few fertile islands in a desert. Left alone, the foxes (red) hunt the rabbits down and then starve. Keep both species alive for 3 years (1,095 days). You may change parameters, plants and food, and remove animals, but not add any.',
+        hint: 'Watch the Carnivores count. When the foxes dwindle, feed them with the Energy tool to carry them through the lean time until the rabbits recover. Fertilising the desert (Energy on bare ground) gives the rabbits more room too.',
         check: (c) => c.elapsed >= 1095,
       },
     ],

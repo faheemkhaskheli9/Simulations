@@ -544,7 +544,7 @@ An energy-balance model of Earth: sunlight, greenhouse gases, ice–albedo feedb
 | CO₂ (ppm) | `co2` | 100 – 5000 (log scale) | 280 |
 | Solar constant (W/m²) | `solar` | 1100 – 1600 | 1361 |
 | Axial tilt (°) | `obliquity` | 0 – 90 | 23.44 |
-| Heat transport (W/m²/K) | `transport` | 0 – 2 | 0.43 |
+| Heat transport (W/m²/K) | `transport` | 0 – 2 | 0.4 |
 | Ice albedo | `iceAlbedo` | 0.3 – 0.8 | 0.62 |
 | Ice-free albedo (clouds etc.) | `baseAlbedo` | 0.15 – 0.5 | 0.3 |
 | Seasonal cycle | `seasons` | on / off | on |
@@ -580,15 +580,15 @@ An energy-balance model of Earth: sunlight, greenhouse gases, ice–albedo feedb
 ### Equations
 
 1. C ∂T/∂t = S(x,t)·(1 − α(T)) − (A + B·T) + ∂/∂x[D(1 − x²) ∂T/∂x],  x = sin(latitude)
-2. A = 202.2 W/m² − ΔF_CO₂,  B = 2.09 W/m²/K
+2. A = 200 W/m² − ΔF_CO₂,  B = 2.09 W/m²/K
 3. ΔF_CO₂ = 5.35 · ln(CO₂ / 280 ppm) W/m²
-4. Albedo α jumps to the ice value where the surface is cold enough to freeze
+4. Albedo α = α_open + (α_ice − α_open)·½[1 − tanh((T + 10 °C) / 8 K)]: more ice the colder it is
 
 ### Simplifications
 
 - One dimension (latitude): no land/ocean split, continents, clouds or ocean currents.
 - Climate sensitivity is ~3 K per CO₂ doubling, set by B and the ice feedback.
-- Ice responds instantly to temperature; small polar caps are unstable, so Arctic ice can vanish abruptly.
+- Ice cover is a smooth function of temperature (an 8 K wide transition), standing in for partial and seasonal sea ice.
 - Seasons come from daily-mean insolation with axial tilt; the orbit is circular.
 
 ### Further reading
@@ -755,15 +755,17 @@ Predators, prey and plants with heritable genes. Watch population cycles and nat
 
 ### Equations
 
-1. Metabolic cost per day ∝ 0.5·size^0.75 + 0.12·speed² + sensing + effort while chasing or fleeing
-2. Reproduction when energy exceeds a threshold ∝ size / fertility; offspring genes = parent genes × (1 + mutation noise)
-3. Grass regrows logistically on a grid, modulated by season and temperature
+1. Metabolic cost per day ∝ b·size^0.75 + 0.2·speed² + sensing + effort while chasing or fleeing (b = 0.5 for prey, 0.35 for predators, which idle cheaply between meals)
+2. Energy reserves are capped at max(200·size, 1.25 × breeding threshold): fat stores scale with body size
+3. Capture odds per tick ∝ size ratio ÷ (1 + rival predators nearby) (predator interference); handling time ∝ prey size
+4. Reproduction when energy exceeds a threshold ∝ size / fertility; offspring genes = parent genes × (1 + mutation noise)
+5. Grass regrows logistically on a grid, modulated by season and temperature
 
 ### Simplifications
 
 - Asexual reproduction; no mating, social behaviour or disease.
-- Predators see prey within their sense radius and catch it with a set efficiency; predator overshoot is common.
-- Optional immigration re-seeds extinct species so runs do not end early.
+- Prey notice a stalking predator with a delay and predators pounce at close range; prey younger than 30 days stay hidden (a refuge). These stabilising mechanisms let both species persist without immigration in the balanced scenario.
+- Optional immigration re-seeds species native to the world if they die out (needed in the harsher islands and invasion scenarios).
 - Selection is emergent: no fitness function is coded.
 
 ### Further reading
@@ -870,6 +872,6 @@ Disease transmission between individuals (SEIR model). Tune infectiousness, incu
 | Escape Snowball Earth | challenge | Global Climate | 2 | `#learn/escape-snowball` | Thaw a frozen planet, then find out whether it refreezes. |
 | Transmute carbon | challenge | Atomic Structure | 1 | `#learn/carbon-dating` | Turn carbon-14 into nitrogen without touching its protons. |
 | Launch a planet | challenge | Gravity & Orbits | 1 | `#learn/stable-orbit` | Put a new planet into a nearly circular orbit around a lone star. |
-| Balance an ecosystem | challenge | Ecosystem & Evolution | 1 | `#learn/balance-ecosystem` | Keep both foxes and rabbits alive for three years with no animals arriving from outside. |
+| Balance an ecosystem | challenge | Ecosystem & Evolution | 1 | `#learn/balance-ecosystem` | Keep foxes and rabbits alive for three years on scattered fertile islands, with no animals arriving from outside. |
 | Make a thunderstorm | challenge | Weather & Atmosphere | 1 | `#learn/make-thunderstorm` | Turn a fair-weather sky into a downpour before the Sun sets. |
 | Build molecules | challenge | Atoms & Molecules | 1 | `#learn/build-molecules` | Assemble water, ammonia and methane from loose atoms by hand. |

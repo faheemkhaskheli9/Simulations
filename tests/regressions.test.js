@@ -97,3 +97,44 @@ test('A5: with waning immunity the disease comes back in new waves (endemic)', a
   assert.ok(died, 'the first wave ended');
   assert.ok(waves >= 1, 'the disease returned after dying out');
 });
+
+test('B4: the 2000-star cluster conserves energy to within 3 % over 60 years', () => {
+  const sim = new GravitySim();
+  sim.loadScenario('cluster');
+  const e0 = sim.totalEnergy();
+  for (let i = 0; i < 720; i++) sim.step(1 / 60); // 5 yr/s → 60 years
+  const drift = Math.abs((sim.totalEnergy() - e0) / e0);
+  assert.ok(drift < 0.03, `energy drift ${(100 * drift).toFixed(2)} %`);
+});
+
+test('B2: today\'s Earth keeps polar ice, and the ice retreats gradually with CO₂', async () => {
+  const { ClimateSim } = await import('../src/sims/climate.js');
+  const iceEdge = (co2) => {
+    const sim = new ClimateSim();
+    sim.params.co2 = co2;
+    sim.advance(80);
+    let ice = 0;
+    for (let k = 0; k < 24; k++) { sim.advance(1 / 24); ice += sim.iceLine(); }
+    return ice / 24;
+  };
+  const [pre, today, doubled] = [280, 420, 560].map(iceEdge);
+  assert.ok(today < 85, `no Arctic ice today (edge at ${today}°)`);
+  assert.ok(pre < today && today < doubled, `ice edge ${pre}° → ${today}° → ${doubled}° should move poleward`);
+  assert.ok(today - pre < 15, `ice collapsed too abruptly (${pre}° → ${today}°)`);
+});
+
+test('B1: the balanced ecosystem sustains both species for 10 years with no immigration', async () => {
+  const { EcosystemSim } = await import('../src/sims/ecosystem.js');
+  for (const seed of [1, 2, 3]) {
+    const sim = new EcosystemSim();
+    sim.loadScenario('balanced');
+    sim.rng.seed(seed * 7919);
+    sim.params.immigration = false;
+    while (sim.time < 3650) {
+      sim.step();
+      const foxes = sim.animals.filter((a) => a.species === 'carnivore').length;
+      assert.ok(foxes > 0, `seed ${seed}: predators extinct on day ${Math.round(sim.time)}`);
+      assert.ok(sim.animals.length > foxes, `seed ${seed}: prey extinct on day ${Math.round(sim.time)}`);
+    }
+  }
+});

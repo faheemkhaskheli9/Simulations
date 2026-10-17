@@ -55,7 +55,7 @@ const SOLUTIONS = {
   // Feed the last few foxes through the lean years.
   'balance-ecosystem': [every(1, (s) => {
     const foxes = s.animals.filter((a) => a.species === 'carnivore');
-    if (foxes.length <= 6) for (const a of foxes) s.energy(a.x, a.y, 3, 1);
+    if (foxes.length <= 12) for (const a of foxes) s.energy(a.x, a.y, 3, 1);
   })],
   'make-thunderstorm': [once((s) => s.setParam('stability', 2))],
   // Drop hydrogens next to each heavy atom, one per free bond.

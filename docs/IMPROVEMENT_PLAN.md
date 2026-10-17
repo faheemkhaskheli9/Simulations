@@ -27,10 +27,10 @@ fix and how it is verified.
 
 | # | Finding | Fix | Verified by | Status |
 |---|---|---|---|---|
-| B1 | **"Balanced predator–prey" is not balanced.** Plants are grazed down to 8 %, and in the browser the prey died out in the first year; the system survived only through immigration. | Retune the ecosystem: plants grow back faster and prey find them more easily, predators breed less readily, and young prey are hidden from predators. | Test: with immigration off, both species survive 10 years in each of 3 seeds. | Planned |
-| B2 | **Today's Earth has no Arctic ice** (ice line 90° at 420 ppm), caused by the small-ice-cap instability of 1-D energy-balance models. | Ice forms at the seasonal freezing point of sea water (−2 °C) rather than at −10 °C in the annual mean, with the model re-calibrated. | Tests: pre-industrial and today both keep polar ice; existing sensitivity and snowball tests still pass. | Planned |
+| B1 | **"Balanced predator–prey" is not balanced.** Plants are grazed down to 8 %, and in the browser the prey died out in the first year; the system survived only through immigration. | Retune the ecosystem: plants grow back faster and prey find them more easily, predators breed less readily, and young prey are hidden from predators. | Test: with immigration off, both species survive 10 years in each of 3 seeds. | ✅ Done |
+| B2 | **Today's Earth has no Arctic ice** (ice line 90° at 420 ppm), caused by the small-ice-cap instability of 1-D energy-balance models. | Ice forms at the seasonal freezing point of sea water (−2 °C) rather than at −10 °C in the annual mean, with the model re-calibrated. | Tests: pre-industrial and today both keep polar ice; existing sensitivity and snowball tests still pass. | ✅ Done |
 | B3 | **Healthy cells slowly starve** (ATP 400 → 227 in respiration, 800 → 195 in the neuron). | Re-balance basal ATP use against ATP made from glucose uptake. | Test: ATP stays within 50 % of its starting value for 60 s in both scenarios. | ✅ Done |
-| B4 | **The 2 000-star cluster loses 24 % of its energy** in 60 s. | Use a smaller time step and a more accurate tree opening angle for that scenario. | Test: energy drift under 5 % over 20 simulated years. | Planned |
+| B4 | **The 2 000-star cluster loses 24 % of its energy** in 60 s. | Use a smaller time step and a more accurate tree opening angle for that scenario. | Test: energy drift under 5 % over 20 simulated years. | ✅ Done |
 
 ## C. Usability
 
