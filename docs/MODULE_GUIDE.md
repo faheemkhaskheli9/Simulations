@@ -211,3 +211,5 @@ lesson to completion, so a lesson that cannot be finished fails CI.
 - [ ] Physical units in labels
 - [ ] Behaviour test against a known result
 - [ ] Listed in the README catalogue and the [Roadmap](ROADMAP.md)
+- [ ] `npm run docs:reference` regenerates [REFERENCE.md](REFERENCE.md) with the new module (the reference test fails until you do)
+- [ ] A screenshot and a section in the [User Guide](USER_GUIDE.md): add a `sim-<id>` shot to `scripts/screenshots.mjs` and run `npm run docs:screenshots`
