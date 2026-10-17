@@ -83,13 +83,14 @@ npm run test:e2e             # real-browser tests
 | `persistence.test.js` | share links round-trip; link parameters typed, clamped and filtered | FT-24 |
 | | diffParams, CSV escaping | FT-27 |
 | | undo/redo stack order and limit | FT-26 |
+| `reference.test.js` | `docs/REFERENCE.md` is identical to what the code generates (docs can't go stale) | MQ |
 | `lessons.test.js` | every lesson references a real module, scenario and parameters, and is **played through to completion** with a scripted solution | M5 |
 | | challenges fail when their rule is broken (and when the learner does nothing: outbreak spreads, predators starve; the molecule kit never assembles itself); manual steps wait for Next | M5 |
 | `e2e/app.e2e.mjs` | per module: every tool in the real UI with no console errors | FT-13, RR-* |
 | | undo/redo an added object; save → load a file; shared link parameters; CSV download | FT-24…27 |
 | | Model & assumptions dialog; lesson catalogue → lesson advancing on real clicks; `#learn/<id>` links; completion stored | M5 |
 
-Current result: **99 unit tests and 17 browser tests, all passing.**
+Current result: **121 unit tests and 19 browser tests, all passing.**
 
 ## 4. Browser smoke test
 

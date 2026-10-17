@@ -8,7 +8,9 @@ parameters of the physics while it runs.
 
 It runs in the browser with no dependencies and no build step.
 
-![A thunderstorm building in the Weather & Atmosphere simulation](docs/screenshots/weather.png)
+![A thunderstorm building in the Weather & Atmosphere simulation](docs/images/sim-weather.jpg)
+
+📖 **New here? Read the illustrated [User Guide](docs/USER_GUIDE.md).** Every parameter, scenario and statistic is listed in the [Simulation Reference](docs/REFERENCE.md).
 
 ```bash
 npm start          # serves http://localhost:8080  (or: node server.js 3000)
@@ -47,11 +49,13 @@ by changing the system and watching what happens.
 
 | | |
 |---|---|
-| ![Spiral galaxy](docs/screenshots/gravity.png) **Gravity & Orbits:** spiral galaxy | ![Stellar nursery](docs/screenshots/stars.png) **Stellar Life Cycles:** star-forming nebulae with a live H–R diagram |
-| ![Hydrogen atom](docs/screenshots/atom.png) **Atomic Structure:** hydrogen and its emission spectrum | ![Salt crystal](docs/screenshots/atoms.png) **Atoms & Molecules:** a salt crystal dissolving |
-| ![Double pendulum](docs/screenshots/mechanics.png) **Mechanics Lab:** chaotic double pendulum | ![Global climate](docs/screenshots/climate.png) **Global Climate:** today's Earth at 420 ppm CO₂ |
-| ![Cell respiration](docs/screenshots/cell.png) **Cell Biology:** mitochondria, pumps and the membrane potential | ![Predator and prey](docs/screenshots/ecosystem.png) **Ecosystem & Evolution:** predator–prey with evolving genes |
-| ![Epidemic](docs/screenshots/epidemic.png) **Epidemic Spread:** an outbreak moving through a town | ![Osmosis lesson](docs/screenshots/lesson.png) **Guided lesson:** osmosis, step by step |
+| ![Galaxy collision](docs/images/sim-gravity.jpg) **Gravity & Orbits:** two galaxies merging | ![Star cluster](docs/images/sim-stars.jpg) **Stellar Life Cycles:** a young cluster with a live H–R diagram |
+| ![Hydrogen atom](docs/images/sim-atom.jpg) **Atomic Structure:** hydrogen and its emission spectrum | ![Water forming](docs/images/sim-atoms.jpg) **Atoms & Molecules:** hydrogen and oxygen forming water |
+| ![Rope bridge](docs/images/sim-mechanics.jpg) **Mechanics Lab:** a rope bridge catching a heavy ball | ![Ice-age Earth](docs/images/sim-climate.jpg) **Global Climate:** an ice-age Earth at 180 ppm CO₂ |
+| ![Cell respiration](docs/images/sim-cell.jpg) **Cell Biology:** mitochondria, pumps and the membrane potential | ![Predator and prey](docs/images/sim-ecosystem.jpg) **Ecosystem & Evolution:** prey coloured by their evolving speed gene |
+| ![Epidemic](docs/images/sim-epidemic.jpg) **Epidemic Spread:** an outbreak moving through a town | ![Greenhouse lesson](docs/images/lesson-card.jpg) **Guided lesson:** the greenhouse effect, step by step |
+
+More screenshots, one for every tool and feature, are in the [User Guide](docs/USER_GUIDE.md).
 
 ## Simulations
 

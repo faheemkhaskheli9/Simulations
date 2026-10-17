@@ -40,3 +40,5 @@ and [Roadmap](docs/ROADMAP.md).
 - [ ] No console errors in the browser; frame time stays within [TRD PR-2/PR-3](docs/TRD.md#6-performance-requirements)
 - [ ] Inputs clamped; no NaN at max speed or with extreme tool use
 - [ ] Docs updated (README catalogue, User Guide, Roadmap/TRD status if relevant)
+- [ ] `npm run docs:reference` re-run if you changed scenarios, parameters, spawn kinds, statistics, model notes or lessons (a test fails otherwise)
+- [ ] `npm run docs:screenshots` re-run if the change is visible in the User Guide screenshots (needs Playwright: `npm install --no-save playwright && npx playwright install chromium`)
