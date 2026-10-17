@@ -51,7 +51,8 @@ along two tracks: the **platform** (persistence, performance, 3D, education) and
 ### M4 Scale and fidelity (P2)
 - [ ] Run physics in Web Workers (typed-array state, transferable buffers)
 - [ ] WebGPU compute for grids (weather, fluids) and particles (atoms, galaxies)
-- [ ] Barnes–Hut tree for 10⁵-body gravity; neighbour lists for molecular dynamics
+- [x] Barnes–Hut tree for gravity (used from 64 massive bodies; new 2000-star *Star cluster* scenario)
+- [ ] Neighbour lists for molecular dynamics
 - [ ] Optional 3D view (space, molecules) with the same tools
 - [ ] Weather: 2D horizontal (map) mode, ice microphysics, lightning
 
@@ -60,7 +61,8 @@ along two tracks: the **platform** (persistence, performance, 3D, education) and
 - [x] Challenges with win and lose conditions (7 so far: ring vaccination, Snowball Earth, transmuting carbon, launching a planet into a circular orbit, balancing an ecosystem, making a thunderstorm, building molecules)
 - [x] Lessons for the remaining modules (gravity, stars, atoms, weather) and a "put a planet in a stable orbit" challenge
 - [x] More challenges (balance an ecosystem, make a thunderstorm, build molecules from a new *Molecule kit* scenario)
-- [ ] Teacher mode: lock parameters, presenter view
+- [x] Teacher mode: share links with `lock=<keys>` or `lock=all` freeze parameters for learners
+- [ ] Presenter view
 - [x] Per-module "Model & assumptions" panel with references
 
 ### M6 Multi-scale worlds (P3)
@@ -76,7 +78,7 @@ along two tracks: the **platform** (persistence, performance, 3D, education) and
 | Weather | ~20–25 ms/frame; collocated grid; warm-rain only | Worker/WebGPU, staggered grid, ice phase |
 | Atoms | 2D, no angle potentials beyond 1–3 repulsion; simplified bond chemistry | Angle terms, reaction energetics |
 | Stars | Analytic tracks, no binaries | Binary evolution, mass transfer |
-| Gravity | O(N²) for massive bodies | Barnes–Hut |
+| Gravity | Barnes–Hut is monopole-only (~2 % force error at θ = 0.6) and runs on the main thread; mergers are still O(N²) | Quadrupole terms, Web Worker |
 | Climate | 1D zonal model; small polar ice caps are unstable, so Arctic ice vanishes abruptly near 420 ppm | Land/ocean split, sea-ice thermodynamics |
 | Atomic Structure | Screened hydrogen-like energies are only accurate for hydrogen and hydrogen-like ions; stability rule misses some odd-odd nuclei (e.g. Co-60) | Tabulated levels and nuclide data |
 | Cell Biology | Each particle stands for many molecules; time is accelerated; no cell division yet | Mitosis, enzyme kinetics |

@@ -4,7 +4,7 @@ import { fmt } from '../core/math.js';
 import { History } from './history.js';
 import { LessonPanel } from './lesson-panel.js';
 import { LESSONS } from '../lessons/index.js';
-import { buildHash, coerceParams, diffParams, download, parseHash, toCSV } from './persistence.js';
+import { buildHash, coerceParams, diffParams, download, formatLock, parseHash, parseLock, toCSV } from './persistence.js';
 
 const MAX_SAMPLES = 20000;
 
@@ -45,6 +45,7 @@ export class App {
     this.history = new History();
     this.samples = [];
     this.touches = new Map();
+    this.locks = {}; // teacher mode: parameter key -> value held fixed
     this.buildChrome();
     this.lessons = new LessonPanel(this, LESSONS);
     this.bindInput();
@@ -170,10 +171,36 @@ export class App {
     const typed = coerceParams(this.sim.paramDefs, params);
     for (const [k, v] of Object.entries(typed)) this.sim.setParam(k, v);
     if (Object.keys(typed).length) this.syncParams();
+    // Teacher mode: "lock" freezes the named parameters at their link values.
+    const locked = parseLock(this.sim.paramDefs, params.lock);
+    if (locked.length) {
+      this.locks = Object.fromEntries(locked.map((k) => [k, this.sim.params[k]]));
+      this.applyLocks();
+      this.status(`Teacher mode: ${locked.length} parameter${locked.length > 1 ? 's' : ''} locked`);
+    }
+  }
+
+  /** Hash query that keeps the current teacher-mode locks. */
+  lockQuery() {
+    const lock = formatLock(this.sim.paramDefs, Object.keys(this.locks));
+    return lock ? { lock } : {};
+  }
+
+  /** Put locked parameters back to their fixed values and disable their controls. */
+  applyLocks() {
+    for (const [k, v] of Object.entries(this.locks)) if (this.sim.params[k] !== v) this.sim.setParam(k, v);
+    for (const { d, input, row } of Object.values(this.paramInputs ?? {})) {
+      const locked = d.key in this.locks;
+      input.disabled = locked;
+      row.classList.toggle('locked', locked);
+      row.title = locked ? 'Locked by your teacher' : '';
+    }
+    this.syncParams();
   }
 
   loadSim(S, scenarioId) {
     this.sim = new S();
+    this.locks = {};
     if (scenarioId && this.sim.scenarios.some((s) => s.id === scenarioId)) this.sim.loadScenario(scenarioId);
     this.view.yUp = !!S.meta.yUp;
     this.selected = null;
@@ -198,9 +225,9 @@ export class App {
     this.sim.loadScenario(id);
     this.selected = null;
     $('#scenario-select').value = id;
-    const hash = `${this.sim.meta.id}/${id}`;
-    if (location.hash.slice(1) !== hash) history.replaceState(null, '', `#${hash}`);
-    this.syncParams();
+    const hash = buildHash(this.sim.meta.id, id, this.lockQuery());
+    if (location.hash !== hash) history.replaceState(null, '', hash);
+    this.applyLocks();
     this.resetRecording();
     this.fitView();
     this.renderInspector(true);
@@ -228,7 +255,7 @@ export class App {
   restore(snapshot) {
     this.sim.deserialize(snapshot);
     this.selected = null;
-    this.syncParams();
+    this.applyLocks();
     this.renderInspector(true);
     this.updateHistoryButtons();
   }
@@ -288,9 +315,9 @@ export class App {
       return;
     }
     $('#scenario-select').value = this.sim.scenarioId;
-    history.replaceState(null, '', buildHash(this.sim.meta.id, this.sim.scenarioId));
+    history.replaceState(null, '', buildHash(this.sim.meta.id, this.sim.scenarioId, this.lockQuery()));
     this.selected = null;
-    this.syncParams();
+    this.applyLocks();
     this.resetRecording();
     this.fitView();
     this.renderInspector(true);
@@ -301,7 +328,7 @@ export class App {
     const S = this.sim.constructor;
     const reference = new S();
     reference.loadScenario(this.sim.scenarioId);
-    const hash = buildHash(this.sim.meta.id, this.sim.scenarioId, diffParams(this.sim.params, reference.params));
+    const hash = buildHash(this.sim.meta.id, this.sim.scenarioId, { ...diffParams(this.sim.params, reference.params), ...this.lockQuery() });
     const url = `${location.href.split('#')[0]}${hash}`;
     history.replaceState(null, '', hash);
     try {
@@ -407,10 +434,10 @@ export class App {
         });
         row.append(el('div', { className: 'param-head' }, name, value), input);
       }
-      this.paramInputs[d.key] = { d, input, value };
+      this.paramInputs[d.key] = { d, input, value, row };
       box.append(row);
     }
-    this.syncParams();
+    this.applyLocks();
   }
 
   syncParams() {

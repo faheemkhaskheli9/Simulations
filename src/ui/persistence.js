@@ -32,6 +32,21 @@ export function coerceParams(paramDefs, raw) {
   return out;
 }
 
+/**
+ * Teacher mode: the "lock" link key names parameters learners cannot change,
+ * as a comma-separated list or "all". Unknown keys are dropped.
+ */
+export function parseLock(paramDefs, raw) {
+  if (!raw) return [];
+  const want = new Set(String(raw).split(',').map((k) => k.trim()));
+  return paramDefs.map((d) => d.key).filter((k) => want.has('all') || want.has(k));
+}
+
+export function formatLock(paramDefs, keys) {
+  if (!keys.length) return '';
+  return keys.length === paramDefs.length ? 'all' : keys.join(',');
+}
+
 /** Parameters that differ from a reference (e.g. the scenario defaults). */
 export function diffParams(params, reference) {
   const out = {};

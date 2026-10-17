@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildHash, parseHash, coerceParams, diffParams, toCSV } from '../src/ui/persistence.js';
+import { buildHash, parseHash, coerceParams, diffParams, formatLock, parseLock, toCSV } from '../src/ui/persistence.js';
 import { History } from '../src/ui/history.js';
 import { GravitySim } from '../src/sims/gravity.js';
 
@@ -14,6 +14,17 @@ test('link parameters are typed, clamped and filtered', () => {
   const defs = new GravitySim().paramDefs;
   const p = coerceParams(defs, { gScale: '99', merge: 'false', trails: '1', evil: 'x', softening: 'abc' });
   assert.deepEqual(p, { gScale: 5, merge: false, trails: true });
+});
+
+test('teacher-mode locks name known parameters or all of them', () => {
+  const defs = new GravitySim().paramDefs;
+  assert.deepEqual(parseLock(defs, 'merge,gScale,evil'), ['gScale', 'merge']);
+  assert.deepEqual(parseLock(defs, undefined), []);
+  assert.equal(parseLock(defs, 'all').length, defs.length);
+  assert.equal(formatLock(defs, parseLock(defs, 'all')), 'all');
+  assert.equal(formatLock(defs, ['gScale', 'merge']), 'gScale,merge');
+  const h = buildHash('gravity', 'solar', { gScale: 2, lock: 'gScale' });
+  assert.deepEqual(parseLock(defs, parseHash(h).params.lock), ['gScale']);
 });
 
 test('diffParams only reports changed values', () => {

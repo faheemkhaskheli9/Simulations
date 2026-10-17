@@ -17,7 +17,7 @@ npm test           # runs the physics, contract, save/load and lesson tests (Nod
 
 | Domain | Module | What it models | Example things to try |
 |---|---|---|---|
-| Space | **Gravity & Orbits** (`gravity`) | N-body gravity in AU / years / solar masses with a symplectic leapfrog integrator. Collisions merge bodies; thousands of test particles for galaxies and asteroid belts. | Solar System, Earth–Moon, binary star with a circumbinary planet, figure-eight three-body orbit, spiral galaxy with a dark-matter halo, galaxy collision. Fling planets, drop in a black hole, change G. |
+| Space | **Gravity & Orbits** (`gravity`) | N-body gravity in AU / years / solar masses with a symplectic leapfrog integrator. Collisions merge bodies; thousands of test particles for galaxies and asteroid belts. | Solar System, Earth–Moon, binary star with a circumbinary planet, figure-eight three-body orbit, spiral galaxy with a dark-matter halo, galaxy collision, a 2000-star cluster (Barnes–Hut tree). Fling planets, drop in a black hole, change G. |
 | Space | **Stellar Life Cycles** (`stars`) | Star formation in nebulae (Salpeter IMF), main-sequence → giant → white dwarf / neutron star / black hole, supernova shock waves that trigger new star formation, and a live Hertzsprung–Russell diagram. | Feed a star mass, change its age, compress a nebula, watch a 40 M☉ star collapse. |
 | Matter | **Atomic Structure** (`atom`) | Protons, neutrons and electron shells (aufbau order), a screened hydrogen-like model for electron energies, photon absorption/emission with a live emission spectrum, ionisation and recombination, semi-empirical nuclear binding and α/β decay. | Shine light on hydrogen to see the Balmer lines, strip electrons to make ions, add neutrons to carbon until it becomes radioactive, follow the uranium-238 decay chain. |
 | Matter | **Atoms & Molecules** (`atoms`) | 2D molecular dynamics: Lennard-Jones forces, Coulomb ions, covalent bonding with valence rules, thermostat, pressure. | Condense argon, melt a salt crystal, make water from H + O, transmute an atom into another element. |
@@ -52,7 +52,7 @@ Every simulation exposes the same tools, so you learn the controls once:
 
 Other controls: mouse wheel zooms, right-drag pans, `Space` plays/pauses, `.` steps one frame,
 `f` fits the view, `Del` removes the selected object. The URL hash (`#weather/storm`) links
-directly to a simulation and scenario. Each module also has global parameters (left panel),
+directly to a simulation and scenario; add `&lock=co2` (or `lock=all`) to lock parameters for a class. Each module also has global parameters (left panel),
 live statistics, a time-series chart, and a **Model & assumptions** dialog listing its equations,
 simplifications and references.
 
@@ -65,6 +65,7 @@ src/core/                   engine pieces shared by all simulations
   simulation.js             base class and interaction contract
   random.js                 seedable RNG (reproducible scenarios)
   spatial-hash.js           neighbour queries for particle systems
+  barnes-hut.js             quadtree for O(N log N) gravity
   math.js                   helpers (black-body colour, formatting…)
 src/sims/                   one file per simulation module (+ index.js registry)
 src/lessons/                guided lessons and challenges, and the runner that checks them
