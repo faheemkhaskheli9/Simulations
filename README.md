@@ -8,10 +8,50 @@ parameters of the physics while it runs.
 
 It runs in the browser with no dependencies and no build step.
 
+![A thunderstorm building in the Weather & Atmosphere simulation](docs/screenshots/weather.png)
+
 ```bash
 npm start          # serves http://localhost:8080  (or: node server.js 3000)
 npm test           # runs the physics, contract, save/load and lesson tests (Node ≥ 18)
 ```
+
+## Why
+
+Most science is taught with static diagrams and equations, but the interesting part is how
+a system *responds*: what happens to the climate if CO₂ doubles, why an epidemic peaks, why
+a double pendulum is chaotic, why a cell bursts in fresh water. Simulations lets you find out
+by changing the system and watching what happens.
+
+- **Learn by experimenting.** Every object and parameter can be edited while the simulation
+  runs, so you can ask "what if?" and get an answer straight away.
+- **One set of controls for every subject.** Gravity, chemistry, weather, biology and
+  epidemiology all use the same six tools, so learning one simulation teaches you the rest.
+- **Honest models.** Each simulation has a **Model & assumptions** dialog listing its
+  equations, simplifications and references, so you know what it gets right and where it
+  stops being realistic.
+- **Nothing to install.** It is plain HTML and JavaScript: no accounts, no tracking, no build.
+  It works offline once loaded (it installs as a PWA) and runs in any modern browser.
+
+## Where to use it
+
+| Who | How |
+|---|---|
+| **Teachers** (secondary school, early university) | Project a simulation in class, or send students a link to a scenario. `#weather/storm&lock=all` opens a scenario with its parameters locked so everyone starts from the same setup. |
+| **Students** | Work through the guided lessons and challenges under **🎓 Learn**, or use a simulation to check homework intuition, e.g. how orbital speed depends on distance (Kepler's laws). |
+| **Self-learners and the curious** | Explore anything from atoms to galaxy collisions at your own pace. Save a world to a file and come back to it later. |
+| **Science communicators** | Make live demos for talks, videos or blog posts. **Share link** copies a URL with the exact scenario and parameters. |
+| **Lab reports and data work** | **Export CSV** downloads the recorded statistics (temperatures, populations, energies…) to plot or analyse in a spreadsheet or notebook. |
+| **Developers** | Use it as a small, dependency-free reference for numerical methods (leapfrog integration, Barnes–Hut, stable fluids, position-based dynamics, agent-based models), or add your own simulation using the [Module Guide](docs/MODULE_GUIDE.md). |
+
+## Screenshots
+
+| | |
+|---|---|
+| ![Spiral galaxy](docs/screenshots/gravity.png) **Gravity & Orbits:** spiral galaxy | ![Stellar nursery](docs/screenshots/stars.png) **Stellar Life Cycles:** star-forming nebulae with a live H–R diagram |
+| ![Hydrogen atom](docs/screenshots/atom.png) **Atomic Structure:** hydrogen and its emission spectrum | ![Salt crystal](docs/screenshots/atoms.png) **Atoms & Molecules:** a salt crystal dissolving |
+| ![Double pendulum](docs/screenshots/mechanics.png) **Mechanics Lab:** chaotic double pendulum | ![Global climate](docs/screenshots/climate.png) **Global Climate:** today's Earth at 420 ppm CO₂ |
+| ![Cell respiration](docs/screenshots/cell.png) **Cell Biology:** mitochondria, pumps and the membrane potential | ![Predator and prey](docs/screenshots/ecosystem.png) **Ecosystem & Evolution:** predator–prey with evolving genes |
+| ![Epidemic](docs/screenshots/epidemic.png) **Epidemic Spread:** an outbreak moving through a town | ![Osmosis lesson](docs/screenshots/lesson.png) **Guided lesson:** osmosis, step by step |
 
 ## Simulations
 
