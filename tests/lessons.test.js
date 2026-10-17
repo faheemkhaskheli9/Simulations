@@ -39,6 +39,19 @@ const SOLUTIONS = {
     once((s) => { s.setParam('solar', 1361); s.setParam('co2', 280); }),
   ],
   'carbon-dating': [once((s) => s.setParam('decaySpeed', 100))],
+  kepler: [
+    null,
+    once((s) => { const e = s.bodies.find((b) => b.name === 'Earth'); s.impulse(e, e.x, e.y, e.vx * 0.09, e.vy * 0.09); }),
+    null,
+    null,
+  ],
+  'star-lives': [null, null, null, null],
+  'states-of-matter': [once((s) => s.setParam('targetT', 20)), null, once((s) => s.setParam('targetT', 600)), null],
+  clouds: [null, null, once((s) => s.setParam('sun', 0)), null],
+  'stable-orbit': [
+    // Add a planet 1 AU out, then throw it sideways at circular speed (2π AU/yr).
+    once((s) => { const p = s.add('planet', 1, 0); s.impulse(p, p.x, p.y, 0, Math.PI); }),
+  ],
 };
 
 test('lesson ids are unique and every lesson has a scripted solution', () => {
@@ -96,6 +109,21 @@ test('a challenge fails when its rule is broken', () => {
   runner.update(sim);
   assert.equal(runner.state, 'failed');
   assert.match(runner.failReason, /Only CO₂/);
+});
+
+test('an eccentric orbit does not win the launch challenge, and orbit assist loses it', () => {
+  const lesson = LESSONS.find((l) => l.id === 'stable-orbit');
+  const sim = new (SIMULATIONS.find((s) => s.meta.id === 'gravity'))();
+  sim.loadScenario(lesson.scenario);
+  for (const [k, v] of Object.entries(lesson.params)) sim.setParam(k, v);
+  const runner = new LessonRunner(lesson, sim);
+  const p = sim.add('planet', 1, 0);
+  sim.impulse(p, p.x, p.y, 0, 4); // 8 AU/yr: an elongated ellipse (e ≈ 0.6)
+  for (let t = 0; t < 10 / DT; t++) { sim.step(DT); runner.update(sim); }
+  assert.equal(runner.state, 'active');
+  sim.setParam('orbitOnAdd', true);
+  runner.update(sim);
+  assert.equal(runner.state, 'failed');
 });
 
 test('steps without a check wait for Next', () => {

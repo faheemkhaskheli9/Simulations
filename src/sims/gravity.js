@@ -86,6 +86,7 @@ export class GravitySim extends Simulation {
       { id: 'figure8', label: 'Three-body figure-eight' },
       { id: 'galaxy', label: 'Spiral galaxy (test stars)' },
       { id: 'galaxyCollision', label: 'Galaxy collision' },
+      { id: 'lonelyStar', label: 'Lone star (launch your own planets)' },
       { id: 'empty', label: 'Empty space' },
     ];
     this.energyTool = { label: 'Heat (speed up)', negLabel: 'Cool (slow down)' };
@@ -186,6 +187,11 @@ export class GravitySim extends Simulation {
       this.makeGalaxy(-60, -15, 9, 2, 1e4, 900, 35, 1);
       this.makeGalaxy(60, 15, -9, -2, 6e3, 600, 28, -1);
       this.view = { x: -110, y: -80, w: 220, h: 160 };
+    } else if (id === 'lonelyStar') {
+      this.params.yearsPerSecond = 0.5;
+      this.params.maxStep = 0.002;
+      this.addBody(this.makeBody('star', 0, 0, 0, 0, { name: 'Sun', px: 8 }));
+      this.view = { x: -3, y: -3, w: 6, h: 6 };
     } else {
       this.view = { x: -5, y: -5, w: 10, h: 10 };
     }

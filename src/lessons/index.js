@@ -2,7 +2,18 @@
 // is played through headlessly in tests/lessons.test.js, so each one is known
 // to be completable.
 
+import { orbitalElements } from '../sims/gravity.js';
+
 const total = (ctx) => ['S', 'E', 'I', 'R', 'V', 'D'].reduce((n, k) => n + ctx.stat(k), 0);
+const body = (ctx, name) => ctx.sim.bodies.find((b) => b.name === name);
+const heaviest = (ctx) => ctx.sim.bodies.reduce((a, b) => (b.m > (a?.m ?? 0) ? b : a), null);
+/** Orbit of a body around the heaviest one, or null if either is gone. */
+const orbit = (ctx, b) => {
+  const host = heaviest(ctx);
+  return b && host && b !== host ? orbitalElements(b, host, ctx.sim.G) : null;
+};
+/** Rocky planets the learner added (scenarios name theirs, added ones are numbered). */
+const addedPlanets = (ctx) => ctx.sim.bodies.filter((b) => b.kind === 'planet' && /^Rocky planet \d+$/.test(b.name));
 
 export const LESSONS = [
   {
@@ -161,6 +172,114 @@ export const LESSONS = [
     ],
   },
 
+  {
+    id: 'kepler',
+    type: 'lesson',
+    title: 'Why planets orbit',
+    summary: 'Push Earth off its circle and see Kepler’s laws at work.',
+    sim: 'gravity',
+    scenario: 'solar',
+    steps: [
+      {
+        text: 'Earth (blue, 1 AU from the Sun) moves sideways fast enough that, as it falls toward the Sun, it keeps missing. Choose the Inspect tool and click Earth: its Eccentricity is near 0, so the orbit is a circle. Watch one full year pass.',
+        check: (c) => c.elapsed >= 1,
+      },
+      {
+        text: 'Choose the Force tool and drag from Earth in the direction it is moving, to give it a kick forward. Make its orbit an ellipse with an Eccentricity of at least 0.3.',
+        hint: 'A forward kick raises the far side of the orbit; a backward one lowers it. Check the Eccentricity in the inspector.',
+        check: (c) => (orbit(c, body(c, 'Earth'))?.e ?? 0) >= 0.3,
+      },
+      {
+        text: 'Kepler’s second law: a planet sweeps out equal areas in equal times, so it races near the Sun and crawls far away. Watch Earth for two more years.',
+        check: (c) => c.elapsed >= 2,
+      },
+      {
+        text: 'Kepler’s third law: bigger orbits take longer (period² ∝ size³). Inspect Earth again: its Period grew along with its Semi-major axis. Press Next to finish.',
+      },
+    ],
+  },
+  {
+    id: 'star-lives',
+    type: 'lesson',
+    title: 'The lives of stars',
+    summary: 'Heavy stars live fast and die in supernovae; light ones fade slowly.',
+    sim: 'stars',
+    scenario: 'masses',
+    steps: [
+      {
+        text: 'Eleven newborn stars, from 0.5 to 40 times the Sun’s mass, sit side by side. Heavier stars burn their fuel far faster. Wait for the first one to swell into a giant.',
+        hint: 'The HR diagram (bottom right) shows giants moving up and to the right.',
+        check: (c) => c.stat('giants') >= 1,
+      },
+      {
+        text: 'Stars above about 8 M☉ end in a supernova, leaving a neutron star or black hole. Wait for the first supernova.',
+        check: (c) => c.stat('supernovae') >= 1,
+      },
+      {
+        text: 'Lighter stars end more quietly, shedding their outer layers to leave a white dwarf. Wait until 6 of the stars have become remnants.',
+        hint: 'You can raise Time speed in Parameters to hurry things along.',
+        check: (c) => c.stat('remnants') >= 6,
+      },
+      {
+        text: 'The 0.5 and 0.8 M☉ stars are still on the main sequence: they will shine for longer than the age of the Universe. Press Next to finish.',
+      },
+    ],
+  },
+  {
+    id: 'states-of-matter',
+    type: 'lesson',
+    title: 'Solid, liquid, gas',
+    summary: 'Cool argon until it condenses, then heat it back into a gas.',
+    sim: 'atoms',
+    scenario: 'gas',
+    steps: [
+      {
+        text: 'Argon atoms fly around and bounce off each other: a gas. Temperature is just how fast they move. Lower the Target temperature in Parameters to 30 K or less.',
+        check: (c) => c.params.thermostat && c.params.targetT <= 30,
+      },
+      {
+        text: 'Slow atoms can no longer escape each other’s weak attraction, so they clump into droplets. Wait until the gas cools below 40 K.',
+        check: (c) => c.stat('T') <= 40,
+      },
+      {
+        text: 'Watch the Pressure in Statistics: clumped atoms rarely hit the walls, so it has dropped. Now heat it back up: set the Target temperature to at least 500 K.',
+        check: (c) => c.params.targetT >= 500,
+      },
+      {
+        text: 'Wait until the temperature passes 400 K: the droplets boil away and the pressure climbs again.',
+        check: (c) => c.stat('T') >= 400,
+      },
+    ],
+  },
+  {
+    id: 'clouds',
+    type: 'lesson',
+    title: 'How clouds form',
+    summary: 'Sunshine warms the ground, air rises and cools, and water vapour condenses.',
+    sim: 'weather',
+    scenario: 'sunny',
+    steps: [
+      {
+        text: 'The Sun heats the ground, which warms the air above it. Warm air is lighter, so it rises in thermals. Wait for an updraft of at least 1 m/s.',
+        hint: 'Switch Display to “Temperature anomaly” to see the warm bubbles.',
+        check: (c) => c.stat('updraft') >= 1,
+      },
+      {
+        text: 'Rising air expands and cools. When it cools to its dew point, the vapour condenses into droplets: a cloud. Wait until clouds cover 10 % of the sky.',
+        hint: 'Raise Speed in Parameters to hurry things along.',
+        check: (c) => c.stat('cloudCover') >= 10,
+      },
+      {
+        text: 'Turn off the Sun: set Solar heating to 0. Without warm ground, the thermals stop.',
+        check: (c) => c.params.sun === 0,
+      },
+      {
+        text: 'Wait until the cloud cover has halved. With no rising air to feed them, droplets mix with dry air and evaporate.',
+        check: (c) => c.stat('cloudCover') <= c.start.stats.cloudCover / 2,
+      },
+    ],
+  },
+
   // ---------- challenges ----------
 
   {
@@ -224,5 +343,33 @@ export const LESSONS = [
       },
     ],
     fail: (c) => (c.stat('isotope').endsWith('-14') ? null : 'The mass number changed. Decay alone keeps it at 14.'),
+  },
+  {
+    id: 'stable-orbit',
+    type: 'challenge',
+    title: 'Launch a planet',
+    summary: 'Put a new planet into a nearly circular orbit around a lone star.',
+    sim: 'gravity',
+    scenario: 'lonelyStar',
+    params: { orbitOnAdd: false },
+    steps: [
+      {
+        text: 'This star has no planets. Add a Rocky planet (Add tool, “New bodies start in orbit” is off) and use the Force tool to throw it into an orbit with an Eccentricity below 0.1. Keep it orbiting for 3 years. Only one added planet may exist at a time.',
+        hint: 'A circular orbit at distance r needs a sideways speed of 2π/√r AU/yr. Drag sideways from the planet, at right angles to the line to the star, and check the Eccentricity in the inspector.',
+        check: (c) => {
+          const [p] = addedPlanets(c);
+          const o = orbit(c, p);
+          const ok = addedPlanets(c).length === 1 && o && o.a > 0 && o.e < 0.1;
+          c.memo.since = ok ? (c.memo.since ?? c.sim.time) : undefined;
+          return ok && c.sim.time - c.memo.since >= 3;
+        },
+      },
+    ],
+    fail: (c) => {
+      if (c.params.orbitOnAdd) return 'New planets must not start in orbit: launch it yourself.';
+      if (c.params.gScale !== c.start.params.gScale) return 'Gravity strength may not change.';
+      if (!c.sim.bodies.some((b) => b.name === 'Sun')) return 'The star is gone.';
+      return null;
+    },
   },
 ];
