@@ -74,7 +74,9 @@ test('switching scenarios restores parameters the cluster changed', () => {
   const sim = new GravitySim();
   sim.loadScenario('cluster');
   sim.loadScenario('solar');
-  assert.equal(sim.params.softening, 0.001);
+  const defaults = Object.fromEntries(sim.paramDefs.map((d) => [d.key, d.value]));
+  assert.equal(sim.params.softening, defaults.softening);
+  assert.equal(sim.params.collisionScale, defaults.collisionScale);
   assert.equal(sim.params.merge, true);
   assert.equal(sim.params.trails, true);
 });

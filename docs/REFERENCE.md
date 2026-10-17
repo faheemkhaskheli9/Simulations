@@ -49,12 +49,12 @@ N-body gravity: planets, moons, stars, black holes and galaxies. Fling bodies, a
 |---|---|---|---|
 | Time speed (yr/s) | `yearsPerSecond` | 0.001 – 100 (log scale) | 0.5 |
 | Gravity strength (× G) | `gScale` | 0 – 5 | 1 |
-| Softening (AU) | `softening` | 0 – 1 | 0.001 |
+| Softening (AU) | `softening` | 0.000001 – 2 (log scale) | 0.00001 |
 | Max integration step (yr) | `maxStep` | 0.0001 – 0.05 (log scale) | 0.002 |
 | Tree opening angle θ (0 = exact) | `theta` | 0 – 1.2 | 0.6 |
 | Dark-matter halo speed (AU/yr) | `haloV` | 0 – 80 | 0 |
 | Merge on collision | `merge` | on / off | on |
-| Collision radius × | `collisionScale` | 1 – 500 (log scale) | 60 |
+| Collision radius × | `collisionScale` | 1 – 500 (log scale) | 20 |
 | New bodies start in orbit | `orbitOnAdd` | on / off | on |
 | Show trails | `trails` | on / off | on |
 
@@ -625,7 +625,7 @@ Inside a living cell: diffusion through the membrane, osmosis that swells or shr
 | Temperature (°C) | `temperature` | 0 – 60 | 37 |
 | Water permeability (aquaporins) | `waterPerm` | 0 – 5 | 1 |
 | Pump rate (cycles/s per pump) | `pumpRate` | 0 – 10 | 3 |
-| Basal ATP use (ATP/s) | `metabolism` | 0 – 50 | 8 |
+| Basal ATP use (ATP/s) | `metabolism` | 0 – 50 | 4 |
 | Membrane strength (burst at × radius) | `strength` | 1.1 – 2 | 1.4 |
 | Show membrane proteins | `showProteins` | on / off | on |
 
@@ -670,13 +670,15 @@ Inside a living cell: diffusion through the membrane, osmosis that swells or shr
 ### Equations
 
 1. Brownian motion: Δx ~ N(0, 2D·Δt)
-2. GHK potential: V_m = (RT/F)·ln[(P_K[K⁺]_o + P_Na[Na⁺]_o) / (P_K[K⁺]_i + P_Na[Na⁺]_i)], P_K : P_Na = 1 : 0.04
-3. Osmosis: water flux ∝ Σ σ·(c_in − c_out); volume follows
-4. Respiration: glucose + O₂ → ATP + CO₂;  Na⁺/K⁺ pump: 1 ATP moves 3 Na⁺ out and 2 K⁺ in
+2. Membrane as a capacitor: V_m = (cations inside − fixed anions)·e / C, starting at the GHK resting value (RT/F)·ln[(P_K[K⁺]_o + P_Na[Na⁺]_o) / (P_K[K⁺]_i + P_Na[Na⁺]_i)], P_K : P_Na = 1 : 0.04
+3. Ion crossing against the voltage succeeds with Boltzmann probability exp(−z·e·V_m / kT)
+4. Osmosis: water flux ∝ Σ σ·(c_in − c_out); volume follows (σ = 0 for solutes that equilibrate: gases, urea, glucose via GLUT)
+5. Respiration: glucose + O₂ → ATP + CO₂;  Na⁺/K⁺ pump: 1 ATP moves 3 Na⁺ out and 2 K⁺ in
 
 ### Simplifications
 
-- Gases cross the lipid bilayer; ions and sugars need channels or transporters.
+- Gases cross the lipid bilayer; ions and sugars need channels or transporters. Na⁺ leaks in slowly; the pump only cycles when it has Na⁺ to export.
+- Fixed negative charges (proteins) inside the cell hold K⁺ in (Donnan effect); one ion of charge shifts the voltage by 2 mV in this model.
 - The cell bursts when its radius exceeds the membrane-strength limit; there is no cytoskeleton or cell wall.
 - No cell division, gene expression or enzyme kinetics yet.
 - Stoichiometry is simplified (real respiration yields ~30 ATP per glucose).
@@ -803,6 +805,7 @@ Disease transmission between individuals (SEIR model). Tune infectiousness, incu
 | Social distancing | `distancing` | 0 – 1 | 0 |
 | Quarantine symptomatic | `quarantine` | on / off | off |
 | Mobility | `mobility` | 0 – 3 | 1 |
+| Imported cases (per 100 days) | `importation` | 0 – 20 | 0 |
 
 ### Things you can add
 

@@ -132,6 +132,8 @@ export class EcosystemSim extends Simulation {
         c.genes.speed = 2.4;
       }
     }
+    // Species that belong to this world; immigration only ever brings these.
+    this.native = new Set(this.animals.map((a) => a.species));
   }
 
   saveState() {
@@ -140,6 +142,7 @@ export class EcosystemSim extends Simulation {
       fertile: encodeTyped(this.fertile),
       births: this.births,
       deaths: this.deaths,
+      native: [...this.native],
       animals: this.animals.map((a) => ({ ...pick(a, ['id', 'species', 'x', 'y', 'heading', 'energy', 'age', 'generation', 'rest']), genes: { ...a.genes } })),
     };
   }
@@ -149,6 +152,7 @@ export class EcosystemSim extends Simulation {
     decodeInto(this.fertile, st.fertile);
     this.births = st.births || 0;
     this.deaths = st.deaths || 0;
+    this.native = new Set((st.native ?? ['herbivore', 'carnivore']).filter((sp) => sp === 'herbivore' || sp === 'carnivore'));
     this.animals = st.animals.map((a) => {
       const genes = {};
       for (const [k, d] of Object.entries(GENES)) genes[k] = clamp(Number(a.genes?.[k]) || d.herb, d.min, d.max);
@@ -270,7 +274,7 @@ export class EcosystemSim extends Simulation {
     this.animals = this.animals.filter((a) => a.alive).concat(babies);
     // Open system: rare migrants arrive at the edge when a species is scarce.
     if (P.immigration) {
-      for (const sp of ['herbivore', 'carnivore']) {
+      for (const sp of this.native) {
         if (this.rng.next() > 0.03 * dt) continue;
         if (this.animals.filter((a) => a.species === sp).length >= 4) continue;
         const edge = this.rng.next() < 0.5;
@@ -307,9 +311,11 @@ export class EcosystemSim extends Simulation {
     }
     if (kind === 'herd' || kind === 'pack') {
       const n = kind === 'herd' ? 10 : 4;
+      this.native.add(kind === 'herd' ? 'herbivore' : 'carnivore');
       for (let i = 0; i < n; i++) this.makeAnimal(kind === 'herd' ? 'herbivore' : 'carnivore', x + this.rng.gaussian(0, 10), y + this.rng.gaussian(0, 10));
       return null;
     }
+    if (kind === 'herbivore' || kind === 'carnivore') this.native.add(kind);
     return this.makeAnimal(kind, x, y);
   }
 

@@ -65,6 +65,7 @@ export class EpidemicSim extends Simulation {
       { key: 'distancing', label: 'Social distancing', type: 'range', min: 0, max: 1, step: 0.05, value: 0 },
       { key: 'quarantine', label: 'Quarantine symptomatic', type: 'checkbox', value: false },
       { key: 'mobility', label: 'Mobility', type: 'range', min: 0, max: 3, step: 0.05, value: 1 },
+      { key: 'importation', label: 'Imported cases (per 100 days)', type: 'range', min: 0, max: 20, step: 0.5, value: 0 },
     ]);
     this.spawnKinds = [
       { id: 'S', label: 'Healthy person' },
@@ -103,6 +104,8 @@ export class EpidemicSim extends Simulation {
     const P = this.params;
     P.distancing = id === 'distanced' ? 0.7 : 0;
     P.waning = id === 'endemic' ? 120 : 0;
+    // An endemic disease persists partly because travellers keep bringing it back.
+    P.importation = id === 'endemic' ? 4 : 0;
     this.hubs = [[150, 120], [450, 110], [300, 300]];
     for (let i = 0; i < 700; i++) this.makePerson(this.rng.range(5, this.W - 5), this.rng.range(5, this.H - 5));
     if (id === 'vaccinated') for (const p of this.people) if (this.rng.next() < 0.6) p.state = 'V';
@@ -127,6 +130,15 @@ export class EpidemicSim extends Simulation {
 
   tick(dt) {
     const P = this.params;
+    // Infections arriving from outside the town (a Poisson process).
+    if (P.importation > 0 && this.rng.next() < 1 - Math.exp((-P.importation / 100) * dt)) {
+      const susceptible = this.people.filter((p) => p.state === 'S');
+      if (susceptible.length) {
+        const p = this.rng.pick(susceptible);
+        p.state = P.incubation > 0 ? 'E' : 'I';
+        p.t = 0;
+      }
+    }
     const moving = this.people.filter((p) => p.state !== 'D');
     this.hash.rebuild(moving);
     for (const p of moving) {

@@ -75,12 +75,16 @@ export class GravitySim extends Simulation {
     this.defineParams([
       { key: 'yearsPerSecond', label: 'Time speed (yr/s)', type: 'range', min: 0.001, max: 100, value: 0.5, log: true },
       { key: 'gScale', label: 'Gravity strength (× G)', type: 'range', min: 0, max: 5, step: 0.01, value: 1 },
-      { key: 'softening', label: 'Softening (AU)', type: 'range', min: 0, max: 1, step: 0.001, value: 0.001 },
+      // Must stay far below the closest orbit (the Moon is 0.0026 AU from Earth);
+      // galaxies and clusters set their own, larger softening.
+      { key: 'softening', label: 'Softening (AU)', type: 'range', min: 0.000001, max: 2, value: 0.00001, log: true },
       { key: 'maxStep', label: 'Max integration step (yr)', type: 'range', min: 0.0001, max: 0.05, value: 0.002, log: true },
       { key: 'theta', label: 'Tree opening angle θ (0 = exact)', type: 'range', min: 0, max: 1.2, step: 0.05, value: 0.6 },
       { key: 'haloV', label: 'Dark-matter halo speed (AU/yr)', type: 'range', min: 0, max: 80, step: 0.5, value: 0 },
       { key: 'merge', label: 'Merge on collision', type: 'checkbox', value: true },
-      { key: 'collisionScale', label: 'Collision radius ×', type: 'range', min: 1, max: 500, value: 60, log: true },
+      // Bodies are drawn far larger than life, so collisions use an enlarged radius.
+      // 20× keeps the Moon (Earth–Moon distance ≈ 47 Earth radii) safely in orbit.
+      { key: 'collisionScale', label: 'Collision radius ×', type: 'range', min: 1, max: 500, value: 20, log: true },
       { key: 'orbitOnAdd', label: 'New bodies start in orbit', type: 'checkbox', value: true },
       { key: 'trails', label: 'Show trails', type: 'checkbox', value: true },
     ]);
@@ -133,7 +137,7 @@ export class GravitySim extends Simulation {
     super.loadScenario(id);
     this.bodies = [];
     this.params.haloV = 0;
-    for (const key of ['softening', 'merge', 'trails']) this.params[key] = this.paramDefs.find((d) => d.key === key).value;
+    for (const key of ['softening', 'merge', 'trails', 'collisionScale']) this.params[key] = this.paramDefs.find((d) => d.key === key).value;
     const rng = this.rng;
     rng.seed(42);
     const G = G_SI_UNITS;
@@ -225,7 +229,7 @@ export class GravitySim extends Simulation {
     const G = G_SI_UNITS;
     // The core stands for a supermassive black hole plus dense bulge: give it a
     // finite size so two cores that meet merge instead of slingshotting.
-    const core = this.addBody(this.makeBody('blackHole', cx, cy, vx, vy, { name: 'Galactic core', m: M, px: 6, radius: 0.05 }));
+    const core = this.addBody(this.makeBody('blackHole', cx, cy, vx, vy, { name: 'Galactic core', m: M, px: 6, radius: 0.15 }));
     for (let i = 0; i < n; i++) {
       // Exponential-ish disk with two spiral arms seeded by angle perturbation.
       const r = 4 + R * Math.pow(this.rng.next(), 1.3);

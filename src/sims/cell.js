@@ -9,9 +9,10 @@ import { pick } from '../core/serialize.js';
 export const SPECIES = {
   o2: { label: 'Oxygen (O₂)', D: 6, perm: 0.9, sigma: 0, color: '#7fc8ff', r: 0.22 },
   co2: { label: 'Carbon dioxide (CO₂)', D: 5, perm: 0.9, sigma: 0, color: '#c0c6d2', r: 0.24 },
-  glucose: { label: 'Glucose', D: 2.5, perm: 0, sigma: 1, via: 'glut', color: '#ffd34d', r: 0.3 },
-  na: { label: 'Sodium ion (Na⁺)', D: 4, perm: 0.002, sigma: 1, via: 'naChannel', color: '#b06cff', r: 0.22 },
-  k: { label: 'Potassium ion (K⁺)', D: 4.5, perm: 0.002, sigma: 1, via: 'kChannel', color: '#5ee05e', r: 0.24 },
+  // Glucose equilibrates through GLUT transporters, so it exerts no lasting osmotic pressure.
+  glucose: { label: 'Glucose', D: 2.5, perm: 0, sigma: 0, via: 'glut', color: '#ffd34d', r: 0.3 },
+  na: { label: 'Sodium ion (Na⁺)', D: 4, perm: 0.03, sigma: 1, z: 1, via: 'naChannel', color: '#b06cff', r: 0.22 },
+  k: { label: 'Potassium ion (K⁺)', D: 4.5, perm: 0.002, sigma: 1, z: 1, via: 'kChannel', color: '#5ee05e', r: 0.24 },
   urea: { label: 'Urea (permeant)', D: 4, perm: 0.4, sigma: 0, color: '#ff9f6a', r: 0.22 },
   sucrose: { label: 'Sucrose (impermeant)', D: 2, perm: 0, sigma: 1, color: '#ff6aa8', r: 0.3 },
   lactate: { label: 'Lactate', D: 3, perm: 0.05, sigma: 0.8, color: '#e8e8a0', r: 0.24 },
@@ -27,6 +28,8 @@ export const PROTEINS = {
 const CENTER = [30, 20];
 const W = 60, H = 40;
 const R0 = 10;
+// Membrane capacitance in model units: each net cation moved changes the voltage by this much.
+const MV_PER_ION = 2;
 
 let nextId = 1;
 
@@ -35,8 +38,9 @@ let nextId = 1;
  * membrane lets gases through, while ions and sugars need channels or
  * transporters. Water follows solutes (osmosis), so the cell swells or
  * shrinks and can burst. Mitochondria turn glucose and oxygen into ATP,
- * which Na⁺/K⁺ pumps spend to keep the ion gradients that set the
- * membrane potential (Goldman–Hodgkin–Katz equation).
+ * which Na⁺/K⁺ pumps spend to keep the ion gradients. The membrane is a
+ * capacitor: its voltage follows the net charge inside, and ions crossing it
+ * feel that voltage, so the resting potential is a true pump–leak balance.
  */
 export class CellSim extends Simulation {
   static meta = {
@@ -49,12 +53,14 @@ export class CellSim extends Simulation {
       summary: 'A single animal cell. Each particle stands for many molecules, and time is accelerated.',
       equations: [
         'Brownian motion: Δx ~ N(0, 2D·Δt)',
-        'GHK potential: V_m = (RT/F)·ln[(P_K[K⁺]_o + P_Na[Na⁺]_o) / (P_K[K⁺]_i + P_Na[Na⁺]_i)], P_K : P_Na = 1 : 0.04',
-        'Osmosis: water flux ∝ Σ σ·(c_in − c_out); volume follows',
+        'Membrane as a capacitor: V_m = (cations inside − fixed anions)·e / C, starting at the GHK resting value (RT/F)·ln[(P_K[K⁺]_o + P_Na[Na⁺]_o) / (P_K[K⁺]_i + P_Na[Na⁺]_i)], P_K : P_Na = 1 : 0.04',
+        'Ion crossing against the voltage succeeds with Boltzmann probability exp(−z·e·V_m / kT)',
+        'Osmosis: water flux ∝ Σ σ·(c_in − c_out); volume follows (σ = 0 for solutes that equilibrate: gases, urea, glucose via GLUT)',
         'Respiration: glucose + O₂ → ATP + CO₂;  Na⁺/K⁺ pump: 1 ATP moves 3 Na⁺ out and 2 K⁺ in',
       ],
       assumptions: [
-        'Gases cross the lipid bilayer; ions and sugars need channels or transporters.',
+        'Gases cross the lipid bilayer; ions and sugars need channels or transporters. Na⁺ leaks in slowly; the pump only cycles when it has Na⁺ to export.',
+        'Fixed negative charges (proteins) inside the cell hold K⁺ in (Donnan effect); one ion of charge shifts the voltage by 2 mV in this model.',
         'The cell bursts when its radius exceeds the membrane-strength limit; there is no cytoskeleton or cell wall.',
         'No cell division, gene expression or enzyme kinetics yet.',
         'Stoichiometry is simplified (real respiration yields ~30 ATP per glucose).',
@@ -77,7 +83,7 @@ export class CellSim extends Simulation {
       { key: 'temperature', label: 'Temperature (°C)', type: 'range', min: 0, max: 60, step: 1, value: 37 },
       { key: 'waterPerm', label: 'Water permeability (aquaporins)', type: 'range', min: 0, max: 5, step: 0.05, value: 1 },
       { key: 'pumpRate', label: 'Pump rate (cycles/s per pump)', type: 'range', min: 0, max: 10, step: 0.1, value: 3 },
-      { key: 'metabolism', label: 'Basal ATP use (ATP/s)', type: 'range', min: 0, max: 50, step: 1, value: 8 },
+      { key: 'metabolism', label: 'Basal ATP use (ATP/s)', type: 'range', min: 0, max: 50, step: 1, value: 4 },
       { key: 'strength', label: 'Membrane strength (burst at × radius)', type: 'range', min: 1.1, max: 2, step: 0.05, value: 1.4 },
       { key: 'showProteins', label: 'Show membrane proteins', type: 'checkbox', value: true },
     ]);
@@ -144,7 +150,7 @@ export class CellSim extends Simulation {
     this.atpMade = 0;
     const P = this.params;
     P.waterPerm = 1;
-    P.metabolism = 8;
+    P.metabolism = 4;
     const ring = (type, n, offset = 0) => { for (let i = 0; i < n; i++) this.addProtein(type, offset + (i / n) * TAU); };
     const mitos = (n) => {
       for (let i = 0; i < n; i++) {
@@ -162,8 +168,9 @@ export class CellSim extends Simulation {
       this.scatter('glucose', 60, 'out'); this.scatter('o2', 120, 'out');
       ring('glut', 6); ring('pump', 4, 0.3); ring('kChannel', 4, 0.6); mitos(4);
     } else if (id === 'diffusion') {
+      ions(); // normal isotonic fluid, so glucose entering only changes the volume slightly
       this.scatter('o2', 150, 'out'); this.scatter('glucose', 120, 'out'); this.scatter('urea', 80, 'out');
-      ring('glut', 3); P.metabolism = 0;
+      ring('glut', 3); ring('pump', 4, 0.3); ring('kChannel', 4, 0.6); P.metabolism = 0;
     } else if (id === 'neuron') {
       ions();
       this.scatter('glucose', 40, 'out'); this.scatter('o2', 80, 'out');
@@ -175,6 +182,8 @@ export class CellSim extends Simulation {
       P.waterPerm = id === 'hypotonic' ? 1.2 : 0.5;
     }
     this.balanceOsmotically();
+    const c0 = this.counts();
+    this.fixedCharge = c0.in.k + c0.in.na - this.ghkPotential(c0) / MV_PER_ION;
     // Osmotic challenges are applied after the cell is in balance with normal fluid.
     if (id === 'hypotonic') {
       let keep = 20;
@@ -237,8 +246,20 @@ export class CellSim extends Simulation {
     return { aIn, aOut: W * H - aIn };
   }
 
-  /** Membrane potential (mV) from the Goldman–Hodgkin–Katz equation (P_K : P_Na = 1 : 0.04). */
+  /**
+   * Membrane potential (mV). The membrane is a capacitor: the voltage follows the
+   * net charge inside (mobile cations minus fixed negatively charged proteins), so
+   * every K⁺ that leaks out makes the inside more negative and pulls K⁺ back.
+   * The fixed charge is calibrated so each scenario starts at its GHK value.
+   */
   membranePotential(c = this.counts()) {
+    if (this.burst) return 0;
+    const cations = c.in.k + c.in.na;
+    return clamp((cations - this.fixedCharge) * MV_PER_ION, -150, 60);
+  }
+
+  /** Goldman–Hodgkin–Katz resting potential from concentrations (P_K : P_Na = 1 : 0.04). */
+  ghkPotential(c = this.counts()) {
     if (this.burst) return 0;
     const { aIn, aOut } = this.areas();
     const T = this.params.temperature + 273.15;
@@ -255,6 +276,11 @@ export class CellSim extends Simulation {
     const P = this.params;
     const tFactor = (P.temperature + 273.15) / 310;
     const cx = CENTER[0], cy = CENTER[1];
+    // Ions feel the membrane voltage: crossing "uphill" by an energy z·e·Vm
+    // succeeds with Boltzmann probability exp(−z·e·Vm / kT). This is what holds
+    // K⁺ inside a negatively charged cell instead of letting it diffuse away.
+    const vm = this.burst ? 0 : this.membranePotential();
+    const vt = (8.314 * (P.temperature + 273.15)) / 96485 * 1000; // thermal voltage, mV
     // Brownian motion with membrane crossing rules.
     for (const p of this.particles) {
       const s = SPECIES[p.sp];
@@ -264,7 +290,8 @@ export class CellSim extends Simulation {
       const wasIn = this.isInside(p.x, p.y), nowIn = this.isInside(nx, ny);
       if (wasIn !== nowIn) {
         const angle = Math.atan2(ny - cy, nx - cx);
-        const through = this.rng.next() < s.perm || (s.via && this.proteinAt(angle, s.via) && this.rng.next() < 0.7);
+        const electric = s.z ? Math.min(1, Math.exp(((wasIn ? 1 : -1) * s.z * vm) / vt)) : 1;
+        const through = this.rng.next() < s.perm * electric || (s.via && this.proteinAt(angle, s.via) && this.rng.next() < 0.7 * electric);
         if (!through) continue; // bounced off the membrane
       }
       p.x = nx; p.y = ny;
@@ -311,7 +338,8 @@ export class CellSim extends Simulation {
         const [px, py] = this.proteinPos(pump);
         const near = (sp, inside) => this.particles.filter((p) => p.alive && p.sp === sp && this.isInside(p.x, p.y) === inside && (p.x - px) ** 2 + (p.y - py) ** 2 < 16);
         const na = near('na', true).slice(0, 3), k = near('k', false).slice(0, 2);
-        if (!na.length && !k.length) continue;
+        // A coupled exchanger: no cycle without sodium to export (3 Na⁺ out : 2 K⁺ in).
+        if (!na.length) continue;
         this.atp -= 1;
         const out = this.R + 0.4, inn = this.R - 0.4;
         for (const p of na) { p.x = CENTER[0] + out * Math.cos(pump.angle); p.y = CENTER[1] + out * Math.sin(pump.angle); }
@@ -502,7 +530,7 @@ export class CellSim extends Simulation {
 
   saveState() {
     return {
-      R: this.R, burst: this.burst, atp: this.atp, atpMade: this.atpMade, contents: this.contents,
+      R: this.R, burst: this.burst, atp: this.atp, atpMade: this.atpMade, contents: this.contents, fixedCharge: this.fixedCharge,
       particles: this.particles.map((p) => pick(p, ['id', 'sp', 'x', 'y'])),
       proteins: this.proteins.map((p) => pick(p, ['id', 'type', 'angle', 'active', 'clock'])),
       mitos: this.mitos.map((m) => pick(m, ['id', 'x', 'y', 'angle', 'active'])),
@@ -515,6 +543,7 @@ export class CellSim extends Simulation {
     this.atp = Math.max(0, Number(st.atp) || 0);
     this.atpMade = Number(st.atpMade) || 0;
     this.contents = Math.max(0, Number(st.contents) || 0);
+    this.fixedCharge = Number.isFinite(st.fixedCharge) ? st.fixedCharge : 50;
     this.particles = st.particles.filter((p) => SPECIES[p.sp]).map((p) => ({ ...p, alive: true }));
     this.proteins = st.proteins.filter((p) => PROTEINS[p.type]).map((p) => ({ ...p, alive: true }));
     this.mitos = st.mitos.map((m) => ({ ...m, alive: true }));

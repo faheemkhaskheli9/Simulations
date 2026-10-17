@@ -17,11 +17,11 @@ fix and how it is verified.
 
 | # | Finding (evidence) | Fix | Verified by | Status |
 |---|---|---|---|---|
-| A1 | **The Moon crashes into Earth** in *Earth & Moon* and *Solar System* (bodies 2 → 1, massive 10 → 9). The default collision radius (60 × physical radius) is larger than the Moon's orbit. | Lower the default collision scale and keep it below any orbit in the scenarios. | Test: the Moon still orbits Earth after 1 simulated year in both scenarios. | Planned |
-| A2 | **Uranium-238 becomes a −11 ion.** α-decay removes protons but the atom keeps every electron. | Atoms with more than one surplus electron shed them (auto-detachment); at most a −1 ion is kept. | Test: after a long U-238 decay chain the charge stays ≥ −1. | Planned |
-| A3 | **Predators appear in "Prey only"** (carnivores 0 → 4): immigration brings in species the scenario excluded. | Immigration only brings species that were present when the scenario started, or that the user added. | Test: prey-only stays predator-free for 10 years. | Planned |
-| A4 | **The diffusion demo cell swells to 164 %.** Glucose was its only outside osmolyte, and glucose enters the cell. | Bathe the cell in normal isotonic fluid (Na⁺/K⁺) as in the other scenarios. | Test: volume stays within ±15 % over 60 s. | Planned |
-| A5 | **"Waning immunity (endemic)" dies out** within 60 s (infectious 4 → 0), so it never shows recurring waves. | New *Imported cases* parameter (infections arriving from outside per 100 days), on in that scenario. | Test: infections are still present after 3 simulated years. | Planned |
+| A1 | **The Moon crashes into Earth** in *Earth & Moon* and *Solar System* (bodies 2 → 1, massive 10 → 9). The default collision radius (60 × physical radius) is larger than the Moon's orbit. | Lower the default collision scale and keep it below any orbit in the scenarios. | Test: the Moon still orbits Earth after 1 simulated year in both scenarios. | ✅ Done |
+| A2 | **Uranium-238 becomes a −11 ion.** α-decay removes protons but the atom keeps every electron. | Atoms with more than one surplus electron shed them (auto-detachment); at most a −1 ion is kept. | Test: after a long U-238 decay chain the charge stays ≥ −1. | ✅ Done |
+| A3 | **Predators appear in "Prey only"** (carnivores 0 → 4): immigration brings in species the scenario excluded. | Immigration only brings species that were present when the scenario started, or that the user added. | Test: prey-only stays predator-free for 10 years. | ✅ Done |
+| A4 | **The diffusion demo cell swells to 164 %.** Glucose was its only outside osmolyte, and glucose enters the cell. | Bathe the cell in normal isotonic fluid (Na⁺/K⁺) as in the other scenarios. | Test: volume stays within ±15 % over 60 s. | ✅ Done |
+| A5 | **"Waning immunity (endemic)" dies out** within 60 s (infectious 4 → 0), so it never shows recurring waves. | New *Imported cases* parameter (infections arriving from outside per 100 days), on in that scenario. | Test: infections are still present after 3 simulated years. | ✅ Done |
 
 ## B. Model quality
 
@@ -29,7 +29,7 @@ fix and how it is verified.
 |---|---|---|---|---|
 | B1 | **"Balanced predator–prey" is not balanced.** Plants are grazed down to 8 %, and in the browser the prey died out in the first year; the system survived only through immigration. | Retune the ecosystem: plants grow back faster and prey find them more easily, predators breed less readily, and young prey are hidden from predators. | Test: with immigration off, both species survive 10 years in each of 3 seeds. | Planned |
 | B2 | **Today's Earth has no Arctic ice** (ice line 90° at 420 ppm), caused by the small-ice-cap instability of 1-D energy-balance models. | Ice forms at the seasonal freezing point of sea water (−2 °C) rather than at −10 °C in the annual mean, with the model re-calibrated. | Tests: pre-industrial and today both keep polar ice; existing sensitivity and snowball tests still pass. | Planned |
-| B3 | **Healthy cells slowly starve** (ATP 400 → 227 in respiration, 800 → 195 in the neuron). | Re-balance basal ATP use against ATP made from glucose uptake. | Test: ATP stays within 50 % of its starting value for 60 s in both scenarios. | Planned |
+| B3 | **Healthy cells slowly starve** (ATP 400 → 227 in respiration, 800 → 195 in the neuron). | Re-balance basal ATP use against ATP made from glucose uptake. | Test: ATP stays within 50 % of its starting value for 60 s in both scenarios. | ✅ Done |
 | B4 | **The 2 000-star cluster loses 24 % of its energy** in 60 s. | Use a smaller time step and a more accurate tree opening angle for that scenario. | Test: energy drift under 5 % over 20 simulated years. | Planned |
 
 ## C. Usability

@@ -17,6 +17,7 @@ test('herbivores starve without plants', () => {
   const sim = new EcosystemSim();
   sim.loadScenario('prey');
   sim.params.growth = 0;
+  sim.params.immigration = false; // a closed system, so starvation is final
   sim.grass.fill(0);
   for (let i = 0; i < 200; i++) sim.step();
   assert.equal(stat(sim, 'herbivores'), 0);

@@ -60,8 +60,11 @@ export function decayMode(Z, N) {
   const A = Z + N;
   if (A === 0) return null;
   if (Z === 0) return N > 0 ? 'beta-' : null;
-  if (A > 209 || Z > 83) return 'alpha';
-  const dz = Z - stableZ(A), tol = stabilityTolerance(A);
+  // Odd–odd nuclei lack the pairing bonus, so their band of stability is narrower.
+  const dz = Z - stableZ(A), tol = stabilityTolerance(A) * (Z % 2 && N % 2 ? 0.5 : 1);
+  // Heavy nuclei shed mass by alpha decay, but a neutron-rich one beta-decays
+  // first, so chains alternate α and β⁻ (U-238 → … → Pb-206) as in nature.
+  if (A > 209 || Z > 83) return dz < -tol ? 'beta-' : 'alpha';
   if (dz > tol) return 'beta+';
   if (dz < -tol) return 'beta-';
   return null;
@@ -294,6 +297,16 @@ export class AtomSim extends Simulation {
       this.electrons.push(e);
       this.regroundElectrons();
       e.n = MAX_LEVEL; // arrives at the top before cascading
+    }
+    // Auto-detachment: an atom can hold at most one surplus electron (a −1 ion,
+    // as after alpha decay or when electrons are added by hand); extra
+    // electrons are too weakly bound and fly off.
+    const surplus = this.electrons.length - this.Z - 1;
+    if (surplus > 0) {
+      let lost = 0;
+      for (let k = 0; k < surplus; k++) if (this.rng.next() < 1 - Math.exp(-4 * dt)) lost++;
+      for (let k = 0; k < lost; k++) this.ionize(this.outermost());
+      if (lost) this.regroundElectrons();
     }
     // Radioactive decay with a rate that grows with distance from stability.
     const mode = P.radioactivity ? decayMode(this.Z, this.N) : null;
