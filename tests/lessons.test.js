@@ -52,6 +52,20 @@ const SOLUTIONS = {
     // Add a planet 1 AU out, then throw it sideways at circular speed (2π AU/yr).
     once((s) => { const p = s.add('planet', 1, 0); s.impulse(p, p.x, p.y, 0, Math.PI); }),
   ],
+  // Feed the last few foxes through the lean years.
+  'balance-ecosystem': [every(1, (s) => {
+    const foxes = s.animals.filter((a) => a.species === 'carnivore');
+    if (foxes.length <= 6) for (const a of foxes) s.energy(a.x, a.y, 3, 1);
+  })],
+  'make-thunderstorm': [once((s) => s.setParam('stability', 2))],
+  // Drop hydrogens next to each heavy atom, one per free bond.
+  'build-molecules': [once((s) => {
+    const hs = s.atoms.filter((a) => a.el === 'H');
+    for (const [el, n] of [['C', 4], ['N', 3], ['O', 2]]) {
+      const c = s.atoms.find((a) => a.el === el);
+      for (let k = 0; k < n; k++) s.move(hs.shift(), c.x + 0.6 * Math.cos((2 * Math.PI * k) / n), c.y + 0.6 * Math.sin((2 * Math.PI * k) / n));
+    }
+  })],
 };
 
 test('lesson ids are unique and every lesson has a scripted solution', () => {
@@ -145,4 +159,40 @@ test('doing nothing loses the vaccination challenge', () => {
   const runner = new LessonRunner(lesson, sim);
   for (let t = 0; t < MAX_SECONDS / DT && runner.state === 'active'; t++) { sim.step(DT); runner.update(sim); }
   assert.equal(runner.state, 'failed');
+});
+
+const play = (id, act, seconds) => {
+  const lesson = LESSONS.find((l) => l.id === id);
+  const sim = new (SIMULATIONS.find((s) => s.meta.id === lesson.sim))();
+  sim.loadScenario(lesson.scenario);
+  for (const [k, v] of Object.entries(lesson.params ?? {})) sim.setParam(k, v);
+  const runner = new LessonRunner(lesson, sim);
+  for (let t = 0; t < seconds / DT && runner.state === 'active'; t++) { act?.(sim, t); sim.step(DT); runner.update(sim); }
+  return runner;
+};
+
+test('left alone, the predators starve and the ecosystem challenge is lost', () => {
+  const runner = play('balance-ecosystem', null, 60);
+  assert.equal(runner.state, 'failed');
+  assert.match(runner.failReason, /carnivores died out/);
+});
+
+test('adding animals loses the ecosystem challenge', () => {
+  const runner = play('balance-ecosystem', (s, t) => { if (t === 5) s.add('carnivore', 100, 100); }, 1);
+  assert.equal(runner.state, 'failed');
+  assert.match(runner.failReason, /may not be added/);
+});
+
+test('switching to the storm scenario loses the thunderstorm challenge', () => {
+  const runner = play('make-thunderstorm', (s, t) => { if (t === 2) s.loadScenario('storm'); }, 1);
+  assert.equal(runner.state, 'failed');
+  assert.match(runner.failReason, /scenario changed/);
+});
+
+test('the molecule kit does not build molecules by itself, and transmuting loses', () => {
+  let runner = play('build-molecules', null, 20);
+  assert.equal(runner.state, 'active');
+  runner = play('build-molecules', (s, t) => { if (t === 2) s.setProperty(s.atoms.find((a) => a.el === 'C'), 'el', 'O'); }, 1);
+  assert.equal(runner.state, 'failed');
+  assert.match(runner.failReason, /atoms changed/);
 });

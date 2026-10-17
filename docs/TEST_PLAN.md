@@ -84,7 +84,7 @@ npm run test:e2e             # real-browser tests
 | | diffParams, CSV escaping | FT-27 |
 | | undo/redo stack order and limit | FT-26 |
 | `lessons.test.js` | every lesson references a real module, scenario and parameters, and is **played through to completion** with a scripted solution | M5 |
-| | challenges fail when their rule is broken (and when the learner does nothing); manual steps wait for Next | M5 |
+| | challenges fail when their rule is broken (and when the learner does nothing: outbreak spreads, predators starve; the molecule kit never assembles itself); manual steps wait for Next | M5 |
 | `e2e/app.e2e.mjs` | per module: every tool in the real UI with no console errors | FT-13, RR-* |
 | | undo/redo an added object; save → load a file; shared link parameters; CSV download | FT-24…27 |
 | | Model & assumptions dialog; lesson catalogue → lesson advancing on real clicks; `#learn/<id>` links; completion stored | M5 |

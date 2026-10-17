@@ -57,9 +57,9 @@ along two tracks: the **platform** (persistence, performance, 3D, education) and
 
 ### M5 Education (P2)
 - [x] Guided lessons that script scenarios, prompts and checkpoints (`src/lessons/`; 10 lessons, at least one per module)
-- [x] Challenges with win and lose conditions (4 so far: ring vaccination, Snowball Earth, transmuting carbon, launching a planet into a circular orbit)
+- [x] Challenges with win and lose conditions (7 so far: ring vaccination, Snowball Earth, transmuting carbon, launching a planet into a circular orbit, balancing an ecosystem, making a thunderstorm, building molecules)
 - [x] Lessons for the remaining modules (gravity, stars, atoms, weather) and a "put a planet in a stable orbit" challenge
-- [ ] More challenges (balance an ecosystem, make a thunderstorm, build a molecule)
+- [x] More challenges (balance an ecosystem, make a thunderstorm, build molecules from a new *Molecule kit* scenario)
 - [ ] Teacher mode: lock parameters, presenter view
 - [x] Per-module "Model & assumptions" panel with references
 

@@ -51,7 +51,9 @@ Press **🎓 Learn** in the top bar to pick a guided lesson or a challenge.
   predator–prey balance. Each step tells you what to do and moves on by itself once you
   have done it; steps that only explain something wait for **Next**.
 - **Challenges** give you a goal and a rule, e.g. *stop the outbreak while vaccinating
-  under 30 % of the town*, and you choose how to get there. Break the rule and you can
+  under 30 % of the town*, *keep predators and prey alive for three years*, *make a
+  thunderstorm before sunset* or *build water, ammonia and methane from loose atoms*, and
+  you choose how to get there. Break the rule and you can
   **Try again**.
 
 The lesson card sits at the top of the right panel. Switching to another simulation ends
@@ -91,6 +93,7 @@ Units: reduced molecular units; temperature shown in Kelvin. Energy tool = *heat
 - **Argon condensing:** droplets form at 60 K. Raise *Target temperature* to boil them.
 - **Salt crystal:** heat it with the Energy tool to melt the lattice.
 - **Hydrogen + oxygen:** watch the *Molecules* statistic for H₂ and H₂O.
+- **Molecule kit:** a few cold, separate atoms. Drag hydrogens next to C, N and O with the Move tool to build CH₄, NH₃ and H₂O.
 - Inspect an atom and change its **Element** to transmute it.
 - Turn on *Gravity* to see a gas stratify into an atmosphere.
 
