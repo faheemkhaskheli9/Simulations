@@ -1,6 +1,10 @@
 import { Simulation } from '../core/simulation.js';
 import { fmt, TAU } from '../core/math.js';
 import { pick } from '../core/serialize.js';
+import { BarnesHut } from '../core/barnes-hut.js';
+
+// Above this many massive bodies the Barnes–Hut tree beats the direct sum.
+const TREE_MIN = 64;
 
 // Units: length = AU, time = years, mass = solar masses  =>  G = 4π².
 export const G_SI_UNITS = 4 * Math.PI * Math.PI;
@@ -53,12 +57,13 @@ export class GravitySim extends Simulation {
         'Colliding bodies merge, conserving mass and momentum (inelastic).',
         'Test particles (galaxy stars, asteroids) feel gravity but exert none.',
         'An optional flat-rotation-curve halo stands in for dark matter.',
-        'Direct O(N²) sum between massive bodies.',
+        'Direct O(N²) sum for small systems; above 64 massive bodies a Barnes–Hut quadtree (opening angle θ) gives O(N log N) forces.',
       ],
       references: [
         'Hockney & Eastwood, Computer Simulation Using Particles (1988), leapfrog integration',
         'Chenciner & Montgomery (2000), the figure-eight three-body orbit',
         'Toomre & Toomre (1972), galactic bridges and tails',
+        'Barnes & Hut (1986), A hierarchical O(N log N) force-calculation algorithm, Nature 324',
       ],
     },
   };
@@ -72,6 +77,7 @@ export class GravitySim extends Simulation {
       { key: 'gScale', label: 'Gravity strength (× G)', type: 'range', min: 0, max: 5, step: 0.01, value: 1 },
       { key: 'softening', label: 'Softening (AU)', type: 'range', min: 0, max: 1, step: 0.001, value: 0.001 },
       { key: 'maxStep', label: 'Max integration step (yr)', type: 'range', min: 0.0001, max: 0.05, value: 0.002, log: true },
+      { key: 'theta', label: 'Tree opening angle θ (0 = exact)', type: 'range', min: 0, max: 1.2, step: 0.05, value: 0.6 },
       { key: 'haloV', label: 'Dark-matter halo speed (AU/yr)', type: 'range', min: 0, max: 80, step: 0.5, value: 0 },
       { key: 'merge', label: 'Merge on collision', type: 'checkbox', value: true },
       { key: 'collisionScale', label: 'Collision radius ×', type: 'range', min: 1, max: 500, value: 60, log: true },
@@ -86,11 +92,14 @@ export class GravitySim extends Simulation {
       { id: 'figure8', label: 'Three-body figure-eight' },
       { id: 'galaxy', label: 'Spiral galaxy (test stars)' },
       { id: 'galaxyCollision', label: 'Galaxy collision' },
+      { id: 'cluster', label: 'Star cluster (2000 self-gravitating stars)' },
       { id: 'lonelyStar', label: 'Lone star (launch your own planets)' },
       { id: 'empty', label: 'Empty space' },
     ];
     this.energyTool = { label: 'Heat (speed up)', negLabel: 'Cool (slow down)' };
     this.chartKeys = ['energy', 'bodies'];
+    this.tree = new BarnesHut();
+    this.acc = [0, 0];
     this.loadScenario('solar');
   }
 
@@ -124,6 +133,7 @@ export class GravitySim extends Simulation {
     super.loadScenario(id);
     this.bodies = [];
     this.params.haloV = 0;
+    for (const key of ['softening', 'merge', 'trails']) this.params[key] = this.paramDefs.find((d) => d.key === key).value;
     const rng = this.rng;
     rng.seed(42);
     const G = G_SI_UNITS;
@@ -187,6 +197,15 @@ export class GravitySim extends Simulation {
       this.makeGalaxy(-60, -15, 9, 2, 1e4, 900, 35, 1);
       this.makeGalaxy(60, 15, -9, -2, 6e3, 600, 28, -1);
       this.view = { x: -110, y: -80, w: 220, h: 160 };
+    } else if (id === 'cluster') {
+      // Crossing time ≈ √(a³ / GM) ≈ 18 yr for a = 200 AU and M ≈ 600 M☉.
+      this.params.yearsPerSecond = 5;
+      this.params.maxStep = 0.5;
+      this.params.softening = 1;
+      this.params.merge = false;
+      this.params.trails = false;
+      this.makeCluster(0, 0, 2000, 200, 1);
+      this.view = { x: -700, y: -700, w: 1400, h: 1400 };
     } else if (id === 'lonelyStar') {
       this.params.yearsPerSecond = 0.5;
       this.params.maxStep = 0.002;
@@ -215,6 +234,35 @@ export class GravitySim extends Simulation {
       }));
     }
     return core;
+  }
+
+  /**
+   * Plummer-sphere star cluster (projected into the plane) with n stars drawn
+   * from a 0.1–2 M☉ power law, in rough virial equilibrium.
+   */
+  makeCluster(cx, cy, n, a, virial) {
+    const rng = this.rng, G = G_SI_UNITS;
+    const stars = [];
+    let M = 0;
+    for (let i = 0; i < n; i++) {
+      const m = 0.1 * Math.pow(20, Math.pow(rng.next(), 2.5));
+      // Plummer radius from the inverse cumulative mass, capped to avoid far outliers.
+      const u = Math.min(0.98, rng.next());
+      const r = a / Math.sqrt(Math.pow(u, -2 / 3) - 1);
+      const th = rng.range(0, TAU);
+      stars.push({ m, x: cx + r * Math.cos(th), y: cy + r * Math.sin(th) });
+      M += m;
+    }
+    for (const [i, s] of stars.entries()) {
+      const r = Math.hypot(s.x - cx, s.y - cy);
+      // Isotropic random velocities with the local Plummer dispersion σ² = GM / (6√(r² + a²)).
+      const sigma = Math.sqrt((virial * G * M) / (6 * Math.sqrt(r * r + a * a)));
+      const hue = s.m > 1 ? 45 : s.m > 0.4 ? 25 : 10;
+      this.addBody(this.makeBody('redDwarf', s.x, s.y, rng.gaussian(0, sigma), rng.gaussian(0, sigma), {
+        name: `Star ${i + 1}`, m: s.m, color: `hsl(${hue},90%,${55 + 25 * Math.min(1, s.m / 2)}%)`, px: 1.4 + Math.min(2, s.m),
+      }));
+    }
+    this.fixMomentum();
   }
 
   fixMomentum() {
@@ -246,6 +294,39 @@ export class GravitySim extends Simulation {
     const bs = this.bodies, G = this.G, eps2 = this.params.softening ** 2;
     const massive = [];
     for (const b of bs) { b.ax = 0; b.ay = 0; if (b.m > 0) massive.push(b); }
+    const theta = this.params.theta;
+    if (theta > 0 && massive.length >= TREE_MIN) {
+      const tree = this.tree.build(massive), out = this.acc;
+      for (let i = 0; i < massive.length; i++) {
+        const b = massive[i];
+        tree.accel(b.x, b.y, i, G, eps2, theta, out);
+        b.ax = out[0]; b.ay = out[1];
+      }
+      for (const t of bs) {
+        if (t.m > 0) continue;
+        tree.accel(t.x, t.y, -1, G, eps2, theta, out);
+        t.ax = out[0]; t.ay = out[1];
+      }
+    } else {
+      this.directAcc(bs, massive, G, eps2);
+    }
+    // Optional isothermal dark-matter halo around the heaviest body: a = v₀²/r.
+    const v0 = this.params.haloV;
+    if (v0 > 0 && massive.length) {
+      const c = massive.reduce((p, q) => (q.m > p.m ? q : p));
+      for (const b of bs) {
+        if (b === c) continue;
+        const dx = c.x - b.x, dy = c.y - b.y;
+        const r2 = dx * dx + dy * dy + 1;
+        const k = (v0 * v0) / r2;
+        b.ax += dx * k; b.ay += dy * k;
+      }
+    }
+    this.accDirty = false;
+  }
+
+  /** Exact pairwise sum: massive bodies attract each other; test particles feel them. */
+  directAcc(bs, massive, G, eps2) {
     for (let i = 0; i < massive.length; i++) {
       const a = massive[i];
       for (let j = i + 1; j < massive.length; j++) {
@@ -266,19 +347,6 @@ export class GravitySim extends Simulation {
         t.ax += dx * inv; t.ay += dy * inv;
       }
     }
-    // Optional isothermal dark-matter halo around the heaviest body: a = v₀²/r.
-    const v0 = this.params.haloV;
-    if (v0 > 0 && massive.length) {
-      const c = massive.reduce((p, q) => (q.m > p.m ? q : p));
-      for (const b of bs) {
-        if (b === c) continue;
-        const dx = c.x - b.x, dy = c.y - b.y;
-        const r2 = dx * dx + dy * dy + 1;
-        const k = (v0 * v0) / r2;
-        b.ax += dx * k; b.ay += dy * k;
-      }
-    }
-    this.accDirty = false;
   }
 
   /** Advance simulated time by `simDt` years using kick-drift-kick leapfrog. */

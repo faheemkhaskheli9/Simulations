@@ -98,6 +98,27 @@ test('shared links restore parameters', async () => {
   await page.close();
 });
 
+test('teacher-mode links lock parameters across scenario changes', async () => {
+  const { page, errors } = await openPage('#gravity/solar?gScale=2&lock=gScale');
+  const row = page.locator('.param.locked');
+  assert.equal(await row.count(), 1);
+  assert.ok(await row.locator('input').isDisabled());
+  await page.selectOption('#scenario-select', 'binary');
+  assert.equal(await page.evaluate(() => app.sim.params.gScale), 2);
+  assert.match(await page.evaluate(() => location.hash), /lock=gScale/);
+  assert.deepEqual(errors, []);
+  await page.close();
+});
+
+test('star cluster runs on the Barnes–Hut tree', async () => {
+  const { page, errors } = await openPage('#gravity/cluster');
+  await page.waitForTimeout(800);
+  assert.equal(await page.evaluate(() => app.sim.bodies.length), 2000);
+  assert.ok(await page.evaluate(() => app.sim.tree.count > 1));
+  assert.deepEqual(errors, []);
+  await page.close();
+});
+
 test('statistics export as CSV', async () => {
   const { page } = await openPage('#epidemic/town');
   await page.waitForTimeout(1500);

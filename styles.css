@@ -84,6 +84,8 @@ button.danger { color: var(--danger); margin-top: 10px; width: 100%; }
 .param .param-head { display: flex; justify-content: space-between; }
 .param input[type="range"] { width: 100%; }
 .param select { width: 100%; margin-top: 4px; }
+.param.locked { opacity: 0.6; }
+.param.locked .param-name::after { content: ' 🔒'; }
 .param-value { color: var(--accent); font-variant-numeric: tabular-nums; }
 .check { display: flex; gap: 6px; align-items: center; }
 

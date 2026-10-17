@@ -40,6 +40,10 @@ Other shortcuts: `Space` play/pause · `.` single step · `f` fit view · `Esc` 
 Links look like `#weather/storm?sun=2&wind=8`, and you can edit them by hand. A saved file
 captures *everything*; a link captures the setup, and the scenario replays the same way.
 
+**Teacher mode.** Add `lock=` to a link to freeze parameters for learners, for example
+`#climate/present?co2=560&lock=co2` or `lock=all`. Locked sliders show a 🔒 and stay at the
+link's value even when the scenario changes; everything else stays interactive.
+
 On touch screens, pinch with two fingers to zoom and drag with two fingers to pan.
 
 ## Lessons and challenges

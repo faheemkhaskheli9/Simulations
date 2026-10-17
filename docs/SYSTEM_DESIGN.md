@@ -63,6 +63,7 @@ flowchart LR
 | `src/core/simulation.js` | `Simulation` base class and default contract implementations |
 | `src/core/random.js` | Seedable PRNG (mulberry32) with uniform, gaussian, pick, chance |
 | `src/core/spatial-hash.js` | Uniform grid for O(n) neighbour queries |
+| `src/core/barnes-hut.js` | Quadtree for O(N log N) gravitational forces |
 | `src/core/math.js` | clamp/lerp, black-body colour, number formatting |
 | `src/sims/*.js` | Simulation modules; `index.js` is the registry |
 | `server.js` | Dependency-free static dev server with path-traversal guard |
@@ -168,10 +169,10 @@ Full authoring guidance is in the [Module Guide](MODULE_GUIDE.md).
 - **State:** `bodies[] {x, y, vx, vy, ax, ay, m, radius, kind, trail}`; `m = 0` marks a *test particle*.
 - **Units:** AU, years, M☉, so G = 4π².
 - **Integrator:** kick-drift-kick leapfrog; substeps `n = ceil(Δt / maxStep)`, capped at 500.
-- **Forces:** O(M²) between massive bodies plus O(N·M) for test particles, with Plummer softening ε; optional isothermal halo `a = v₀²/r` around the heaviest body.
+- **Forces:** exact O(M²) sum between massive bodies plus O(N·M) for test particles, with Plummer softening ε. From 64 massive bodies on, a Barnes–Hut quadtree (`core/barnes-hut.js`, flat typed arrays, opening angle θ, default 0.6, ~2 % mean force error) brings this to O(N log M); θ = 0 forces the exact sum. Optional isothermal halo `a = v₀²/r` around the heaviest body.
 - **Collisions:** perfectly inelastic mergers (conserve mass and momentum); test particles absorbed.
 - **Derived:** total energy, osculating orbital elements (a, e, period) for the inspector.
-- **Scaling path:** Barnes–Hut quadtree, then GPU, for N massive bodies ≫ 100.
+- **Scaling path:** move the tree walk into a Web Worker, then GPU, for N massive bodies ≫ 10⁴.
 
 ### 5.2 Stellar Life Cycles (`stars.js`, `stellar-model.js`)
 - **Pure model** `evolve(M, t)`: main-sequence lifetime `t_ms = 10⁴ · M^-2.5` Myr; piecewise mass–luminosity; mass–radius; giant or supergiant expansion; remnant by mass (WD < 8 M☉ < NS < 25 M☉ < BH); Mestel-like white-dwarf cooling; `T_eff = 5778 · (L/R²)^¼`.
