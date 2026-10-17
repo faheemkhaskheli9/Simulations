@@ -194,8 +194,12 @@ export class GravitySim extends Simulation {
     } else if (id === 'galaxyCollision') {
       this.params.yearsPerSecond = 3;
       this.params.maxStep = 0.01;
-      this.makeGalaxy(-60, -15, 9, 2, 1e4, 900, 35, 1);
-      this.makeGalaxy(60, 15, -9, -2, 6e3, 600, 28, -1);
+      // A grazing (not head-on) encounter raises tidal tails. The cores are
+      // softened so their close passage stays resolvable at this time step.
+      this.params.softening = 1;
+      this.makeGalaxy(-60, -22, 9, 0, 1e4, 900, 35, 1);
+      this.makeGalaxy(60, 22, -9, 0, 6e3, 600, 28, -1);
+      this.fixMomentum(); // centre-of-momentum frame, so the merger stays in view
       this.view = { x: -110, y: -80, w: 220, h: 160 };
     } else if (id === 'cluster') {
       // Crossing time ≈ √(a³ / GM) ≈ 18 yr for a = 200 AU and M ≈ 600 M☉.
@@ -219,7 +223,9 @@ export class GravitySim extends Simulation {
 
   makeGalaxy(cx, cy, vx, vy, M, n, R, spin) {
     const G = G_SI_UNITS;
-    const core = this.addBody(this.makeBody('blackHole', cx, cy, vx, vy, { name: 'Galactic core', m: M, px: 6 }));
+    // The core stands for a supermassive black hole plus dense bulge: give it a
+    // finite size so two cores that meet merge instead of slingshotting.
+    const core = this.addBody(this.makeBody('blackHole', cx, cy, vx, vy, { name: 'Galactic core', m: M, px: 6, radius: 0.05 }));
     for (let i = 0; i < n; i++) {
       // Exponential-ish disk with two spiral arms seeded by angle perturbation.
       const r = 4 + R * Math.pow(this.rng.next(), 1.3);
