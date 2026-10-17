@@ -31,8 +31,9 @@ npm test           # runs the physics, contract, save/load and lesson tests (Nod
 ## Lessons and challenges
 
 Press **🎓 Learn** for guided lessons (the greenhouse effect, flattening the curve, light
-from atoms, energy conservation, osmosis, predator–prey) and challenges (stop an outbreak
-with under 30 % vaccinated, escape Snowball Earth, transmute carbon-14). Steps advance by
+from atoms, energy conservation, osmosis, predator–prey, Kepler's laws, the lives of stars,
+states of matter, how clouds form) and challenges (stop an outbreak with under 30 %
+vaccinated, escape Snowball Earth, transmute carbon-14, launch a planet into a circular orbit). Steps advance by
 themselves when you do what they ask. Link to one with `#learn/<id>`, e.g. `#learn/osmosis`.
 
 ## Interaction model

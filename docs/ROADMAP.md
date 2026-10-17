@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Last updated** | 2026-10-16 |
+| **Last updated** | 2026-10-17 |
 | **Related** | [PRD §10](PRD.md#10-release-plan) · [System Design §12](SYSTEM_DESIGN.md#12-evolution-and-extension-points) |
 
 The long-term goal is to cover real-world phenomena at **every scale**. The product grows
@@ -56,9 +56,10 @@ along two tracks: the **platform** (persistence, performance, 3D, education) and
 - [ ] Weather: 2D horizontal (map) mode, ice microphysics, lightning
 
 ### M5 Education (P2)
-- [x] Guided lessons that script scenarios, prompts and checkpoints (`src/lessons/`; 6 lessons)
-- [x] Challenges with win and lose conditions (3 so far: ring vaccination, Snowball Earth, transmuting carbon)
-- [ ] Lessons for the remaining modules (gravity, stars, atoms, weather) and more challenges ("put a planet in a stable orbit")
+- [x] Guided lessons that script scenarios, prompts and checkpoints (`src/lessons/`; 10 lessons, at least one per module)
+- [x] Challenges with win and lose conditions (4 so far: ring vaccination, Snowball Earth, transmuting carbon, launching a planet into a circular orbit)
+- [x] Lessons for the remaining modules (gravity, stars, atoms, weather) and a "put a planet in a stable orbit" challenge
+- [ ] More challenges (balance an ecosystem, make a thunderstorm, build a molecule)
 - [ ] Teacher mode: lock parameters, presenter view
 - [x] Per-module "Model & assumptions" panel with references
 
