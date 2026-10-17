@@ -134,3 +134,18 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
     overflow: auto;
   }
 }
+
+/* Welcome screen */
+#home-dialog { width: min(1000px, calc(100vw - 32px)); }
+.home-actions { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.home-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; margin-top: 14px; }
+.home-tag { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); }
+.home-card {
+  display: flex; flex-direction: column; align-items: stretch; gap: 6px; text-align: left;
+  padding: 8px; background: var(--panel-2); border-radius: 10px; min-width: 0;
+}
+.home-card:hover, .home-card:focus-visible { border-color: var(--accent); transform: translateY(-1px); }
+.home-card b { font-size: 14px; }
+.home-card .small { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.home-thumb { width: 100%; aspect-ratio: 28 / 15; border-radius: 6px; background: #05070d; }

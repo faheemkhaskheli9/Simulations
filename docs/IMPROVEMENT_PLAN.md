@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | In progress (see the status column) |
+| **Status** | Complete: all items implemented and verified |
 | **Related** | [Roadmap](ROADMAP.md) · [TRD](TRD.md) · [Test Plan](TEST_PLAN.md) |
 
 ## How this plan was made
@@ -36,15 +36,32 @@ fix and how it is verified.
 
 | # | Finding | Fix | Verified by | Status |
 |---|---|---|---|---|
-| C1 | **The chart is a thin sliver** at the left for the first 100 s (it reserves room for 400 samples) and has no scale. | The chart stretches whatever has been recorded across the full width, labels the time span, and shows each series' range. | Browser screenshots; unit test of the layout maths. | Planned |
-| C2 | **First-time visitors land in one simulation** with no overview of the other nine or of the lessons. | A *Welcome* screen with a card for every simulation and a link to the lessons, shown on the first visit and from a new **⌂ Home** button. | Browser test: the welcome screen opens and a card starts its simulation. | Planned |
+| C1 | **The chart is a thin sliver** at the left for the first 100 s (it reserves room for 400 samples) and has no scale. | The chart stretches whatever has been recorded across the full width, labels the time span, and shows each series' range. | Browser screenshots; unit test of the layout maths. | ✅ Done |
+| C2 | **First-time visitors land in one simulation** with no overview of the other nine or of the lessons. | A *Welcome* screen with a card for every simulation and a link to the lessons, shown on the first visit and from a new **⌂ Home** button. | Browser test: the welcome screen opens and a card starts its simulation. | ✅ Done |
 
 ## D. Keeping it fixed
 
 | # | Item | Status |
 |---|---|---|
-| D1 | `tests/soak.test.js` runs **every scenario of every simulation** for several seconds and checks that all statistics stay finite and that the scenario-specific invariants above hold. Future regressions of this kind fail the test suite. | Planned |
-| D2 | Regenerate the [Reference](REFERENCE.md) and the User Guide screenshots, and update the guide, Roadmap and TRD. | Planned |
+| D1 | `tests/soak.test.js` runs **every scenario of every simulation** for several seconds and checks that all statistics stay finite and that the scenario-specific invariants above hold. Future regressions of this kind fail the test suite. | ✅ Done |
+| D2 | Regenerate the [Reference](REFERENCE.md) and the User Guide screenshots, and update the guide, Roadmap and TRD. | ✅ Done |
+
+## Results
+
+| Measure | Before | After |
+|---|---|---|
+| Moon's distance from Earth after 1 year (Earth & Moon) | merged into Earth | 0.0025–0.0026 AU (real: 0.0024–0.0027) |
+| Uranium-238 decay chain | α only, down to osmium; ion charge −11 | α and β⁻ through Ra-226, Rn-222, Pb-210 to **Pb-206**; charge ≥ −1 |
+| Predators appearing in "Prey only" over 60 s | 4 | 0 |
+| Diffusion-demo cell volume over 60 s | up to 164 % | 94–101 % |
+| Resting cell membrane potential | drifting with K⁺ leak | −55 to −77 mV, held by the membrane charge |
+| ATP after 60 s (respiration / neuron) | 57 % / 24 % of start | 116 % / 61 % |
+| Endemic scenario after 3 years | disease extinct | recurring waves |
+| Balanced ecosystem, 10 years, no immigration | 0 of 5 seeds survive | **10 of 10** seeds survive |
+| Arctic ice edge at 280 / 420 / 560 ppm | 76° / none / none | 71° / 79° / 86° |
+| Star-cluster energy drift over 300 years | 24 % | 1.7 % |
+| Chart on a fresh scenario | a sliver at the left edge, no scale | full width, current value, range and time span |
+| Unit tests | 121 | 195 (incl. 60 soak tests and 13 regression tests) |
 
 ## Out of scope for this round
 

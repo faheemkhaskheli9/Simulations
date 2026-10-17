@@ -83,14 +83,18 @@ npm run test:e2e             # real-browser tests
 | `persistence.test.js` | share links round-trip; link parameters typed, clamped and filtered | FT-24 |
 | | diffParams, CSV escaping | FT-27 |
 | | undo/redo stack order and limit | FT-26 |
+| `regressions.test.js` | one test per audit finding: Moon stays in orbit; uranium series ends at Pb-206 with a sane charge; no foreign immigrants; cells keep volume, voltage and ATP; K⁺ held by the voltage; endemic waves return; ecosystem persists 10 years without immigration (3 seeds); Arctic ice today and gradual retreat; cluster energy drift < 3 % | [Improvement plan](IMPROVEMENT_PLAN.md) |
+| `soak.test.js` | **every scenario of every simulation** runs for several seconds: statistics and the whole saved state stay finite, the clock advances, and the world round-trips through save/load | RR-1, MQ-6 |
+| `chart.test.js`, `home.test.js` | chart layout fills the width and each series' range; the welcome screen opens only on a plain first visit | C1, C2 |
 | `reference.test.js` | `docs/REFERENCE.md` is identical to what the code generates (docs can't go stale) | MQ |
 | `lessons.test.js` | every lesson references a real module, scenario and parameters, and is **played through to completion** with a scripted solution | M5 |
 | | challenges fail when their rule is broken (and when the learner does nothing: outbreak spreads, predators starve; the molecule kit never assembles itself); manual steps wait for Next | M5 |
 | `e2e/app.e2e.mjs` | per module: every tool in the real UI with no console errors | FT-13, RR-* |
+| | welcome screen: one card and live thumbnail per simulation, opens a simulation, can be turned off | FT-28 |
 | | undo/redo an added object; save → load a file; shared link parameters; CSV download | FT-24…27 |
 | | Model & assumptions dialog; lesson catalogue → lesson advancing on real clicks; `#learn/<id>` links; completion stored | M5 |
 
-Current result: **121 unit tests and 19 browser tests, all passing.**
+Current result: **195 unit tests and 20 browser tests, all passing.**
 
 ## 4. Browser smoke test
 

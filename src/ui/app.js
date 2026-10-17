@@ -3,6 +3,7 @@ import { Chart } from './chart.js';
 import { fmt } from '../core/math.js';
 import { History } from './history.js';
 import { LessonPanel } from './lesson-panel.js';
+import { HomeScreen } from './home.js';
 import { LESSONS } from '../lessons/index.js';
 import { buildHash, coerceParams, diffParams, download, formatLock, parseHash, parseLock, toCSV } from './persistence.js';
 
@@ -48,11 +49,13 @@ export class App {
     this.locks = {}; // teacher mode: parameter key -> value held fixed
     this.buildChrome();
     this.lessons = new LessonPanel(this, LESSONS);
+    this.home = new HomeScreen(this);
     this.bindInput();
     window.addEventListener('resize', () => this.resize());
     window.addEventListener('hashchange', () => this.routeFromHash());
     this.resize();
     this.routeFromHash();
+    this.home.openIfFirstVisit();
     requestAnimationFrame((t) => this.frame(t));
   }
 
@@ -355,7 +358,7 @@ export class App {
     this.chart.reset(this.sim.chartKeys.map((k) => {
       const s = stats.find((x) => x.key === k);
       return { key: k, label: s?.label ?? k, color: s?.color };
-    }));
+    }), this.sim.timeUnit);
   }
 
   fitView() {

@@ -49,8 +49,13 @@ also works without a network connection.
 
 **Your first minute.**
 
-1. Pick a simulation in the first drop-down at the top (e.g. *Gravity & Orbits*).
-2. Pick a scenario in the second drop-down (e.g. *Solar System*). It starts running.
+![The welcome screen with a live thumbnail of every simulation](images/welcome.jpg)
+
+1. On your first visit the **welcome screen** shows every simulation with a live
+   thumbnail. Click one to open it, or press **🎓 Start a guided lesson**. Untick *Show
+   this screen at startup* to skip it next time; **⌂ Home** in the top bar brings it back.
+2. To switch later, use the drop-downs at the top: the first picks a simulation, the
+   second a scenario (e.g. *Solar System*). The scenario starts running.
 3. Click something with the **Inspect** tool to see what it is, then try changing a
    number in the Inspector.
 4. Press **🎓 Learn** for a guided lesson.
@@ -83,6 +88,7 @@ running, its card appears at the top of the right panel.
 
 | Control | What it does |
 |---|---|
+| **⌂ Home** | Open the welcome screen: every simulation with a live thumbnail, and the lessons |
 | **Simulation** drop-down | Switch between the ten simulations, grouped by field (Space, Matter, Classical, Earth, Life) |
 | **Scenario** drop-down | Load a ready-made setup, such as *Solar System* or *Thunderstorm* |
 | **▶ Play / ❚❚ Pause** | Start or stop time (`Space`) |
@@ -202,9 +208,11 @@ a second: total energy, temperature, populations, cloud cover, membrane voltage,
 element and isotope, and so on.
 
 **The chart** under the world plots two to four key statistics over time. Each line is
-scaled to its own range so that different units fit together, so read exact values from
-the legend above it. The chart shows the last 100 seconds of running time (it pauses with the simulation).
-Use **Export CSV** to keep the full history.
+scaled to its own range so that different units fit together. The legend above shows each
+series' current value and, in brackets, the lowest and highest value on screen. The
+footer gives the span of simulated time shown (up to the last 100 seconds of running
+time, stretched across the full width from the start). The chart pauses with the
+simulation. Use **Export CSV** to keep the full history.
 
 ---
 
@@ -480,7 +488,9 @@ natural selection changes the average genes over generations (see the statistics
   be faster and smaller.
 - Inspect an animal and edit its genes, or press *Clone this animal* to spread a mutant.
 - Raise the temperature to 40 °C, or cause a drought, and see who survives.
-- Turn off *Immigration* and see whether both species can survive on their own.
+- Turn off *Immigration*: in the balanced scenario both species persist on their own, in
+  cycles. In *Fertile islands* or *Fast predator invasion* they don't; can you rescue them
+  (that is the *Balance an ecosystem* challenge)?
 
 ### Epidemic Spread · Life
 
@@ -496,7 +506,9 @@ quarantine, vaccination and waning immunity can all be tested.
 **Try this**
 - Compare the chart for *Town outbreak*, *Social distancing* and *60 % vaccinated*.
 - Turn on *Quarantine symptomatic*, or vaccinate a ring around the outbreak with the brush.
-- *Waning immunity*: the disease never quite goes away.
+- *Waning immunity*: immunity fades and a few *imported cases* arrive from outside, so
+  the disease returns in waves (endemic). Set *Imported cases* to 0 and see whether it
+  dies out.
 
 ---
 

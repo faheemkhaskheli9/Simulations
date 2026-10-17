@@ -180,3 +180,35 @@ test('lessons: #learn/<id> links open a lesson; manual steps finish with Next', 
   assert.deepEqual(errors, []);
   await page.close();
 });
+
+test('the welcome screen lists every simulation with a live thumbnail and opens one', async () => {
+  const page = await browser.newPage({ viewport: { width: 1400, height: 850 } });
+  await page.goto(BASE);
+  await page.waitForSelector('#home-dialog[open]');
+  assert.equal(await page.locator('.home-card').count(), SIMS.length);
+  // Thumbnails are real renders: the last one drawn must not be a flat colour.
+  await page.waitForFunction(() => document.querySelectorAll('.home-thumb').length > 0);
+  await page.waitForTimeout(1500);
+  const varied = await page.evaluate(() => {
+    const c = document.querySelectorAll('.home-thumb')[0];
+    const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+    const seen = new Set();
+    for (let i = 0; i < d.length; i += 4 * 97) seen.add(`${d[i]},${d[i + 1]},${d[i + 2]}`);
+    return seen.size;
+  });
+  assert.ok(varied > 5, 'thumbnail has content');
+  await page.locator('.home-card', { hasText: 'Cell Biology' }).click();
+  await page.waitForFunction(() => window.app.sim.meta.id === 'cell');
+  assert.equal(await page.locator('#home-dialog[open]').count(), 0);
+  // Turning it off keeps it closed on the next visit; the Home button still opens it.
+  await page.click('#home');
+  await page.locator('#home-dialog input[type=checkbox]').uncheck();
+  await page.keyboard.press('Escape');
+  await page.goto(`${BASE}?again`);
+  await page.waitForFunction(() => window.app?.sim);
+  await page.waitForTimeout(300);
+  assert.equal(await page.locator('#home-dialog[open]').count(), 0);
+  await page.click('#home');
+  await page.waitForSelector('#home-dialog[open]');
+  await page.close();
+});

@@ -74,12 +74,12 @@ along two tracks: the **platform** (persistence, performance, 3D, education) and
 
 | Area | Limitation | Planned fix |
 |---|---|---|
-| Ecosystem | Predators tend to overshoot; immigration keeps species alive | More realistic functional responses, refuges, sexual reproduction |
+| Ecosystem | Asexual reproduction; harsher scenarios (islands, invasion) still need immigration | Sexual reproduction, spatial refuges, more trophic levels |
 | Weather | ~20–25 ms/frame; collocated grid; warm-rain only | Worker/WebGPU, staggered grid, ice phase |
 | Atoms | 2D, no angle potentials beyond 1–3 repulsion; simplified bond chemistry | Angle terms, reaction energetics |
 | Stars | Analytic tracks, no binaries | Binary evolution, mass transfer |
 | Gravity | Barnes–Hut is monopole-only (~2 % force error at θ = 0.6) and runs on the main thread; mergers are still O(N²) | Quadrupole terms, Web Worker |
-| Climate | 1D zonal model; small polar ice caps are unstable, so Arctic ice vanishes abruptly near 420 ppm | Land/ocean split, sea-ice thermodynamics |
+| Climate | 1D zonal model; ice cover is a smooth function of temperature rather than true sea-ice physics | Land/ocean split, sea-ice thermodynamics |
 | Atomic Structure | Screened hydrogen-like energies are only accurate for hydrogen and hydrogen-like ions; stability rule misses some odd-odd nuclei (e.g. Co-60) | Tabulated levels and nuclide data |
 | Cell Biology | Each particle stands for many molecules; time is accelerated; no cell division yet | Mitosis, enzyme kinetics |
 | Mechanics | Circles only; no friction model beyond rolling damping | Rigid polygons, Coulomb friction |

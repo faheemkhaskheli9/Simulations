@@ -99,6 +99,13 @@ const SHOTS = {
     await clearMarks(page);
   },
 
+  async welcome(page) {
+    await page.goto(BASE);
+    await page.waitForSelector('#home-dialog[open]');
+    await page.waitForTimeout(4000); // thumbnails render one per frame
+    await save(page, 'welcome');
+  },
+
   async topbar(page) {
     await open(page, '#gravity/solar', 800);
     await save(page, 'topbar', await clipOf(page, '.topbar'));

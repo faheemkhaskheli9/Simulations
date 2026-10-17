@@ -1,6 +1,6 @@
 // Offline support. Network-first so a deploy is picked up on the next load; the cache is
 // only a fallback, filled as the app fetches its files (every module loads at startup).
-const CACHE = 'simulations-v1';
+const CACHE = 'simulations-v2';
 const SHELL = ['./', 'index.html', 'styles.css', 'src/main.js', 'manifest.webmanifest', 'icon.svg'];
 
 self.addEventListener('install', (e) => {

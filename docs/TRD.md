@@ -74,6 +74,8 @@ suite. Out of scope for v1: back-end services, accounts, persistence, analytics.
 | FT-25 | Save and load full world state as JSON; loading a save for another simulation switches to it | T (e2e) | Met |
 | FT-26 | Undo/redo (≥ 40 steps) of every user intervention: tools, inspector edits and deletions | T (e2e) | Met |
 | FT-27 | Export recorded statistics (up to 20 000 samples) as CSV | T (e2e) | Met |
+| FT-28 | A welcome screen lists every simulation with a live thumbnail on a plain first visit (not on deep links), can be turned off, and reopens from ⌂ Home | T (unit + e2e) | Met |
+| FT-29 | The chart fills its width from the first samples and shows each series' current value, on-screen range and the time span | T | Met |
 
 ## 5. Scientific model requirements
 
@@ -110,6 +112,14 @@ Each module must reproduce the listed reference behaviour.
 | SM-27 | Cell | Resting membrane potential between −50 and −90 mV (GHK) | T | Met |
 | SM-28 | Cell | Isotonic cell keeps its size; hypotonic swells and bursts; hypertonic shrinks | T | Met |
 | SM-29 | Cell | O₂ crosses the membrane freely; glucose only via transporters; mitochondria make ATP and CO₂; without ATP the Na⁺ gradient runs down | T | Met |
+| SM-30 | Gravity | The Moon stays between 0.0023 and 0.0029 AU of Earth for a year in both Earth–Moon scenarios | T | Met |
+| SM-31 | Atomic Structure | The U-238 series alternates α and β⁻ decays through Ra-226, Rn-222 and Pb-210 to Pb-206; atoms keep at most one surplus electron | T | Met |
+| SM-32 | Ecosystem | The balanced scenario sustains both species for 10 years without immigration (3 seeds) | T | Met |
+| SM-33 | Climate | Today's Earth keeps polar ice; the ice edge retreats gradually from 280 to 420 to 560 ppm | T | Met |
+| SM-34 | Cell | Healthy cells keep volume within ±20 %, a −45 to −95 mV potential and ≥ 50 % of their ATP for 60 s | T | Met |
+| SM-35 | Epidemic | With waning immunity and imported cases the disease returns after dying out | T | Met |
+| SM-36 | Gravity | The 2 000-star cluster's energy drifts < 3 % over 60 years | T | Met |
+| RR-5 | All | Every scenario of every simulation stays finite and round-trips through save/load (soak test) | T | Met |
 
 ## 6. Performance requirements
 
@@ -167,7 +177,7 @@ Reference machine: mid-range laptop (4-core, integrated GPU), Chromium, default 
 
 | PRD | TRD |
 |---|---|
-| G1 Breadth, FR-30…39 | SM-1…SM-29 |
+| G1 Breadth, FR-30…39 | SM-1…SM-36 |
 | G2 Interactivity, FR-10…15 | AR-1, FT-10…15 |
 | G3 Experimentation, FR-20…22 | FT-20…22 |
 | G4 Plausibility | SM-*, RR-1 |
