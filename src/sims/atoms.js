@@ -92,6 +92,7 @@ export class AtomsSim extends Simulation {
       { id: 'water', label: 'Hydrogen + oxygen → water' },
       { id: 'organic', label: 'Carbon + hydrogen soup' },
       { id: 'mixture', label: 'Noble-gas mixture with gravity' },
+      { id: 'kit', label: 'Molecule kit (build by hand)' },
     ];
     this.energyTool = { label: 'Heat', negLabel: 'Cool' };
     this.chartKeys = ['T', 'pressure'];
@@ -151,6 +152,11 @@ export class AtomsSim extends Simulation {
       P.gravity = 4;
       fill(['Ar'], 120);
       fill(['Ne'], 120);
+    } else if (id === 'kit') {
+      // A few cold, well-separated atoms to assemble with the Move tool.
+      P.targetT = 5;
+      for (const [el, x] of [['C', 15], ['N', 30], ['O', 45]]) this.atoms.push(this.makeAtom(el, x, 20));
+      for (let i = 0; i < 14; i++) this.atoms.push(this.makeAtom('H', 6 + i * 4, i % 2 ? 34 : 6));
     }
   }
 

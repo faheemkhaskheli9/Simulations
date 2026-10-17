@@ -3,6 +3,7 @@
 // to be completable.
 
 import { orbitalElements } from '../sims/gravity.js';
+import { AtomsSim } from '../sims/atoms.js';
 
 const total = (ctx) => ['S', 'E', 'I', 'R', 'V', 'D'].reduce((n, k) => n + ctx.stat(k), 0);
 const body = (ctx, name) => ctx.sim.bodies.find((b) => b.name === name);
@@ -14,6 +15,8 @@ const orbit = (ctx, b) => {
 };
 /** Rocky planets the learner added (scenarios name theirs, added ones are numbered). */
 const addedPlanets = (ctx) => ctx.sim.bodies.filter((b) => b.kind === 'planet' && /^Rocky planet \d+$/.test(b.name));
+/** Elemental make-up of every atom in the box, e.g. "CH₁₄NO". */
+const composition = (ctx) => AtomsSim.formula(ctx.sim.atoms);
 
 export const LESSONS = [
   {
@@ -370,6 +373,69 @@ export const LESSONS = [
       if (c.params.gScale !== c.start.params.gScale) return 'Gravity strength may not change.';
       if (!c.sim.bodies.some((b) => b.name === 'Sun')) return 'The star is gone.';
       return null;
+    },
+  },
+  {
+    id: 'balance-ecosystem',
+    type: 'challenge',
+    title: 'Balance an ecosystem',
+    summary: 'Keep both foxes and rabbits alive for three years with no animals arriving from outside.',
+    sim: 'ecosystem',
+    scenario: 'balanced',
+    params: { immigration: false },
+    steps: [
+      {
+        text: 'Left alone, the foxes (red) eat too many rabbits and then starve. Keep both species alive for 3 years (1,095 days). You may change parameters, plants and food, and remove animals, but not add any.',
+        hint: 'Watch the Carnivores count. When only a few foxes remain, feed them with the Energy tool to carry them through the lean time until the rabbits recover. Raising Predator energy gain makes them too good at hunting.',
+        check: (c) => c.elapsed >= 1095,
+      },
+    ],
+    fail: (c) => {
+      if (c.params.immigration) return 'Immigration must stay off: the ecosystem has to survive on its own.';
+      c.memo.founders ??= new Set(c.sim.animals.map((a) => a.id));
+      if (c.sim.animals.some((a) => a.generation === 1 && !c.memo.founders.has(a.id))) return 'Animals may not be added: only births count.';
+      if (c.stat('carnivores') === 0) return 'The carnivores died out.';
+      if (c.stat('herbivores') === 0) return 'The herbivores died out.';
+      return null;
+    },
+  },
+  {
+    id: 'make-thunderstorm',
+    type: 'challenge',
+    title: 'Make a thunderstorm',
+    summary: 'Turn a fair-weather sky into a downpour before the Sun sets.',
+    sim: 'weather',
+    scenario: 'sunny',
+    steps: [
+      {
+        text: 'Fair-weather cumulus clouds only drizzle. Build a thunderstorm: a rain rate of at least 5 mm/h with an updraft of at least 10 m/s, before sunset (18:00). Do not switch scenario.',
+        hint: 'Storms need air that keeps rising once it starts. Lower the Lapse stability so warm air stays buoyant all the way up, and add moist air for the clouds to feed on.',
+        check: (c) => c.stat('rainRate') >= 5 && c.stat('updraft') >= 10,
+      },
+    ],
+    fail: (c) => {
+      if (c.sim.scenarioId !== 'sunny') return 'The scenario changed: build the storm from the sunny day.';
+      if (c.sim.time >= 18 * 3600) return 'The Sun has set without a storm.';
+      return null;
+    },
+  },
+  {
+    id: 'build-molecules',
+    type: 'challenge',
+    title: 'Build molecules',
+    summary: 'Assemble water, ammonia and methane from loose atoms by hand.',
+    sim: 'atoms',
+    scenario: 'kit',
+    steps: [
+      {
+        text: 'One carbon (grey), one nitrogen (blue), one oxygen (red) and 14 hydrogen atoms float in a cold box. Use the Move tool to build one each of water (H₂O), ammonia (H₃N) and methane (CH₄) at the same time. Atoms may not be added, removed or changed.',
+        hint: 'An atom bonds as many times as its valence: O takes 2 hydrogens, N 3 and C 4. Drop each hydrogen right next to the heavy atom. If two hydrogens pair up as H₂, use “Break all bonds” in the inspector.',
+        check: (c) => ['H₂O', 'H₃N', 'CH₄'].every((f) => c.sim.moleculeCensus()[f] >= 1),
+      },
+    ],
+    fail: (c) => {
+      c.memo.atoms ??= composition(c);
+      return composition(c) === c.memo.atoms ? null : 'The set of atoms changed: build with the ones you were given.';
     },
   },
 ];

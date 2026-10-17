@@ -33,8 +33,9 @@ npm test           # runs the physics, contract, save/load and lesson tests (Nod
 Press **🎓 Learn** for guided lessons (the greenhouse effect, flattening the curve, light
 from atoms, energy conservation, osmosis, predator–prey, Kepler's laws, the lives of stars,
 states of matter, how clouds form) and challenges (stop an outbreak with under 30 %
-vaccinated, escape Snowball Earth, transmute carbon-14, launch a planet into a circular orbit). Steps advance by
-themselves when you do what they ask. Link to one with `#learn/<id>`, e.g. `#learn/osmosis`.
+vaccinated, escape Snowball Earth, transmute carbon-14, launch a planet into a circular orbit,
+keep foxes and rabbits alive for three years, build a thunderstorm before sunset, assemble water,
+ammonia and methane by hand). Steps advance by themselves when you do what they ask. Link to one with `#learn/<id>`, e.g. `#learn/osmosis`.
 
 ## Interaction model
 
