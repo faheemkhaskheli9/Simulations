@@ -11,5 +11,9 @@
 | [ROADMAP.md](ROADMAP.md) | Everyone | Milestones, future modules, known limitations |
 | [USER_GUIDE.md](USER_GUIDE.md) | Users, educators | Illustrated guide: the screen, every tool, saving and sharing, lessons, teacher mode, each simulation with experiments to try, shortcuts, troubleshooting, glossary |
 | [REFERENCE.md](REFERENCE.md) | Everyone | Generated from the code: every simulation's scenarios, parameters (with link keys), addable objects, statistics, equations and assumptions, and all lessons |
+| [world/PLAN.md](world/PLAN.md) | Everyone | Plan for the single 3D world that contains every simulation: phases, timeline, first tasks |
+| [world/PRD.md](world/PRD.md) | Product, stakeholders | 3D world: goals, world map, experience, requirements, metrics |
+| [world/TRD.md](world/TRD.md) | Engineering | 3D world: measurable technical requirements with verification |
+| [world/SYSTEM_DESIGN.md](world/SYSTEM_DESIGN.md) | Engineering | 3D world: engine, nested places, sites, scheduler, couplings, persistence |
 | [adr/](adr/) | Engineering | Architecture Decision Records |
 | [../CONTRIBUTING.md](../CONTRIBUTING.md) | Contributors | Workflow, conventions and review checklist |

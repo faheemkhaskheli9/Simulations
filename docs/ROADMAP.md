@@ -66,6 +66,9 @@ along two tracks: the **platform** (persistence, performance, 3D, education) and
 - [x] Per-module "Model & assumptions" panel with references
 
 ### M6 Multi-scale worlds (P3)
+
+Planned in detail as **Simulations World**, one 3D world containing every simulation: see the [Plan](world/PLAN.md), [PRD](world/PRD.md), [TRD](world/TRD.md) and [System Design](world/SYSTEM_DESIGN.md).
+
 - [ ] Composite simulations that couple modules (weather drives the ecosystem; stellar
       flux drives planetary climate)
 - [ ] Zoom-through-scales navigation (galaxy → star → planet → biosphere → cell → atom)

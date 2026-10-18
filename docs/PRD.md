@@ -189,7 +189,7 @@ Detailed and measurable versions are in the [TRD](TRD.md).
 
 ## 12. Open questions
 
-1. Should the long-term product move to 3D by default, or keep 2D as primary with 3D for space only?
+1. Should the long-term product move to 3D by default, or keep 2D as primary with 3D for space only? Proposed answer: a single 3D world as a second way in, with 2D kept; see the [World PRD](world/PRD.md).
 2. Is a guided "lesson" layer in scope for v2, or should it be a separate product?
 3. What licence and contribution model will apply to community modules?
 4. ~~Is there a need for offline / installable (PWA) mode?~~ Resolved: the app ships a web manifest and a network-first service worker, so it installs and works offline.
