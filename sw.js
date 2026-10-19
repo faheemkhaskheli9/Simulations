@@ -1,10 +1,35 @@
 // Offline support. Network-first so a deploy is picked up on the next load; the cache is
 // only a fallback, filled as the app fetches its files (every module loads at startup).
-const CACHE = 'simulations-v2';
+const CACHE = 'simulations-v3';
 const SHELL = ['./', 'index.html', 'styles.css', 'src/main.js', 'manifest.webmanifest', 'icon.svg'];
+// The 3D world loads on demand, so its files are cached up front to work offline (W-TC-8).
+const WORLD = [
+  'src/world/couplings.js',
+  'src/world/engine/camera3d.js',
+  'src/world/engine/colors.js',
+  'src/world/engine/gl.js',
+  'src/world/engine/materials.js',
+  'src/world/engine/math3d.js',
+  'src/world/engine/meshes.js',
+  'src/world/engine/ray.js',
+  'src/world/engine/renderer.js',
+  'src/world/layout.js',
+  'src/world/native/globe.js',
+  'src/world/native/gravity3d.js',
+  'src/world/places.js',
+  'src/world/routes.js',
+  'src/world/scheduler.js',
+  'src/world/site.js',
+  'src/world/ui/atlas.js',
+  'src/world/ui/coupling-panel.js',
+  'src/world/ui/hud.js',
+  'src/world/ui/tour.js',
+  'src/world/ui/world-stage.js',
+  'src/world/world.js',
+];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll([...SHELL, ...WORLD])).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (e) => {

@@ -10,6 +10,7 @@ export class Place {
     this.parent = parent;
     this.unit = spec.unit; // { name, metres }
     this.size = spec.size; // characteristic radius, local units
+    this.lat = spec.lat ?? null;
     if (spec.lat !== undefined) {
       // Placed on the surface of a sphere of radius spec.radius (parent units).
       this.position = sphericalToCartesian(spec.lat, spec.lon ?? 0, spec.radius ?? parent.occluder ?? 0);
@@ -21,7 +22,7 @@ export class Place {
     this.follow = spec.follow ?? null; // { site, body } keeps the place on a moving body
     this.enterAt = spec.enterAt ?? 3; // enter when camera distance < enterAt · size (parent units)
     this.exitAt = spec.exitAt ?? 8; // leave when camera distance > exitAt · size (local units)
-    this.minDistance = spec.minDistance ?? this.size * 1e-3;
+    this.minDistance = spec.minDistance ?? null; // set by PlaceTree once children are known
     this.occluder = spec.occluder ?? 0; // radius of an opaque sphere at the origin (e.g. a planet)
     this.ancestors = spec.ancestors ?? 2; // how many ancestor places draw behind this one
     this.sky = spec.sky ?? '#02030a';
@@ -32,6 +33,11 @@ export class Place {
     this.children = [];
     this.siteSpecs = spec.sites ?? [];
     if (parent) parent.children.push(this);
+  }
+
+  /** Radius of everything that belongs to this place (local units). */
+  get extent() {
+    return this.exitAt * this.size;
   }
 
   /** Parent units per local unit. */
@@ -77,6 +83,12 @@ export class PlaceTree {
       this.byId.set(s.id, new Place(s, parent));
     }
     this.root = [...this.byId.values()].find((p) => !p.parent);
+    // The camera must be able to get close enough to enter every child.
+    for (const p of this.byId.values()) {
+      if (p.minDistance !== null) continue;
+      const enter = p.children.map((c) => c.enterAt * c.size * c.scale * 0.3);
+      p.minDistance = Math.min(p.size * 1e-3, ...enter);
+    }
   }
 
   get(id) {

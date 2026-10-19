@@ -8,7 +8,7 @@ const N = 60;
 const A_OLR = 200; // W/m², outgoing longwave at 0 °C
 const B_OLR = 2.09; // W/m²/K, longwave feedback
 const HEAT_CAP = 12.7; // W·yr/m²/K, ~100 m ocean mixed layer
-const ICE_T = -10; // °C, surface temperature where ice forms
+export const ICE_T = -10; // °C, surface temperature where ice forms
 // Width (K) of the smooth ice/no-ice albedo transition. A broad transition stands
 // in for partial and seasonal ice cover and removes the 'small ice cap
 // instability' that made Arctic ice vanish at once near today's CO₂.

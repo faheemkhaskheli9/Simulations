@@ -15,6 +15,7 @@
     <select id="sim-select" aria-label="Simulation"></select>
     <select id="scenario-select" aria-label="Scenario"></select>
     <button id="home" title="All simulations and lessons">⌂ Home</button>
+    <button id="world-btn" title="Enter the 3D world: every simulation in one place, from galaxies to atoms">🌍 World</button>
     <button id="learn" title="Guided lessons and challenges">🎓 Learn</button>
     <button id="play">❚❚ Pause</button>
     <button id="step" title="Advance one frame [.]">Step</button>
@@ -63,12 +64,42 @@
   </aside>
 
   <main class="stage">
-    <canvas id="world"></canvas>
+    <div class="viewport">
+      <canvas id="world"></canvas>
+      <canvas id="world-gl" hidden></canvas>
+      <div id="world-hud" class="world-hud" hidden>
+        <div class="hud-top">
+          <nav id="breadcrumb" class="breadcrumb" aria-label="Where you are" aria-live="polite"></nav>
+          <div class="hud-actions">
+            <button id="atlas-btn" title="Every place and simulation, searchable">🗺 Atlas</button>
+            <button id="tour-btn" title="Guided tour from galaxies to atoms [T]">▶ Tour</button>
+            <button id="world-up" title="Up one place [Backspace]">⬆ Up</button>
+            <button id="world-home" title="Back to deep space [H]">✦ Deep space</button>
+            <select id="quality" aria-label="Quality" title="Rendering quality">
+              <option value="low">Low quality</option>
+              <option value="medium">Medium quality</option>
+              <option value="high">High quality</option>
+            </select>
+            <label class="check small" title="Jump instead of flying"><input id="reduced-motion" type="checkbox" /> Reduced motion</label>
+          </div>
+        </div>
+        <div id="labels" class="labels" aria-hidden="true"></div>
+        <div id="markers" class="markers"></div>
+        <div id="scalebar" class="scalebar" aria-live="polite"><span class="bar"></span><span class="label"></span></div>
+        <p class="hud-help muted small">Drag: look around · Right-drag: pan · Wheel: zoom · Click a marker to fly · Backspace: up</p>
+        <div id="tour-card" class="tour-card" hidden aria-live="polite"></div>
+        <div id="world-notice" class="world-notice" role="status" hidden></div>
+      </div>
+    </div>
     <canvas id="chart"></canvas>
   </main>
 
   <aside class="panel right">
     <section id="lesson" class="lesson" hidden aria-live="polite"></section>
+    <section id="world-panel" hidden>
+      <h2>Connected science</h2>
+      <div id="couplings"></div>
+    </section>
     <section>
       <h2>Inspector</h2>
       <div id="inspector"></div>
@@ -93,6 +124,14 @@
       <button aria-label="Close">✕</button>
     </form>
     <div id="learn-body"></div>
+  </dialog>
+
+  <dialog id="atlas-dialog" aria-labelledby="atlas-title">
+    <form method="dialog" class="dialog-head">
+      <h2 id="atlas-title">🗺 Atlas of the world</h2>
+      <button aria-label="Close">✕</button>
+    </form>
+    <div id="atlas-body"></div>
   </dialog>
 
   <dialog id="home-dialog" aria-labelledby="home-title">

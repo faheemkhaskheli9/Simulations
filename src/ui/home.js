@@ -64,12 +64,14 @@ export class HomeScreen {
 
     const learn = el('button', { className: 'primary', textContent: '🎓 Start a guided lesson' });
     learn.addEventListener('click', () => { this.dialog.close(); this.app.lessons.showCatalogue(); });
+    const world = el('button', { className: 'primary', textContent: '🌍 Enter the 3D world', title: 'Every simulation in one world you can fly through, from galaxies to atoms' });
+    world.addEventListener('click', () => { this.dialog.close(); location.hash = '#world'; });
     const keep = el('input', { type: 'checkbox', checked: !storage.get(HIDE_KEY) });
     keep.addEventListener('change', () => (keep.checked ? storage.remove(HIDE_KEY) : storage.set(HIDE_KEY, '1')));
 
     $('#home-body').replaceChildren(
       el('p', { className: 'muted', textContent: 'Pick a simulation to explore. Every one uses the same six tools: inspect, move, add, remove, push and add energy. Change anything while it runs.' }),
-      el('div', { className: 'home-actions' }, learn, el('label', { className: 'check small' }, keep, ' Show this screen at startup')),
+      el('div', { className: 'home-actions' }, learn, world, el('label', { className: 'check small' }, keep, ' Show this screen at startup')),
       grid,
     );
   }

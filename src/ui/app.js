@@ -6,17 +6,11 @@ import { LessonPanel } from './lesson-panel.js';
 import { HomeScreen } from './home.js';
 import { LESSONS } from '../lessons/index.js';
 import { buildHash, coerceParams, diffParams, download, formatLock, parseHash, parseLock, toCSV } from './persistence.js';
+import { TOOLS, ToolSession } from './tools.js';
 
 const MAX_SAMPLES = 20000;
+const MAX_FILE_BYTES = 20 * 1024 * 1024; // saves are validated anyway; this keeps a huge file from stalling the page
 
-const TOOLS = [
-  { id: 'inspect', label: 'Inspect', key: '1', hint: 'Click an object to see and edit its properties.' },
-  { id: 'move', label: 'Move', key: '2', hint: 'Drag an object to reposition it.' },
-  { id: 'add', label: 'Add', key: '3', hint: 'Click to add the selected kind of object.' },
-  { id: 'remove', label: 'Remove', key: '4', hint: 'Click or drag to remove things.' },
-  { id: 'force', label: 'Force', key: '5', hint: 'Drag from an object (or empty space) to apply a push in that direction.' },
-  { id: 'energy', label: 'Energy', key: '6', hint: 'Hold to add energy in the brush area; hold Shift (or tick Invert) to remove it.' },
-];
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const el = (tag, props = {}, ...children) => {
@@ -47,6 +41,8 @@ export class App {
     this.samples = [];
     this.touches = new Map();
     this.locks = {}; // teacher mode: parameter key -> value held fixed
+    this.driven = {}; // parameter key -> label of the world coupling that drives it
+    this.tools = new ToolSession(this);
     this.buildChrome();
     this.lessons = new LessonPanel(this, LESSONS);
     this.home = new HomeScreen(this);
@@ -70,7 +66,14 @@ export class App {
       for (const S of list) og.append(el('option', { value: S.meta.id, textContent: S.meta.title }));
       simSelect.append(og);
     }
-    simSelect.addEventListener('change', () => { location.hash = simSelect.value; });
+    simSelect.addEventListener('change', () => {
+      if (this.stage) this.stage.focusSim(simSelect.value);
+      else location.hash = simSelect.value;
+    });
+    $('#world-btn').addEventListener('click', () => {
+      if (this.stage) this.stage.openIn2D();
+      else location.hash = '#world';
+    });
     $('#scenario-select').addEventListener('change', (e) => this.loadScenario(e.target.value));
     $('#play').addEventListener('click', () => this.setRunning(!this.running));
     $('#step').addEventListener('click', () => this.stepOnce());
@@ -98,7 +101,8 @@ export class App {
     $('#load-file').addEventListener('change', async (e) => {
       const file = e.target.files[0];
       e.target.value = '';
-      if (file) this.loadWorld(await file.text(), file.name);
+      if (file && file.size > MAX_FILE_BYTES) this.status(`${file.name} is too large (over 20 MB)`, true);
+      else if (file) this.loadWorld(await file.text(), file.name);
     });
     $('#share').addEventListener('click', () => this.shareLink());
     $('#csv').addEventListener('click', () => this.exportCSV());
@@ -160,6 +164,11 @@ export class App {
   }
 
   routeFromHash() {
+    if (/^#world(\/|\?|$)/.test(location.hash)) {
+      this.enterWorld(location.hash);
+      return;
+    }
+    if (this.stage) this.exitWorld();
     const { simId, scenarioId, params } = parseHash(location.hash);
     // #learn/<lesson-id> opens a lesson directly.
     if (simId === 'learn' && this.lessons.find(scenarioId)) {
@@ -170,6 +179,18 @@ export class App {
     const S = this.simulations.find((s) => s.meta.id === simId) ?? this.simulations[0];
     if (!this.sim || this.sim.constructor !== S) this.loadSim(S, scenarioId);
     else if (scenarioId && scenarioId !== this.sim.scenarioId) this.loadScenario(scenarioId);
+    // "Open in 2D" from the world hands over the site's current state.
+    if (this.pendingState?.sim === this.sim.meta.id) {
+      try {
+        this.sim.deserialize(this.pendingState);
+        $('#scenario-select').value = this.sim.scenarioId;
+        this.resetRecording();
+        this.fitView();
+      } catch (err) {
+        this.status(`Could not open that state: ${err.message}`, true);
+      }
+    }
+    this.pendingState = null;
     // Parameters from a shared link override the scenario defaults.
     const typed = coerceParams(this.sim.paramDefs, params);
     for (const [k, v] of Object.entries(typed)) this.sim.setParam(k, v);
@@ -193,20 +214,48 @@ export class App {
   applyLocks() {
     for (const [k, v] of Object.entries(this.locks)) if (this.sim.params[k] !== v) this.sim.setParam(k, v);
     for (const { d, input, row } of Object.values(this.paramInputs ?? {})) {
-      const locked = d.key in this.locks;
-      input.disabled = locked;
-      row.classList.toggle('locked', locked);
-      row.title = locked ? 'Locked by your teacher' : '';
+      const locked = d.key in this.locks, driver = this.driven[d.key];
+      input.disabled = locked || !!driver;
+      row.classList.toggle('locked', locked || !!driver);
+      row.classList.toggle('driven', !!driver);
+      row.title = driver ? `Set by the coupling "${driver}". Turn it off under Connected science to change it.` : locked ? 'Locked by your teacher' : '';
     }
     this.syncParams();
   }
 
+  /** Mark parameters driven by world couplings (key -> coupling label) as read-only. */
+  setDriven(driven) {
+    const same = Object.keys(driven).length === Object.keys(this.driven).length && Object.entries(driven).every(([k, v]) => this.driven[k] === v);
+    if (same) return;
+    this.driven = driven;
+    this.applyLocks();
+  }
+
   loadSim(S, scenarioId) {
-    this.sim = new S();
-    this.locks = {};
-    if (scenarioId && this.sim.scenarios.some((s) => s.id === scenarioId)) this.sim.loadScenario(scenarioId);
+    // In the world, every simulation already lives at a site: go there instead.
+    if (this.stage) {
+      this.stage.focusSim(S.meta.id, scenarioId);
+      return;
+    }
+    const sim = new S();
+    if (scenarioId && sim.scenarios.some((s) => s.id === scenarioId)) sim.loadScenario(scenarioId);
+    this.bindSim(sim);
+  }
+
+  /**
+   * Show an existing simulation in the panels (tools, parameters, inspector,
+   * stats, chart and history). The 2D app binds the simulation it just made;
+   * the 3D world binds the active site's simulation with that site's history.
+   */
+  bindSim(sim, { history = new History(), locks = {}, driven = {} } = {}) {
+    const S = sim.constructor;
+    this.sim = sim;
+    this.history = history;
+    this.locks = locks;
+    this.driven = driven;
     this.view.yUp = !!S.meta.yUp;
     this.selected = null;
+    this.tools.reset();
     $('#sim-select').value = S.meta.id;
     $('#sim-title').textContent = S.meta.title;
     $('#sim-description').textContent = S.meta.description;
@@ -217,8 +266,10 @@ export class App {
     kinds.replaceChildren(...this.sim.spawnKinds.map((k) => el('option', { value: k.id, textContent: k.label })));
     $('#energy-label').textContent = `${this.sim.energyTool.label} / ${this.sim.energyTool.negLabel}`;
     this.buildParams();
-    this.resetRecording();
-    this.fitView();
+    this.samples = [];
+    this.resetChart();
+    this.updateHistoryButtons();
+    if (!this.stage) this.fitView();
     this.renderInspector(true);
     this.setTool(this.tool);
     this.lessons.onSimChanged();
@@ -228,11 +279,14 @@ export class App {
     this.sim.loadScenario(id);
     this.selected = null;
     $('#scenario-select').value = id;
-    const hash = buildHash(this.sim.meta.id, id, this.lockQuery());
-    if (location.hash !== hash) history.replaceState(null, '', hash);
+    if (this.stage) this.stage.onScenarioLoaded();
+    else {
+      const hash = buildHash(this.sim.meta.id, id, this.lockQuery());
+      if (location.hash !== hash) history.replaceState(null, '', hash);
+    }
     this.applyLocks();
     this.resetRecording();
-    this.fitView();
+    if (!this.stage) this.fitView();
     this.renderInspector(true);
   }
 
@@ -247,6 +301,7 @@ export class App {
   // ---------- undo / redo, save / load, sharing ----------
 
   checkpoint() {
+    this.stage?.touch();
     try {
       this.history.checkpoint(this.sim.serialize());
     } catch (err) {
@@ -288,7 +343,62 @@ export class App {
     this.statusTimer = setTimeout(() => { s.textContent = ''; }, isError ? 6000 : 2500);
   }
 
+  // ---------- the 3D world ----------
+
+  /** Switch the stage to the 3D world (loaded on first use) and apply a #world route. */
+  async enterWorld(hash) {
+    if (this.worldStage) {
+      this.stage = this.worldStage;
+      this.stage.route(hash);
+      return;
+    }
+    if (this.enteringWorld) return;
+    this.enteringWorld = true;
+    try {
+      const { webgl2Available } = await import('../world/engine/gl.js');
+      if (!webgl2Available()) {
+        await this.worldFallback();
+        return;
+      }
+      const { WorldStage } = await import('../world/ui/world-stage.js');
+      this.worldStage = new WorldStage(this);
+      this.stage = this.worldStage;
+      this.stage.route(location.hash.startsWith('#world') ? location.hash : hash);
+    } catch (err) {
+      console.error(err);
+      this.stage = null;
+      if (!this.sim) this.loadSim(this.simulations[0]);
+      this.status(`The 3D world could not start: ${err.message}`, true);
+    } finally {
+      this.enteringWorld = false;
+    }
+  }
+
+  /** Without WebGL2 the world is the Atlas: every entry opens its site in 2D (W-RR-1). */
+  async worldFallback() {
+    const [{ World }, { Atlas }] = await Promise.all([import('../world/world.js'), import('../world/ui/atlas.js')]);
+    const world = new World(this.simulations);
+    if (!this.sim) this.loadSim(this.simulations[0]);
+    new Atlas(world, (e) => {
+      const site = e.site ?? world.primaryOf(e.place);
+      location.hash = buildHash(site.Sim.meta.id, site.scenario);
+    }, { fallback: true }).open();
+  }
+
+  /** Back to the classic 2D view (the world keeps its state for the next visit). */
+  exitWorld() {
+    this.stage.hide();
+    this.stage = null;
+    this.sim = null; // the 2D view gets its own simulation, not the site's
+    this.locks = {};
+    this.driven = {};
+  }
+
   saveWorld() {
+    if (this.stage) {
+      this.stage.save();
+      return;
+    }
     const data = this.sim.serialize();
     const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
     download(`${data.sim}-${data.scenario}-${stamp}.json`, JSON.stringify(data));
@@ -301,6 +411,10 @@ export class App {
       data = JSON.parse(text);
     } catch {
       this.status(`${name} is not valid JSON`, true);
+      return;
+    }
+    if (this.stage) {
+      this.stage.load(data, name);
       return;
     }
     const S = this.simulations.find((s) => s.meta.id === data?.sim);
@@ -328,10 +442,18 @@ export class App {
   }
 
   async shareLink() {
+    if (this.stage) {
+      await this.copyLink(this.stage.shareHash());
+      return;
+    }
     const S = this.sim.constructor;
     const reference = new S();
     reference.loadScenario(this.sim.scenarioId);
     const hash = buildHash(this.sim.meta.id, this.sim.scenarioId, { ...diffParams(this.sim.params, reference.params), ...this.lockQuery() });
+    await this.copyLink(hash);
+  }
+
+  async copyLink(hash) {
     const url = `${location.href.split('#')[0]}${hash}`;
     history.replaceState(null, '', hash);
     try {
@@ -362,7 +484,8 @@ export class App {
   }
 
   fitView() {
-    this.view.fit(this.sim.bounds());
+    if (this.stage) this.stage.focusActive();
+    else this.view.fit(this.sim.bounds());
   }
 
   resize() {
@@ -382,7 +505,8 @@ export class App {
 
   stepOnce() {
     this.setRunning(false);
-    this.sim.step(1 / 60);
+    if (this.stage) this.stage.stepOnce(1 / 60);
+    else this.sim.step(1 / 60);
   }
 
   setTool(id) {
@@ -414,13 +538,13 @@ export class App {
       let input;
       if (d.type === 'checkbox') {
         input = el('input', { type: 'checkbox' });
-        input.addEventListener('change', () => this.sim.setParam(d.key, input.checked));
+        input.addEventListener('change', () => { this.sim.setParam(d.key, input.checked); this.stage?.touch(); });
         row.classList.add('check');
         row.append(input, name);
       } else if (d.type === 'select') {
         input = el('select');
         for (const o of d.options) input.append(el('option', { value: o.value, textContent: o.label }));
-        input.addEventListener('change', () => this.sim.setParam(d.key, input.value));
+        input.addEventListener('change', () => { this.sim.setParam(d.key, input.value); this.stage?.touch(); });
         row.append(name, input);
       } else {
         input = el('input', { type: 'range', min: 0, max: 1000, step: 1 });
@@ -433,6 +557,7 @@ export class App {
         input.addEventListener('input', () => {
           const v = toValue(Number(input.value));
           this.sim.setParam(d.key, v);
+          this.stage?.touch();
           value.textContent = fmt(v);
         });
         row.append(el('div', { className: 'param-head' }, name, value), input);
@@ -529,8 +654,23 @@ export class App {
     return [e.clientX - r.left, e.clientY - r.top];
   }
 
-  brushWorld() {
-    return Number($('#brush').value) / this.view.scale;
+  // ---------- tool settings (the ToolSession host interface) ----------
+
+  brushPx() {
+    return Number($('#brush').value);
+  }
+
+  toolKind() {
+    return $('#kind-select').value;
+  }
+
+  energyStrength() {
+    return Number($('#strength').value);
+  }
+
+  /** -1 when the energy brush removes energy (Shift held xor Invert ticked). */
+  energySign() {
+    return this.pointer.shift !== $('#invert').checked ? -1 : 1;
   }
 
   onDown(e) {
@@ -541,43 +681,14 @@ export class App {
       if (this.touches.size === 2) {
         // Second finger: switch from the current tool to pinch-zoom / two-finger pan.
         this.pointer.down = false;
-        this.dragTarget = null;
-        this.forceStart = null;
+        this.tools.reset();
         return;
       }
     }
     const [wx, wy] = this.view.toWorld(sx, sy);
     Object.assign(this.pointer, { x: sx, y: sy, down: true, button: e.button, shift: e.shiftKey, startX: sx, startY: sy, inside: true });
     if (e.button !== 0) return; // right/middle drag pans
-    const tol = 10 / this.view.scale;
-    const sim = this.sim;
-    if (['add', 'remove', 'force', 'energy'].includes(this.tool)) this.checkpoint();
-    switch (this.tool) {
-      case 'inspect':
-        this.select(sim.pick(wx, wy, tol));
-        break;
-      case 'move': {
-        const t = sim.pick(wx, wy, tol);
-        if (t) this.checkpoint();
-        this.dragTarget = t;
-        if (t) this.select(t);
-        break;
-      }
-      case 'add': {
-        const made = sim.add($('#kind-select').value, wx, wy, this.brushWorld());
-        if (made) this.select(made);
-        break;
-      }
-      case 'remove': {
-        const gone = sim.removeAt(wx, wy, this.brushWorld());
-        if (gone && gone === this.selected) this.select(null);
-        this.lastRemove = performance.now();
-        break;
-      }
-      case 'force':
-        this.forceStart = { target: sim.pick(wx, wy, tol), wx, wy };
-        break;
-    }
+    this.tools.down({ x: wx, y: wy, upp: 1 / this.view.scale });
   }
 
   onMove(e) {
@@ -603,28 +714,17 @@ export class App {
       return;
     }
     const [wx, wy] = this.view.toWorld(sx, sy);
-    if (this.tool === 'move' && this.dragTarget) this.sim.move(this.dragTarget, wx, wy);
-    if (this.tool === 'remove' && performance.now() - this.lastRemove > 60) {
-      const gone = this.sim.removeAt(wx, wy, this.brushWorld());
-      if (gone && gone === this.selected) this.select(null);
-      this.lastRemove = performance.now();
-    }
+    this.tools.move({ x: wx, y: wy, upp: 1 / this.view.scale });
   }
 
   onUp(e) {
     this.touches.delete(e.pointerId);
     const p = this.pointer;
-    if (p.down && p.button === 0 && this.tool === 'force' && this.forceStart) {
-      const [sx, sy] = this.localPos(e);
-      const [dx, dy] = this.view.deltaToWorld(sx - p.startX, sy - p.startY);
-      const f = this.forceStart;
-      if (f.target && f.target.alive === false) f.target = null;
-      this.sim.impulse(f.target, f.wx, f.wy, dx, dy);
-      if (f.target) this.select(f.target);
+    if (p.down && p.button === 0) {
+      const [wx, wy] = this.view.toWorld(...this.localPos(e));
+      this.tools.up({ x: wx, y: wy, upp: 1 / this.view.scale });
     }
     p.down = false;
-    this.dragTarget = null;
-    this.forceStart = null;
   }
 
   // ---------- main loop ----------
@@ -632,13 +732,23 @@ export class App {
   frame(now) {
     const dt = Math.min(0.05, (now - this.lastFrame) / 1000);
     this.lastFrame = now;
+    if (!this.sim && !this.stage) {
+      requestAnimationFrame((t) => this.frame(t)); // the world is still loading
+      return;
+    }
+    if (this.stage) {
+      this.stage.frame(now, dt);
+      this.frameMs = this.stage.frameMs;
+      if (this.sim) this.panelsTick(now);
+      requestAnimationFrame((t) => this.frame(t));
+      return;
+    }
     const sim = this.sim;
     const t0 = performance.now();
     const p = this.pointer;
     if (p.down && p.button === 0 && this.tool === 'energy') {
       const [wx, wy] = this.view.toWorld(p.x, p.y);
-      const sign = p.shift !== $('#invert').checked ? -1 : 1;
-      sim.energy(wx, wy, this.brushWorld(), sign * Number($('#strength').value) * dt);
+      this.tools.energy({ x: wx, y: wy, upp: 1 / this.view.scale }, dt, this.energySign(), this.energyStrength());
     }
     if (this.running) {
       try {
@@ -650,6 +760,12 @@ export class App {
     }
     this.frameMs = this.frameMs * 0.9 + (performance.now() - t0) * 0.1;
     this.draw();
+    this.panelsTick(now);
+    requestAnimationFrame((t) => this.frame(t));
+  }
+
+  /** Statistics, chart, lessons and inspector refresh, a few times a second. */
+  panelsTick(now) {
     if (now - this.lastStats > 250) {
       this.lastStats = now;
       const stats = this.renderStats();
@@ -668,7 +784,6 @@ export class App {
       if (this.selected && !this.sim.locate(this.selected)) this.select(null);
       else if (this.selected) this.renderInspector();
     }
-    requestAnimationFrame((t) => this.frame(t));
   }
 
   draw() {
@@ -698,8 +813,8 @@ export class App {
       ctx.lineWidth = 1;
       ctx.beginPath(); ctx.arc(p.x, p.y, Number($('#brush').value), 0, Math.PI * 2); ctx.stroke();
     }
-    if (this.tool === 'force' && p.down && this.forceStart) {
-      const [sx, sy] = view.toScreen(this.forceStart.wx, this.forceStart.wy);
+    if (this.tool === 'force' && p.down && this.tools.forceStart) {
+      const [sx, sy] = view.toScreen(this.tools.forceStart.x, this.tools.forceStart.y);
       ctx.strokeStyle = '#ffd34d';
       ctx.fillStyle = '#ffd34d';
       ctx.lineWidth = 2;

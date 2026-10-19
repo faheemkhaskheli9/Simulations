@@ -107,5 +107,30 @@ export const mat4 = {
     ];
   },
 
+  /**
+   * Model matrix from a basis (three column vectors), a translation and a
+   * uniform or per-axis scale: p' = basis · (scale ⊙ p) + position.
+   */
+  model(basis, position, scale = 1) {
+    const s = typeof scale === 'number' ? [scale, scale, scale] : scale;
+    const m = new Float64Array(16);
+    for (let c = 0; c < 3; c++) for (let r = 0; r < 3; r++) m[c * 4 + r] = basis[c][r] * s[c];
+    m[12] = position[0]; m[13] = position[1]; m[14] = position[2]; m[15] = 1;
+    return m;
+  },
+
   f32: (m) => Float32Array.from(m),
 };
+
+/** Yaw (around +y, from +z towards +x) and pitch (above the horizontal) of an offset vector. */
+export function yawPitch(offset) {
+  const d = Math.hypot(offset[0], offset[1], offset[2]);
+  if (!(d > 0)) return { distance: 0, yaw: 0, pitch: 0 };
+  return { distance: d, yaw: Math.atan2(offset[0], offset[2]), pitch: Math.asin(Math.max(-1, Math.min(1, offset[1] / d))) };
+}
+
+/** Inverse of yawPitch. */
+export function offsetFromYawPitch(distance, yaw, pitch) {
+  const c = Math.cos(pitch);
+  return [distance * c * Math.sin(yaw), distance * Math.sin(pitch), distance * c * Math.cos(yaw)];
+}

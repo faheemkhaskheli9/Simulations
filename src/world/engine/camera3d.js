@@ -121,12 +121,27 @@ export class Camera3D {
     const top = this.tree.common(this.place, place);
     const a = this.tree.convert(this.target, this.place, top), b = this.tree.convert(target, place, top);
     const sep = v3.dist(a, b) * top.unit.metres;
+    // Places the flight may work in, deepest first: the start's ancestors on the
+    // way out and the destination's ancestors on the way in, up to the common one.
+    const chain = (from) => {
+      const out = [];
+      for (let p = from; p && p !== top; p = p.parent) out.push(p);
+      out.push(top);
+      return out;
+    };
     this.flight = {
       place, target: [...target], offset: [...offset], t: 0, duration: Math.max(0.01, duration),
       startPlace: this.place, startTarget: [...this.target], startDir: v3.norm(this.offset),
       logA: Math.log(startEyeDist), logB: Math.log(endDist),
       logPeak: Math.log(Math.max(startEyeDist, endDist, sep * 1.2)),
+      outChain: chain(this.place), inChain: chain(place), top,
     };
+  }
+
+  /** Deepest place of `chain` whose extent still contains a camera `metres` away. */
+  static workPlace(chain, metres) {
+    for (const p of chain) if (metres <= p.exitAt * p.size * p.unit.metres) return p;
+    return chain[chain.length - 1];
   }
 
   get flying() {
@@ -146,8 +161,9 @@ export class Camera3D {
     const dMetres = Math.exp(t >= 1 ? f.logB : logD);
     // Target and direction settle by 60 % of the flight.
     const s = Math.min(1, t / 0.6);
-    // Work in the higher of the two places until the end so coordinates stay precise.
-    const work = f.t >= 1 ? f.place : this.tree.common(f.startPlace, f.place);
+    // Work in the deepest place whose scale fits the current distance, so the
+    // coordinates stay precise at both ends of a flight across many scales.
+    const work = f.t >= 1 ? f.place : Camera3D.workPlace(t < 0.5 ? f.outChain : f.inChain, dMetres);
     if (this.place !== work) this.moveTo(work);
     const from = this.tree.convert(f.startTarget, f.startPlace, work);
     const to = this.tree.convert(f.target, f.place, work);

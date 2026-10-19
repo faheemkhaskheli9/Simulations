@@ -62,7 +62,9 @@ export class LessonPanel {
     const S = app.simulations.find((s) => s.meta.id === lesson.sim);
     this.runner = null; // so the sim switch below does not count as leaving
     app.startingLesson = true;
-    if (app.sim.constructor !== S) app.loadSim(S, lesson.scenario);
+    // In the 3D world a lesson flies to its site (lesson.site, or any site running its module).
+    if (app.stage) app.stage.focusSim(lesson.sim, lesson.scenario, lesson.site);
+    else if (app.sim.constructor !== S) app.loadSim(S, lesson.scenario);
     app.loadScenario(lesson.scenario);
     app.startingLesson = false;
     for (const [k, v] of Object.entries(lesson.params ?? {})) app.sim.setParam(k, v);
