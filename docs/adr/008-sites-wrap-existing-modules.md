@@ -1,6 +1,6 @@
 # ADR-008: Sites wrap existing modules; native 3D is optional
 
-- **Status:** Proposed
+- **Status:** Accepted (implemented 2026-10-19)
 - **Date:** 2026-10-18
 
 ## Context

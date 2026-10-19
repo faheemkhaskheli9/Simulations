@@ -322,4 +322,4 @@ caches.
 | Coupled multi-scale worlds | Future "composite" module that hosts sub-simulations and exchanges fluxes |
 | Persistence and sharing | `saveState` / `loadState` on the contract (implemented) |
 | Faster physics | Worker / WebGPU back-ends behind the same `step` |
-| 3D | `View3D` plus an optional `render3D` on modules |
+| 3D | Built as the 3D world: sites wrap modules unchanged, native views in `src/world/native/` ([world design](world/SYSTEM_DESIGN.md)) |

@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| **Status** | Proposed |
-| **Last updated** | 2026-10-18 |
+| **Status** | In progress: World Preview shipped (W0–W3, W5), W4 and W6 partly done |
+| **Last updated** | 2026-10-19 |
 | **Related** | [PRD](PRD.md) · [TRD](TRD.md) · [System Design](SYSTEM_DESIGN.md) · [Roadmap](../ROADMAP.md) (M4 3D view, M6 multi-scale worlds) |
 
 ## Goal
@@ -21,6 +21,37 @@ Native 3D views then replace surfaces one module at a time, where 3D adds unders
 Couplings come last, once every site is stable. A small in-house WebGL2 engine keeps the
 project dependency-free; nested places with their own units keep it precise at every
 scale.
+
+## Progress (2026-10-19)
+
+The first implementation covers W0–W3, the two P0 native views, the couplings, the tour and
+the tests, as the [design review](REVIEW.md) (R15) proposed. GitHub issue #2 tracks the rest.
+
+| Phase | Status | What is done | What is left |
+|---|---|---|---|
+| W0 Decisions and spikes | ✅ Done | ADR-006/007/008 accepted; the spikes became the real engine; WebGL2 confirmed in CI (Chromium + SwiftShader) | Upload cost on the reference laptop (only software-GPU numbers so far) |
+| W1 Engine core | ✅ Done | `math3d`, `ray`, `gl`, `meshes`, `materials`, `renderer`, `camera3d`, `places`, with Node tests | Wide lines (WebGL2 draws 1 px lines) |
+| W2 Sites, panels, tools | ✅ Done | `App.bindSim` instead of a separate `SitePanels` (R1); surface, gravity and globe sites; all six tools through the shared `ToolSession`; scheduler; lazy sites; contract, parity and layout tests | — |
+| W3 Shell and navigation | ✅ Done (**World Preview**) | `#world/…` routes, *Enter the 3D world*, breadcrumb, scale bar, markers, Atlas, tour, backdrops, world save/load, touched-site tracking, per-site undo, *Open in 2D*, WebGL2 fallback, slow-device offer, offline cache, 25 browser tests | — |
+| W4 Native 3D views | ◐ Partial | Climate globe; Gravity drawn natively in 3D on its orbital plane (galaxies, Solar System, Earth & Moon) | Gravity 3D physics mode (z, octree, inclined orbits), Ecosystem terrain, Weather volume, Atoms 3D mode, Cell and Atom spheres (all run as surfaces today) |
+| W5 Connected science | ✅ Done | Five couplings: Earth's orbit → Climate, Climate → Weather, Climate → Ecosystem, Weather → Ecosystem, Climate → Epidemic; loop check, smoothing, clamping, panel, read-only driven parameters | Stars → Climate (needs a "Sun" star in Stars); a "Dim the Sun" lesson |
+| W6 Performance and release | ◐ Partial | Guided tour, lessons fly to their site, soak test with all couplings, User Guide chapter and screenshots, keyboard Atlas, live-region breadcrumb, reduced motion | Performance budgets on the reference laptop (W-PR-1…8), 30-minute memory run |
+
+### Measured so far
+
+Headless Chromium with **SwiftShader (a software GPU)** at 1400 × 850, so these numbers are
+a floor for CI, not the reference-laptop targets of W-PR-1…8:
+
+| Active site | World CPU time per frame | Draw calls |
+|---|---|---|
+| Colliding galaxies (deep space) | 0.9 ms | 4 |
+| Solar System | 2.9 ms | 19 |
+| Global climate (globe) | 5.4 ms | 18 |
+| Weather (valley) | 32 ms (the Weather module's own step dominates) | 13 |
+| Mechanics, Cell, Atoms, Atom | 5–9 ms | 2–5 |
+
+First world frame: under 0.3 s after page load on a local server. World code: 134 KB
+(budget 250 KB, W-TC-6), checked by a test.
 
 ## Phases
 
@@ -137,13 +168,13 @@ gantt
 
 Roughly **World Preview in ~8 weeks** and **World 1.0 in ~15 weeks**.
 
-## First tasks (ready to start)
+## Next tasks
 
-1. Write ADR-006/007/008 as Accepted after the W0 spikes.
-2. Create `src/world/engine/math3d.js` + `tests/world-math.test.js`.
-3. Create `src/world/places.js` with two places and hand-over tests.
-4. Spike page rendering `GravitySim` on a textured quad via `surface-site.js`.
-5. Plan the `SitePanels` extraction from `src/ui/app.js` (list of DOM ids and methods it owns).
+1. Gravity 3D physics mode: `z`, `vz`, an octree Barnes–Hut and an inclined-orbits scenario (W-SM-1…4).
+2. Native Ecosystem terrain and Weather volume (WFR-24), then Atoms 3D mode (W-SM-5).
+3. A "Sun" star in Stars, the Stars → Climate coupling (W-SM-7) and a "Dim the Sun" lesson.
+4. Measure W-PR-1…8 on the reference laptop with the scripted tour; tune quality presets.
+5. Move Weather to a Web Worker so the valley stays above 30 fps (W-PR-3).
 
 ## Risks to watch
 

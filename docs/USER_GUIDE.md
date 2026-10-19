@@ -19,9 +19,10 @@ world: atoms, cells, ecosystems, weather, climate, planets, stars and galaxies.
 9. [Teacher mode](#9-teacher-mode)
 10. [Phones and tablets](#10-phones-and-tablets)
 11. [The simulations, one by one](#11-the-simulations-one-by-one)
-12. [Keyboard shortcuts](#12-keyboard-shortcuts)
-13. [Troubleshooting](#13-troubleshooting)
-14. [Glossary](#14-glossary)
+12. [The 3D world](#12-the-3d-world)
+13. [Keyboard shortcuts](#13-keyboard-shortcuts)
+14. [Troubleshooting](#14-troubleshooting)
+15. [Glossary](#15-glossary)
 
 ---
 
@@ -59,6 +60,8 @@ also works without a network connection.
 3. Click something with the **Inspect** tool to see what it is, then try changing a
    number in the Inspector.
 4. Press **🎓 Learn** for a guided lesson.
+5. Press **🌍 World** to fly through all the simulations in one 3D world, from colliding
+   galaxies down to a single atom (see [The 3D world](#12-the-3d-world)).
 
 ---
 
@@ -512,7 +515,121 @@ quarantine, vaccination and waning immunity can all be tested.
 
 ---
 
-## 12. Keyboard shortcuts
+## 12. The 3D world
+
+The **3D world** puts every simulation into one continuous space that you fly through,
+from colliding galaxies down to a single atom. Each simulation is a **site** at the place
+where it happens: the galaxies in deep space, a star nursery in the Orion Arm, the planets
+in the Solar System, the climate on the Earth's globe, a thunderstorm, a savanna and a
+town in a valley, a mechanics lab and a microscope on a science campus, molecules in a
+sample chamber and, at the bottom, one atom. The tools, panels, lessons, undo, save and
+share links all work as in the classic view.
+
+Open it with **🌍 World** in the top bar, *Enter the 3D world* on the welcome screen, or
+a `#world` link. **▦ Open in 2D** takes the active site, with its current state, back to
+the classic view.
+
+![Deep space: the Milky Way, the colliding galaxies, the Atlas and tour buttons, the scale bar and the Connected science panel](images/world-deep.jpg)
+
+1. **Where you are.** The breadcrumb (*Deep Space › Orion Arm › Solar System › …*) names
+   the place you are in; click any part of it to fly back up.
+2. **Getting around.** **🗺 Atlas** lists every place and simulation (type to search, arrow
+   keys and Enter to go); **▶ Tour** flies the guided tour; **⬆ Up** and **✦ Deep space**
+   move up the ladder. Quality and *Reduced motion* (jump instead of fly) are here too.
+3. **Scale.** The scale bar shows how big things are, from hundreds of thousands of
+   light-years down to picometres.
+4. **Markers.** Blue ◎ markers are places you can go into; yellow ● markers are other
+   simulations in the same place. Click one to fly there.
+5. **Connected science.** Switches that link simulations (below).
+
+### Moving the camera
+
+| Do this | To |
+|---|---|
+| Drag (left button, or the Inspect tool anywhere) | Look around (orbit) |
+| Right-drag | Pan |
+| Scroll | Zoom towards the pointer; keep scrolling to pass into the next place |
+| Scroll over a ◎ marker | Zoom into that place; the camera rides along even if it moves (the Earth orbits fast!) |
+| Click a marker, breadcrumb or Atlas entry | Fly there |
+| Arrow keys / `WASD`, `+` `-`, `Backspace`, `H`, `T`, `F` | Orbit, zoom, up one place, deep space, tour, focus the active site |
+| Pinch, two-finger drag, tap | Zoom, pan, fly to a marker (touch screens) |
+
+Zooming is continuous: keep scrolling into the Solar System, onto the Earth, into the
+valley, the campus, the microscope and the sample chamber, and you arrive at one atom,
+36 orders of magnitude below the galaxies.
+
+![The Solar System in 3D: orbits, the Sun and the Earth marker](images/world-solar.jpg)
+![The Earth as a globe: climate bands and polar ice, lit by the Sun at today's solar declination](images/world-earth.jpg)
+
+### Sites and tools
+
+The site you are looking at is **active**: the left and right panels show its tools,
+parameters, inspector, statistics and chart, exactly as in the classic view. Click
+another site (or its marker) to make it active. Nearby sites keep moving at a lower rate;
+far-away ones pause.
+
+All six tools work by pointing at the active site: click a planet to inspect it, drag a
+ball in the lab, add animals to the savanna, push the Moon, warm a patch of the globe.
+The brush shows as a ring on the surface. Most simulations appear on a **surface**
+(a ground patch, a screen or a cross-section) drawn exactly as in 2D; **Gravity** and
+**Global Climate** have **native 3D views** (orbits in space and a lit globe).
+
+![The valley: the thunderstorm cross-section, the savanna and the town](images/world-valley.jpg)
+![Using the Energy tool on the savanna in the world](images/world-tools.jpg)
+![The mechanics lab at the science campus](images/world-lab.jpg)
+![A cell under the microscope, with the marker into the sample chamber](images/world-cell.jpg)
+
+### Atlas and tour
+
+![The Atlas: every place and site, searchable](images/world-atlas.jpg)
+
+The **tour** visits eleven stops from the galaxies to the atom with a short caption at
+each. It moves on by itself after a while; *Stay here* pauses it, ◀ / *Next* skip, and ✕
+or `Esc` leaves it wherever you are.
+
+![The tour stopping at the valley's thunderstorm](images/world-tour.jpg)
+
+### Connected science
+
+Couplings let one simulation drive a parameter of another, with real quantities. They are
+all off by default, so every site behaves exactly as its classic version until you turn
+one on.
+
+| Coupling | What happens |
+|---|---|
+| Earth's orbit → Climate | The solar constant follows the Earth's distance from the Sun (1361 W/m² at 1 AU). Drag the Earth outwards in the Solar System and the globe freezes |
+| Climate → Weather | The valley's solar heating follows the sunlight at its latitude: strong in summer, weak in winter |
+| Climate → Ecosystem | The savanna's temperature is the climate's surface temperature at the valley |
+| Weather → Ecosystem | Rain in the valley over the last ten seconds speeds up plant growth on the savanna |
+| Climate → Epidemic | Transmission in the town rises in winter |
+
+A parameter set by a coupling shows 🔗, is read-only, and names its source when you hover
+over it; turn the coupling off to change it yourself. Each coupling shows the value it is
+passing right now.
+
+![The Connected science panel with three couplings on](images/world-couplings.jpg)
+
+### Saving and sharing the world
+
+- **Save** writes the whole world to one file: every site you changed, the couplings that
+  are on, the active site and the camera. **Load** opens it again. Loading a classic save
+  file opens it at the matching site.
+- **Share link** copies a link to the active site with your changed parameters and the
+  camera view, e.g. `#world/deep/orion/solar/earth/valley/weather?stability=8&view=…`.
+  Teacher-mode `lock=` works on world links too.
+- **Undo** and **Redo** keep a separate history for each site.
+- **🎓 Learn** works in the world: starting a lesson flies to its site.
+
+### If the world can't run
+
+The world needs **WebGL2** (all current desktop and mobile browsers). Without it, the 🌍
+button opens the Atlas as a list, and each entry opens its simulation in the classic
+view. If the world runs slowly for a few seconds, it offers a lower quality or the
+classic view; you can also pick *Low quality* yourself.
+
+---
+
+## 13. Keyboard shortcuts
 
 | Key | Action |
 |---|---|
@@ -529,11 +646,15 @@ quarantine, vaccination and waning immunity can all be tested.
 | Mouse wheel | Zoom at the cursor |
 | Right-drag | Pan |
 
+In the 3D world, also: drag to look around, arrow keys or `WASD` to orbit, `+` / `-` to
+zoom, `Backspace` up one place, `H` deep space, `T` tour, `F` focus the active site, `Esc`
+leave the tour.
+
 On a Mac, use `⌘` instead of `Ctrl`.
 
 ---
 
-## 13. Troubleshooting
+## 14. Troubleshooting
 
 | Problem | Fix |
 |---|---|
@@ -544,10 +665,13 @@ On a Mac, use `⌘` instead of `Ctrl`.
 | A slider won't move | It is locked by a teacher-mode link (🔒). Open the simulation without `lock=` in the link |
 | "Could not load …" | The file is not a Simulations save, or was edited. Saves from newer versions of the app can't be opened in older ones |
 | The site shows an old version | The offline cache refreshes on the next load: reload the page once |
+| The 3D world shows only a list | Your browser has no WebGL2. Each entry still opens its simulation in the classic view |
+| The 3D world is slow | Choose *Low quality*, make a lighter site active (Weather is the heaviest), or press **▦ Open in 2D** |
+| I'm lost in the 3D world | Click a part of the breadcrumb, press `H` for deep space, or use the 🗺 Atlas |
 
 ---
 
-## 14. Glossary
+## 15. Glossary
 
 | Term | Meaning |
 |---|---|
@@ -555,6 +679,7 @@ On a Mac, use `⌘` instead of `Ctrl`.
 | Alpha / beta decay | A nucleus emitting a helium nucleus (α), or turning a neutron into a proton (β⁻) or vice versa (β⁺) |
 | ATP | The cell's energy currency |
 | AU | Astronomical unit, the Earth–Sun distance (≈ 150 million km) |
+| Coupling | In the 3D world, a link through which one simulation sets a parameter of another |
 | Climate sensitivity | Long-term warming for a doubling of CO₂ |
 | Emission spectrum | The wavelengths an element emits when its electrons fall to lower energy levels |
 | HR diagram | Hertzsprung–Russell diagram: star luminosity against surface temperature |

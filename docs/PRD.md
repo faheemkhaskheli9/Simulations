@@ -53,7 +53,7 @@ model across all domains**, built to grow into an ever larger catalogue of pheno
 
 ### Non-goals (for now)
 - Quantitative research-grade accuracy or validated forecasting.
-- 3D rendering (2D first; 3D is on the roadmap).
+- 3D rendering in v1 (2D first). Since added as a second way in: the [3D world](world/PRD.md).
 - Multiplayer or real-time collaboration.
 - User accounts, cloud storage and monetisation.
 
@@ -174,7 +174,7 @@ Detailed and measurable versions are in the [TRD](TRD.md).
 | **M1 MVP** | Shell, universal tools, six modules, tests, docs | Complete |
 | **M2 Persistence and sharing** | Save/load worlds, share links, CSV export, undo/redo, CI | Complete |
 | **M3 Catalogue expansion** | Atomic structure, cell biology, climate, classical mechanics | P1 complete; P2 modules next |
-| **M4 Scale and fidelity** | Web Workers, WebGL/WebGPU, Barnes–Hut, 3D views | Planned |
+| **M4 Scale and fidelity** | Web Workers, WebGL/WebGPU, Barnes–Hut, 3D views | In progress (Barnes–Hut and the 3D world done) |
 | **M5 Education** | Guided lessons, challenges, teacher mode | Planned |
 
 ## 11. Risks and mitigations
@@ -189,7 +189,7 @@ Detailed and measurable versions are in the [TRD](TRD.md).
 
 ## 12. Open questions
 
-1. Should the long-term product move to 3D by default, or keep 2D as primary with 3D for space only? Proposed answer: a single 3D world as a second way in, with 2D kept; see the [World PRD](world/PRD.md).
+1. Should the long-term product move to 3D by default, or keep 2D as primary with 3D for space only? Answer: a single 3D world as a second way in, with 2D kept; built as the [3D world](world/PRD.md).
 2. Is a guided "lesson" layer in scope for v2, or should it be a separate product?
 3. What licence and contribution model will apply to community modules?
 4. ~~Is there a need for offline / installable (PWA) mode?~~ Resolved: the app ships a web manifest and a network-first service worker, so it installs and works offline.

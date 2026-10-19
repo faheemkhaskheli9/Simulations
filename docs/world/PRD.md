@@ -3,9 +3,9 @@
 | | |
 |---|---|
 | **Product** | Simulations World: one explorable 3D world that contains every simulation |
-| **Status** | Draft v0.1 (proposal, nothing built yet) |
+| **Status** | v1.0: World Preview built, with the globe, native gravity and five couplings ([status](TRD.md#12-implementation-status)) |
 | **Owner** | Faheem Khaskheli |
-| **Last updated** | 2026-10-18 |
+| **Last updated** | 2026-10-19 |
 | **Related** | [Plan](PLAN.md) · [TRD](TRD.md) · [System Design](SYSTEM_DESIGN.md) · [ADR-006](../adr/006-in-house-webgl2-renderer.md) · [ADR-007](../adr/007-nested-scale-frames.md) · [ADR-008](../adr/008-sites-wrap-existing-modules.md) · product [PRD](../PRD.md) |
 
 ---

@@ -1,6 +1,6 @@
 # ADR-006: In-house WebGL2 renderer for the 3D world
 
-- **Status:** Proposed
+- **Status:** Accepted (implemented 2026-10-19)
 - **Date:** 2026-10-18
 
 ## Context

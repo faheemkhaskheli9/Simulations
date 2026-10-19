@@ -179,6 +179,41 @@ and params when the step began), `elapsed`, `memo` (per-step scratch) and `selec
 Add a scripted solution to `SOLUTIONS` in `tests/lessons.test.js`; the test plays the
 lesson to completion, so a lesson that cannot be finished fails CI.
 
+## 5. Placing a module in the 3D world
+
+Every registered module should also have a **site** in the [3D world](world/SYSTEM_DESIGN.md).
+No code in the module changes: add one entry to the place where the phenomenon happens in
+`src/world/layout.js` (the layout test fails until every module has a site).
+
+```js
+// in a place's `sites` list; positions and sizes are in that place's unit
+{ id: 'tides', sim: 'tides', scenario: 'spring', label: 'Tides', type: 'surface',
+  surface: 'ground',          // 'ground' (lying flat), 'plane' (a screen) or 'slab' (a cross-section)
+  center: [4, 0.02, -3], width: 6,   // the height follows your module's bounds() aspect
+  params: { speed: 2 },       // optional: parameters for this setting
+  view: { offset: [0, 5, 6] } },     // optional: where the camera looks from (relative to center)
+```
+
+The surface adapter draws your `render()` into a texture and maps clicks back to your
+coordinates, so all six tools work exactly as in 2D. Keep `render()` free of assumptions
+about the page (draw only to the context and view you are given).
+
+A new **place** is also just data: `{ id, parent, label, unit: { name, metres }, size,
+position (in the parent's unit), enterAt, exitAt, view, primary, sites }`. Keep `enterAt`
+below `exitAt`, and the place inside its parent's extent (`exitAt × size`); the place tests
+check both, and that no coordinate sent to the GPU exceeds 10⁶.
+
+**A native 3D view** (optional) is a `Site` subclass in `src/world/native/`, registered in
+`SITE_TYPES` in `src/world/world.js`. It implements `toPlace(x, y)` and `hit(ray)` (module
+point ↔ place point), `render(fc)` using only the renderer's `mesh`, `spheres`, `points`,
+`lines` and `texture` calls, and optionally `drawSelection(fc, entity)`. Read the module's
+public state; change it only through the contract. See `native/globe.js` (Global Climate)
+and `native/gravity3d.js` (Gravity).
+
+**A coupling** joins two sites: add `{ id, label, from, to, param, unit, smoothing, explain,
+read(sim, memo, ctx) }` to `COUPLINGS` in `src/world/couplings.js`. `read` returns the value
+for the target's parameter (it is smoothed and clamped to the parameter's range for you).
+
 ## Contract reference
 
 | Member | Notes |
@@ -213,3 +248,4 @@ lesson to completion, so a lesson that cannot be finished fails CI.
 - [ ] Listed in the README catalogue and the [Roadmap](ROADMAP.md)
 - [ ] `npm run docs:reference` regenerates [REFERENCE.md](REFERENCE.md) with the new module (the reference test fails until you do)
 - [ ] A screenshot and a section in the [User Guide](USER_GUIDE.md): add a `sim-<id>` shot to `scripts/screenshots.mjs` and run `npm run docs:screenshots`
+- [ ] A site in `src/world/layout.js`, at the place where the phenomenon happens ([§5](#5-placing-a-module-in-the-3d-world))

@@ -33,6 +33,14 @@ async function open(page, hash, wait = 2500) {
 
 const pause = (page) => page.evaluate(() => window.app.setRunning(false));
 
+/** Open a #world route, skipping the first-visit notice, and let it settle. */
+async function openWorld(page, hash, wait = 3000) {
+  await page.addInitScript(() => { try { localStorage.setItem('world.welcomed', '1'); } catch { /* ignore */ } });
+  await page.goto(BASE + hash);
+  await page.waitForFunction(() => window.app?.stage?.world.active);
+  await page.waitForTimeout(wait);
+}
+
 /** World point → page coordinates of the canvas. */
 async function worldToPage(page, x, y) {
   const box = await page.locator('#world').boundingBox();
@@ -292,6 +300,71 @@ const SHOTS = {
   async 'sim-epidemic'(page) {
     await open(page, '#epidemic/town', 1400);
     await save(page, 'sim-epidemic');
+  },
+
+  // ---------- the 3D world ----------
+  async 'world-deep'(page) {
+    await openWorld(page, '#world', 2500);
+    await annotate(page, [
+      { sel: '#breadcrumb', n: 1, label: 'Where you are' },
+      { sel: '.hud-actions', n: 2, label: 'Atlas, tour, up, home' },
+      { sel: '#scalebar', n: 3, label: 'Scale' },
+      { sel: '.marker.place', n: 4, label: '' },
+      { sel: '#couplings', n: 5, label: 'Connected science' },
+    ]);
+    await save(page, 'world-deep');
+    await clearMarks(page);
+  },
+  async 'world-solar'(page) {
+    await openWorld(page, '#world/planets?view=9.5,0.35,0.42', 4000);
+    await save(page, 'world-solar');
+  },
+  async 'world-earth'(page) {
+    await openWorld(page, '#world/climate?view=26000,0.9,0.3', 2500);
+    await save(page, 'world-earth');
+  },
+  async 'world-valley'(page) {
+    await openWorld(page, '#world/valley', 4000);
+    await save(page, 'world-valley');
+  },
+  async 'world-tools'(page) {
+    await openWorld(page, '#world/ecosystem', 3000);
+    await page.keyboard.press('6');
+    const box = await page.locator('#world-gl').boundingBox();
+    await page.mouse.move(box.x + box.width * 0.45, box.y + box.height * 0.55);
+    await page.mouse.down();
+    await page.waitForTimeout(600);
+    await save(page, 'world-tools');
+    await page.mouse.up();
+  },
+  async 'world-lab'(page) {
+    await openWorld(page, '#world/mechanics?view=24,0.35,0.12', 3000);
+    await save(page, 'world-lab');
+  },
+  async 'world-cell'(page) {
+    await openWorld(page, '#world/cell?view=70,0.25,0.15', 4000);
+    await save(page, 'world-cell');
+  },
+  async 'world-atlas'(page) {
+    await openWorld(page, '#world/weather', 1500);
+    await page.click('#atlas-btn');
+    await page.waitForTimeout(300);
+    await save(page, 'world-atlas');
+  },
+  async 'world-tour'(page) {
+    await openWorld(page, '#world', 500);
+    await page.check('#reduced-motion');
+    await page.click('#tour-btn');
+    for (let i = 0; i < 4; i++) await page.click('#tour-card button >> text=Next ▶');
+    await page.uncheck('#reduced-motion');
+    await page.waitForTimeout(3000);
+    await save(page, 'world-tour');
+  },
+  async 'world-couplings'(page) {
+    await openWorld(page, '#world/weather', 500);
+    for (const n of [0, 1, 3]) await page.check(`#couplings input[type=checkbox] >> nth=${n}`);
+    await page.waitForTimeout(3500);
+    await save(page, 'world-couplings', await clipOf(page, '.panel.right'));
   },
 };
 

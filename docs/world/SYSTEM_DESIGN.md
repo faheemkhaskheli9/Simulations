@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| **Status** | Draft v0.1 (design for review, not implemented) |
-| **Last updated** | 2026-10-18 |
+| **Status** | v1.0: implemented (World Preview, the two P0 native views and five couplings); see [§17](#17-as-built-v1) for where the build differs from this design |
+| **Last updated** | 2026-10-19 |
 | **Related** | [PRD](PRD.md) · [TRD](TRD.md) · [Plan](PLAN.md) · [ADR-006](../adr/006-in-house-webgl2-renderer.md) · [ADR-007](../adr/007-nested-scale-frames.md) · [ADR-008](../adr/008-sites-wrap-existing-modules.md) · 2D [System Design](../SYSTEM_DESIGN.md) |
 
 ---
@@ -64,29 +64,30 @@ New code lives under `src/world/`; nothing in `src/sims/` or `src/core/` moves.
 
 | Path | Responsibility |
 |---|---|
-| `src/world/engine/math3d.js` | vec3, quat, mat4 (Float64Array on the CPU), conversions to Float32Array |
-| `src/world/engine/gl.js` | Context creation, capability detection, shader/program, buffer, VAO, texture helpers, context-loss handling |
-| `src/world/engine/renderer.js` | Frame orchestration: layers, depth clears, passes (opaque, instanced, lines, transparent, overlay), stats |
-| `src/world/engine/meshes.js` | Procedural meshes: sphere (UV and icosphere), plane, box, terrain grid, ring, marker billboard |
-| `src/world/engine/materials.js` | Shader sources: unlit, lambert, instanced points/spheres, lines with width, textured surface, globe, starfield, glow |
-| `src/world/engine/camera3d.js` | Orbit camera stored as (place, target, distance, yaw, pitch); fly-to animation; projection |
-| `src/world/engine/ray.js` | Screen → ray, ray–plane, ray–sphere, ray–AABB, ray–instanced-spheres |
-| `src/world/places.js` | `Place` tree: frames, units, size, hand-over thresholds, path ↔ id |
-| `src/world/layout.js` | The default world: places and site entries (data only) |
-| `src/world/site.js` | `Site` base: wraps a `Simulation`, tier, surface, pick/tool mapping |
-| `src/world/surface-site.js` | 2D adapter: renders the module's `render()` into an OffscreenCanvas texture on a plane, globe patch or slab |
-| `src/world/native/*.js` | Native 3D views per module (`gravity3d.js`, `globe.js`, …) built on `render3D` hooks |
-| `src/world/scheduler.js` | Activity tiers and per-frame step budget |
-| `src/world/couplings.js` | Coupling definitions and the exchange tick |
-| `src/world/world.js` | `World`: owns places, sites, scheduler, couplings; lazy site creation; serialisation |
-| `src/world/routes.js` | `#world/...` parse/format, camera encoding |
-| `src/world/ui/world-app.js` | Controller: main loop, pointer → tools, place hand-over, panels binding |
-| `src/world/ui/atlas.js`, `breadcrumb.js`, `scalebar.js`, `tour.js` | Navigation UI |
-| `src/ui/site-panels.js` | **Extracted from `app.js`**: tools, parameters, inspector, stats, chart, history for one `Simulation`; used by both apps |
+| `src/world/engine/math3d.js` | Vectors, bases, mat4 (Float64Array on the CPU), yaw/pitch helpers |
+| `src/world/engine/ray.js` | Screen → ray, ray–plane, ray–sphere, ray–AABB, nearest of many spheres |
+| `src/world/engine/meshes.js` | Procedural meshes as typed arrays: sphere, quad, box, disc, circles |
+| `src/world/engine/materials.js` | GLSL: textured/lit meshes, instanced spheres, points, 1 px lines |
+| `src/world/engine/gl.js` | WebGL2 helpers: programs, buffers, attributes, textures, availability check |
+| `src/world/engine/renderer.js` | Layers (near/far + depth clear), draw calls, textures, context-loss rebuild |
+| `src/world/engine/colors.js` | CSS colour → RGBA |
+| `src/world/engine/camera3d.js` | Orbit camera as (place, target, offset); log zoom; hand-over; fly-to across scales |
+| `src/world/places.js` | `Place` tree: units, frames (incl. on a globe), extents, conversions, lengths |
+| `src/world/layout.js` | The default world and the guided tour (data only) |
+| `src/world/site.js` | `Site` base (lazy sim, tiers, history) and `SurfaceSite` (module drawn into a texture) |
+| `src/world/native/gravity3d.js` | Native Gravity view: bodies, halos, trails, labels on the orbital plane |
+| `src/world/native/globe.js` | Native Global Climate view: band texture on a globe lit at the model's declination |
+| `src/world/scheduler.js` | Active and ambient stepping within a budget; catch-up; error isolation |
+| `src/world/couplings.js` | Coupling definitions, loop check, smoothing, clamping |
+| `src/world/world.js` | `World`: places, sites, tiers, following bodies, couplings, saves |
+| `src/world/routes.js` | `#world/...` parse/format/resolve |
+| `src/world/ui/world-stage.js` | Controller: main loop, layers, picking, tools, camera input, HUD |
+| `src/world/ui/hud.js`, `atlas.js`, `tour.js`, `coupling-panel.js` | Breadcrumb, scale bar, markers, labels; Atlas; tour; Connected science panel |
+| `src/ui/tools.js` | The six tools as contract calls, shared by the 2D app and the world |
 
-`index.html` gains a `<canvas id="world-gl">` in the stage and an *Enter the World*
-button on the welcome screen. The route decides which app runs: `#world…` → `WorldApp`,
-anything else → the 2D `App`.
+`index.html` has a `<canvas id="world-gl">` and the HUD in the stage, a **🌍 World** button
+in the top bar and *Enter the 3D world* on the welcome screen. The route decides what the
+stage shows: `#world…` → the world (loaded on first use), anything else → the 2D view.
 
 ## 4. Places and frames
 
@@ -336,6 +337,11 @@ interface Coupling {
 }
 ```
 
+Built in v1 (all off by default): **Earth's orbit → Climate** (Earth–Sun distance → `solar`),
+**Climate → Weather** (sunlight at the valley's latitude → `sun`), **Climate → Ecosystem**
+(temperature → `temperature`), **Weather → Ecosystem** (rain in the last 10 s → `growth`) and
+**Climate → Epidemic** (winter → higher `beta`). The table below is the original plan.
+
 | Coupling | Reads | Writes | New module surface needed |
 |---|---|---|---|
 | Stars → Climate | Sun-like star's luminosity (`describe` field `L`) | `climate.solar` (× 1361 W/m²) | `outputs()` on Stars for a tagged "Sun" star |
@@ -460,3 +466,20 @@ worker's cache list and bump `CACHE`. The world adds no build step.
 | WebGPU rendering | Second backend behind `Renderer3DApi` |
 | Headsets | WebXR session on the same renderer (two views per frame) |
 | Deeper coupling | Field couplings (e.g. climate map → weather boundary profile) using `outputs()` with arrays |
+
+## 17. As built (v1)
+
+Where the implementation differs from the design above, and why:
+
+| Design | As built | Reason |
+|---|---|---|
+| `SitePanels` extracted from `app.js`; a separate `WorldApp` | The panels stay in `App`; `App.bindSim(sim, { history, driven })` binds the active site, and the world is a *stage* of the same app (`WorldStage`) | Review R1: smaller change, the 2D app is untouched in behaviour |
+| Camera as (place, target, distance, yaw, pitch) | (place, target, offset) with an eased up vector | Review R4: exact hand-over into rotated frames (the valley on the globe) |
+| Fly-to in the common ancestor's units | Each moment of a flight works in the deepest place whose extent contains the camera distance | Precision at both ends of a galaxy-to-atom flight |
+| Ray–instanced-sphere picking in 3D | Native Gravity picks on its orbital plane with the module's own `pick` | No 3D physics mode yet, so bodies lie on the plane |
+| Labels from a canvas text atlas; billboards | DOM buttons (markers) and spans (planet names) over the canvas | Review R7: accessible and simpler |
+| Lines with a width | 1 px lines | Review R10: WebGL2 ignores widths above 1 |
+| Stars → Climate first | Earth's orbit → Climate, Climate → Weather/Ecosystem/Epidemic, Weather → Ecosystem | Stars has no "Sun" star yet (review R9); Stars → Climate stays on the plan |
+| — | Zooming over a moving place's marker locks the camera onto it | The Earth moves 2π AU per two seconds in the Solar System scenario |
+| — | Ancestor places' sites are frozen while you are inside a child | The orbiting Earth would otherwise swing the Sun round the sky |
+| — | A site may set parameters for its setting (`params` in the layout) | The galaxy collision runs slower in the world so it can be watched |

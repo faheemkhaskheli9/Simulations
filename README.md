@@ -8,6 +8,15 @@ parameters of the physics while it runs.
 
 It runs in the browser with no dependencies and no build step.
 
+**New: the 3D world.** Press **🌍 World** to fly through every simulation in one world, from
+two colliding galaxies down to a single atom: the Solar System, the Earth's climate on a
+globe, a thunderstorm, a savanna and a town in a valley, a lab, a cell under a microscope
+and molecules in a sample chamber. The same tools work everywhere, and *Connected science*
+links the simulations (the Earth's orbit sets the climate, the climate sets the weather,
+rain feeds the savanna).
+
+![The valley in the 3D world: a thunderstorm, a savanna and a town](docs/images/world-valley.jpg)
+
 ![A thunderstorm building in the Weather & Atmosphere simulation](docs/images/sim-weather.jpg)
 
 📖 **New here? Read the illustrated [User Guide](docs/USER_GUIDE.md).** Every parameter, scenario and statistic is listed in the [Simulation Reference](docs/REFERENCE.md).
@@ -54,6 +63,7 @@ by changing the system and watching what happens.
 | ![Rope bridge](docs/images/sim-mechanics.jpg) **Mechanics Lab:** a rope bridge catching a heavy ball | ![Ice-age Earth](docs/images/sim-climate.jpg) **Global Climate:** an ice-age Earth at 180 ppm CO₂ |
 | ![Cell respiration](docs/images/sim-cell.jpg) **Cell Biology:** mitochondria, pumps and the membrane potential | ![Predator and prey](docs/images/sim-ecosystem.jpg) **Ecosystem & Evolution:** prey coloured by their evolving speed gene |
 | ![Epidemic](docs/images/sim-epidemic.jpg) **Epidemic Spread:** an outbreak moving through a town | ![Greenhouse lesson](docs/images/lesson-card.jpg) **Guided lesson:** the greenhouse effect, step by step |
+| ![Deep space](docs/images/world-deep.jpg) **3D world:** deep space, with the Milky Way and two galaxies colliding | ![The Earth](docs/images/world-earth.jpg) **3D world:** the climate model on a globe, with polar ice |
 
 More screenshots, one for every tool and feature, are in the [User Guide](docs/USER_GUIDE.md).
 
@@ -113,8 +123,12 @@ src/core/                   engine pieces shared by all simulations
   math.js                   helpers (black-body colour, formatting…)
 src/sims/                   one file per simulation module (+ index.js registry)
 src/lessons/                guided lessons and challenges, and the runner that checks them
-src/ui/                     camera, chart and application UI
-tests/                      node:test suites (physics checks + interaction contract)
+src/ui/                     camera, chart, tools and application UI
+src/world/                  the 3D world: places, sites, couplings, saves and links
+  engine/                   small WebGL2 engine: maths, rays, meshes, shaders, renderer, camera
+  native/                   native 3D views (Gravity, the climate globe)
+  ui/                       world controller, HUD, Atlas, tour, couplings panel
+tests/                      node:test suites (physics, contract, world) and browser tests (tests/e2e)
 docs/                       PRD, TRD, system design, module guide, test plan, roadmap, user guide, ADRs
 ```
 
@@ -128,6 +142,7 @@ docs/                       PRD, TRD, system design, module guide, test plan, ro
 | [Module Guide](docs/MODULE_GUIDE.md) | How to add a new simulation |
 | [Test Plan](docs/TEST_PLAN.md) | Test strategy, inventory, release checklist |
 | [Roadmap](docs/ROADMAP.md) | Milestones and future simulations |
+| [3D world: plan](docs/world/PLAN.md), [PRD](docs/world/PRD.md), [TRD](docs/world/TRD.md), [design](docs/world/SYSTEM_DESIGN.md) | The single 3D world: plan and progress, requirements with status, architecture |
 | [User Guide](docs/USER_GUIDE.md) | How to use the tools, experiments to try, glossary |
 | [Architecture Decision Records](docs/adr/) | Key technical decisions |
 | [Contributing](CONTRIBUTING.md) | Workflow and conventions |

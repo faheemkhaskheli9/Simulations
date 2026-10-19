@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Last updated** | 2026-10-16 |
+| **Last updated** | 2026-10-19 |
 | **Related** | [TRD](TRD.md) (requirement IDs referenced below) · [System Design §10](SYSTEM_DESIGN.md#10-testing-strategy) |
 
 ## 1. Objectives
@@ -20,7 +20,8 @@
 | Contract | `node:test`, loops over the registry | `tests/contract.test.js` | Every change |
 | Behaviour / scenario | `node:test`, runs scenarios for N steps | per-module test files | Every change |
 | Serialization | `node:test`, loops over the registry | `tests/serialize.test.js` | Every change |
-| Browser end-to-end | Playwright (Chromium) via `node:test` | `tests/e2e/app.e2e.mjs` | CI on every push / PR (`npm run test:e2e`) |
+| Browser end-to-end | Playwright (Chromium) via `node:test` | `tests/e2e/app.e2e.mjs`, `tests/e2e/world.e2e.mjs` | CI on every push / PR (`npm run test:e2e`) |
+| 3D world (unit) | `node:test`, no DOM or GL | `tests/world-*.test.js` | Every change |
 | Manual exploratory | Checklist below | — | Before release |
 | Performance | Frame-time readout (`ms/frame` in the top bar) and headless timing | — | Before release |
 
@@ -89,12 +90,17 @@ npm run test:e2e             # real-browser tests
 | `reference.test.js` | `docs/REFERENCE.md` is identical to what the code generates (docs can't go stale) | MQ |
 | `lessons.test.js` | every lesson references a real module, scenario and parameters, and is **played through to completion** with a scripted solution | M5 |
 | | challenges fail when their rule is broken (and when the learner does nothing: outbreak spreads, predators starve; the molecule kit never assembles itself); manual steps wait for Next | M5 |
+| `world-math.test.js` | vectors, bases, matrices, yaw/pitch; ray–plane/sphere/box/nearest-sphere against reference values; meshes; colours | W-FT-8 |
+| `world-places.test.js` | child ↔ parent conversion to 1e-9; log zoom; hand-over hysteresis at ±1 % for every place; eye fixed across hand-over; fly-to galaxy → atom on time and precise; camera save/restore; no GPU coordinate above 10⁶ in any default scene | W-FT-1…3, W-FT-6, W-AR-7 |
+| `world-sites.test.js` | layout names real modules and scenarios, every module has a site, unique ids, modules never import world code; lazy creation, tiers, unloading with state kept; rays hit module points within half a texel; **the six tools make the same calls as in 2D** at the same on-screen scale; a site with no couplings evolves exactly like its 2D module; offline cache list, 250 KB budget, GL only in the engine | W-AR-1, W-AR-3, W-AR-6, W-FT-20…27, W-FT-60, W-TC-2, W-TC-6, W-TC-8 |
+| `world-runtime.test.js` | scheduler (fake clock: active step, budget, round-robin, catch-up cap, adaptation, error isolation); couplings (off by default, loops refused, smoothing, clamping, non-finite values ignored, coupled sites kept ambient, Earth's orbit cools the climate, rain → growth, seasons → weather); routes; saves (contents, round-trip with identical future, rejection of bad files with nothing changed, 2D saves open at their site); globe bands within 0.5° and lit at the declination; soak with every coupling | W-FT-40…43, W-FT-60…64, W-FT-80…84, W-SM-6, W-SM-8, W-RR-3, W-RR-4 |
 | `e2e/app.e2e.mjs` | per module: every tool in the real UI with no console errors | FT-13, RR-* |
+| `e2e/world.e2e.mjs` | the world opens and draws; every tool on all 12 sites with no console errors; Atlas by keyboard (< 4 s flight); reduced motion; scrolling from deep space to one atom; per-site undo; world save → load; share link reproduces site, parameters and camera; driven parameter read-only; Open in 2D carries state; WebGL context loss recovered; lessons fly to their site; the tour; no-WebGL2 fallback | W-FT-6, W-FT-7, W-FT-29, W-FT-63, W-FT-80…86, W-UA-1, W-UA-3, W-RR-1 |
 | | welcome screen: one card and live thumbnail per simulation, opens a simulation, can be turned off | FT-28 |
 | | undo/redo an added object; save → load a file; shared link parameters; CSV download | FT-24…27 |
 | | Model & assumptions dialog; lesson catalogue → lesson advancing on real clicks; `#learn/<id>` links; completion stored | M5 |
 
-Current result: **195 unit tests and 20 browser tests, all passing.**
+Current result: **246 unit tests and 45 browser tests, all passing.**
 
 ## 4. Browser smoke test
 
@@ -134,4 +140,5 @@ browser dev-tools performance profiles on the reference machine.
 ## 8. Planned improvements
 
 - Long-run soak tests (10⁴ steps) checking bounded memory and finite state.
-- Visual regression snapshots for each scenario.
+- Visual regression snapshots for each scenario and each place of the 3D world.
+- A scripted-tour performance probe for the 3D world on the reference laptop (W-PR-1…8).

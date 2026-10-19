@@ -53,7 +53,8 @@ along two tracks: the **platform** (persistence, performance, 3D, education) and
 - [ ] WebGPU compute for grids (weather, fluids) and particles (atoms, galaxies)
 - [x] Barnes–Hut tree for gravity (used from 64 massive bodies; new 2000-star *Star cluster* scenario)
 - [ ] Neighbour lists for molecular dynamics
-- [ ] Optional 3D view (space, molecules) with the same tools
+- [x] Optional 3D view with the same tools: the **3D world** (Gravity and Global Climate in native 3D; every other module on a surface)
+- [ ] Native 3D for molecules, weather and the ecosystem; a 3D gravity mode with inclined orbits
 - [ ] Weather: 2D horizontal (map) mode, ice microphysics, lightning
 
 ### M5 Education (P2)
@@ -65,13 +66,14 @@ along two tracks: the **platform** (persistence, performance, 3D, education) and
 - [ ] Presenter view
 - [x] Per-module "Model & assumptions" panel with references
 
-### M6 Multi-scale worlds (P3)
+### M6 Multi-scale worlds (World Preview done)
 
-Planned in detail as **Simulations World**, one 3D world containing every simulation: see the [Plan](world/PLAN.md), [PRD](world/PRD.md), [TRD](world/TRD.md) and [System Design](world/SYSTEM_DESIGN.md).
+Built as **Simulations World**, one 3D world containing every simulation: see the [Plan](world/PLAN.md) (progress and next tasks), [PRD](world/PRD.md), [TRD](world/TRD.md) (status per requirement) and [System Design](world/SYSTEM_DESIGN.md).
 
-- [ ] Composite simulations that couple modules (weather drives the ecosystem; stellar
-      flux drives planetary climate)
-- [ ] Zoom-through-scales navigation (galaxy → star → planet → biosphere → cell → atom)
+- [x] Zoom-through-scales navigation (galaxy → star → planet → biosphere → cell → atom), with Atlas, breadcrumb, scale bar and a guided tour
+- [x] Composite simulations that couple modules: Earth's orbit → climate, climate → weather, ecosystem and epidemic, weather (rain) → ecosystem
+- [ ] Stellar flux drives planetary climate (Stars → Climate)
+- [ ] Performance budgets measured on the reference laptop; Weather in a Web Worker
 
 ## Known limitations to address
 
@@ -87,3 +89,4 @@ Planned in detail as **Simulations World**, one 3D world containing every simula
 | Cell Biology | Each particle stands for many molecules; time is accelerated; no cell division yet | Mitosis, enzyme kinetics |
 | Mechanics | Circles only; no friction model beyond rolling damping | Rigid polygons, Coulomb friction |
 | Platform | No analytics | Privacy-friendly, opt-in usage metrics |
+| 3D world | Gravity runs on its orbital plane (no inclinations yet); Atoms, Weather and Ecosystem are 2D surfaces in 3D; 1 px lines; performance only measured on a software GPU | 3D gravity mode, native views, wide lines, reference-laptop benchmarks |
