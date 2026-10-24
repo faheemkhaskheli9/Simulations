@@ -1,6 +1,6 @@
 // Native 3D view of the Gravity module: bodies as lit spheres or glowing points
 // on the orbital plane (or above and below it in the module's 3D mode, where
-// module z is the place's up axis), with trails and labels. It reads the module's public
+// module z is the place's up axis), with trails, orbit ellipses and labels. It reads the module's public
 // state and changes it only through the contract (review R2).
 import { Site } from '../site.js';
 import { v3 } from '../engine/math3d.js';
@@ -112,6 +112,20 @@ export class GravitySite extends Site {
           buf[i * 3 + 2] = at[2] + (b.trail[i * 2 + 1] - oy) * this.scale - fc.eye[2];
         }
         r.lines(buf, hexColor(b.color, 0.4));
+      }
+    }
+    // Orbit ellipses: one closed loop per body bound to its host.
+    if (sim.params.orbits) {
+      for (const { body, points } of sim.orbitEllipses()) {
+        if (hidden.has(body.name)) continue;
+        const n = points.length / 3, buf = new Float32Array((n + 1) * 3);
+        for (let i = 0; i <= n; i++) {
+          const j = (i % n) * 3;
+          buf[i * 3] = this.center[0] + (points[j] - ox) * this.scale - fc.eye[0];
+          buf[i * 3 + 1] = this.center[1] + (points[j + 2] - oz) * this.scale - fc.eye[1];
+          buf[i * 3 + 2] = this.center[2] + (points[j + 1] - oy) * this.scale - fc.eye[2];
+        }
+        r.lines(buf, hexColor(body.color, 0.55));
       }
     }
     r.spheres(this.spheres, ns);

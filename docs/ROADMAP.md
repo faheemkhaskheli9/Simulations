@@ -92,7 +92,7 @@ Built as **Simulations World**, one 3D world containing every simulation: see th
 | Cell Biology | Each particle stands for many molecules; time is accelerated; no cell division yet | Mitosis, enzyme kinetics |
 | Mechanics | Circles only; no friction model beyond rolling damping | Rigid polygons, Coulomb friction |
 | Platform | No analytics | Privacy-friendly, opt-in usage metrics |
-| 3D world | The Cell and Atom views are render-only (their models stay 2D); 1 px lines; performance only measured on a software GPU | Orbit ellipses, wide lines, reference-laptop benchmarks |
+| 3D world | The Cell and Atom views are render-only (their models stay 2D); 1 px lines; performance only measured on a software GPU | Wide lines, reference-laptop benchmarks |
 
 
 ## Future execution plan (2026-10-19)

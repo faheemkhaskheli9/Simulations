@@ -60,6 +60,7 @@ N-body gravity: planets, moons, stars, black holes and galaxies. Fling bodies, a
 | Collision radius × | `collisionScale` | 1 – 500 (log scale) | 20 |
 | New bodies start in orbit | `orbitOnAdd` | on / off | on |
 | Show trails | `trails` | on / off | on |
+| Show orbit ellipses | `orbits` | on / off | off |
 
 ### Things you can add
 

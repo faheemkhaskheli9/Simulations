@@ -37,7 +37,7 @@ export const PLACES = [
     primary: 'planets',
     sites: [
       { id: 'planets', sim: 'gravity', scenario: 'solar', label: 'Solar System', type: 'gravity', at: [0, 0, 0], scale: 1,
-        hideInside: { earth: ['Earth', 'Moon'] }, view: { offset: [0, 7, 11] } },
+        hideInside: { earth: ['Earth', 'Moon'] }, params: { orbits: true }, view: { offset: [0, 7, 11] } },
     ],
   },
   {
@@ -50,7 +50,7 @@ export const PLACES = [
       { id: 'climate', sim: 'climate', scenario: 'preindustrial', label: 'Global climate', type: 'globe', at: [0, 0, 0], radius: 6371,
         view: { offset: [0, 4000, 19000] } },
       { id: 'moon', sim: 'gravity', scenario: 'earthMoon', label: 'Earth & Moon', type: 'gravity', at: [0, 0, 0], scale: AU / 1e3,
-        origin: 'Earth', hide: ['Earth'], lit: true, markAt: 'Moon', view: { offset: [0, 300000, 520000] } },
+        origin: 'Earth', hide: ['Earth'], lit: true, markAt: 'Moon', params: { orbits: true }, view: { offset: [0, 300000, 520000] } },
     ],
   },
   {
