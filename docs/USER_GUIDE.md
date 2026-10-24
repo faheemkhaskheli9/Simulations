@@ -577,15 +577,21 @@ far-away ones pause.
 All six tools work by pointing at the active site: click a planet to inspect it, drag a
 ball in the lab, add animals to the savanna, push the Moon, warm a patch of the globe.
 The brush shows as a ring on the surface. Most simulations appear on a **surface**
-(a ground patch, a screen or a cross-section) drawn exactly as in 2D; **Gravity**,
-**Global Climate** and **Ecosystem** have **native 3D views** (orbits in space, a lit
-globe, and the savanna as a raised block of land whose fertile ground stands higher,
-with each animal standing on it and facing where it heads). Feeding the land with the
-Energy tool raises it; a drought lowers it. The
+(a ground patch or a screen) drawn exactly as in 2D; **Gravity**, **Global Climate**,
+**Ecosystem** and **Weather** have **native 3D views** (orbits in space, a lit globe,
+the savanna as a raised block of land whose fertile ground stands higher, with each
+animal standing on it and facing where it heads, and the weather as a block of air).
+Feeding the land with the Energy tool raises it; a drought lowers it. In the weather
+block, the ground and its mountains and lakes run through the whole depth, clouds are
+soft puffs and rain (or snow, in freezing air) falls as streaks. The module's own
+picture stays on the back wall, so every *Display* still shows, and the tools act on the
+middle of the block. The valley's sky follows the weather: it darkens at night and turns
+grey as cloud covers it. The
 colliding galaxies in deep space run Gravity's 3D physics, so their tilted disks and
 tidal tails have real depth.
 
-![The valley: the thunderstorm cross-section, the savanna and the town](images/world-valley.jpg)
+![The valley: the thunderstorm, the savanna and the town](images/world-valley.jpg)
+![The thunderstorm as a block of air: cloud puffs over the ground strip, with the slice on the back wall](images/world-weather.jpg)
 ![Using the Energy tool on the savanna in the world](images/world-tools.jpg)
 ![The mechanics lab at the science campus](images/world-lab.jpg)
 ![A cell under the microscope, with the marker into the sample chamber](images/world-cell.jpg)

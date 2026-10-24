@@ -61,8 +61,8 @@ export const PLACES = [
     decor: [{ kind: 'ground', radius: 300, color: '#5f7d48' }],
     primary: 'weather',
     sites: [
-      { id: 'weather', sim: 'weather', scenario: 'storm', label: 'Weather', type: 'surface', surface: 'slab',
-        center: [0, 8, -10], width: 32, view: { offset: [0, 12, 38] } },
+      { id: 'weather', sim: 'weather', scenario: 'storm', label: 'Weather', type: 'volume',
+        center: [0, 8, -10], width: 32, depth: 8, view: { offset: [0, 12, 38] } },
       { id: 'ecosystem', sim: 'ecosystem', scenario: 'balanced', label: 'Savanna ecosystem', type: 'terrain',
         center: [-9, 0.02, 4.5], width: 12, view: { offset: [0, 9, 8] } },
       { id: 'epidemic', sim: 'epidemic', scenario: 'town', label: 'Town (epidemic)', type: 'surface', surface: 'ground',

@@ -178,31 +178,31 @@ export class SurfaceSite extends Site {
 
   drawSelection() {} // drawn into the texture, exactly as in the 2D app
 
-  render(fc) {
+  /** Redraw the module's 2D picture into the site's texture when it is due. */
+  updatePicture(fc, highlight = true) {
     const sim = this.sim, r = fc.renderer;
     const due = this.tier === 'active' || !this.drawn || fc.time - (this.lastDraw ?? 0) >= 1 / fc.ambientHz;
-    if (due || !r.hasTexture(this.texKey)) {
-      const want = this.tier === 'active' ? fc.texturePx : fc.texturePx / 2;
-      if (Math.max(...this.texSize) !== want) this.fitTexture(want);
-      const [w, h] = this.texSize;
-      const canvas = fc.canvas(this, w, h);
-      const ctx = canvas.getContext('2d');
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.fillStyle = sim.background;
-      ctx.fillRect(0, 0, w, h);
-      sim.render(ctx, this.view2d, { selected: fc.selected, width: w, height: h });
-      if (fc.selected) this.drawHighlight(ctx, fc.selected);
-      r.texture(this.texKey, canvas, ++this.version);
-      this.drawn = true;
-      this.lastDraw = fc.time;
-    }
+    if (!due && r.hasTexture(this.texKey)) return;
+    const want = this.tier === 'active' ? fc.texturePx : fc.texturePx / 2;
+    if (Math.max(...this.texSize) !== want) this.fitTexture(want);
+    const [w, h] = this.texSize;
+    const canvas = fc.canvas(this, w, h);
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = sim.background;
+    ctx.fillRect(0, 0, w, h);
+    sim.render(ctx, this.view2d, { selected: fc.selected, width: w, height: h });
+    if (highlight && fc.selected) this.drawHighlight(ctx, fc.selected);
+    r.texture(this.texKey, canvas, ++this.version);
+    this.drawn = true;
+    this.lastDraw = fc.time;
+  }
+
+  render(fc) {
+    const r = fc.renderer;
+    this.updatePicture(fc);
     const model = mat4.model(this.basis, v3.sub(this.center, fc.eye), [this.width, 1, this.height]);
     r.mesh('quad', model, { texture: this.texKey, lit: 0 });
-    if (this.spec.surface === 'slab') {
-      // A thin dark block behind the cross-section gives it depth.
-      const back = v3.add(this.center, basisApply(this.basis, [0, -this.width * 0.046, 0])); // front face just behind the picture
-      r.mesh('box', mat4.model(this.basis, v3.sub(back, fc.eye), [this.width, this.width * 0.08, this.height]), { color: [0.12, 0.15, 0.22, 1], lit: 0.6 });
-    }
     // Frame, so a dark module still reads as an object in the world.
     const c = [[-0.5, -0.5], [0.5, -0.5], [0.5, 0.5], [-0.5, 0.5], [-0.5, -0.5]]
       .flatMap(([a, b]) => fc.rel(v3.add(this.center, basisApply(this.basis, [a * this.width, 0.001 * this.width, b * this.height]))));

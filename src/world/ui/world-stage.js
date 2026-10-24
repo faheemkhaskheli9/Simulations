@@ -631,7 +631,7 @@ export class WorldStage {
 
   render(layers) {
     const r = this.renderer, c = this.camera, tree = this.world.tree, cur = c.place;
-    r.begin(hexColor(cur.sky));
+    r.begin(this.skyColor(cur));
     this.labels = [];
     const eye = c.eye(), fwd = c.forward(), up = c.up;
     this.layersDrawn = [];
@@ -661,6 +661,13 @@ export class WorldStage {
       }
       if (this.world.active?.place === place) this.drawGizmos(fc);
     }
+  }
+
+  /** The place's sky, or a loaded site's tint of it (the Weather volume's time of day and clouds). */
+  skyColor(place) {
+    const base = hexColor(place.sky);
+    const site = place.sites.find((s) => s.sim && s.skyTint);
+    return site ? site.skyTint(base) : base;
   }
 
   /** Near and far planes for one layer from the camera distance and the place's extent. */
