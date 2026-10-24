@@ -328,11 +328,13 @@ try. Every parameter, addable object and statistic is listed in the
 Newtonian gravity for planets, moons, stars, black holes and galaxies, in astronomical
 units (AU, years, solar masses). Massive bodies attract each other and merge when they
 collide; galaxy and asteroid "stars" are light test particles. Large systems use a
-Barnes–Hut tree.
+Barnes–Hut tree. Tick *3D physics* to let bodies leave the plane: orbits can tilt, and
+the inspector shows *z*, *vz* and the orbit's inclination. The 2D view looks straight
+down on the system; the [3D world](#12-the-3d-world) shows the height.
 
 **Scenarios:** Solar System, Earth & Moon, binary star with a circumbinary planet,
-three-body figure-eight, spiral galaxy, galaxy collision, star cluster, lone star, empty
-space.
+three-body figure-eight, spiral galaxy, galaxy collision, star cluster, inclined orbits
+(3D), galaxy collision in 3D, lone star, empty space.
 
 **Try this**
 - In the *Solar System*, inspect Earth: its period is 1 year. Multiply Jupiter's mass by
@@ -343,6 +345,10 @@ space.
 - *Spiral galaxy*: set *Dark-matter halo speed* to 0 and the outer stars drift away, which
   is why astronomers proposed dark matter.
 - *Galaxy collision*: the cores merge and the stars are flung into tidal tails.
+- *Inclined orbits (3D)*: planets tilted 0°, 15°, 30°, 90° (polar) and 150°
+  (retrograde). Inspect one: its inclination stays put while it orbits.
+- *Galaxy collision in 3D*: two tilted disks meet; open it in the 3D world to see the
+  tails rise above and below the plane.
 
 ### Stellar Life Cycles · Space
 
@@ -572,7 +578,9 @@ All six tools work by pointing at the active site: click a planet to inspect it,
 ball in the lab, add animals to the savanna, push the Moon, warm a patch of the globe.
 The brush shows as a ring on the surface. Most simulations appear on a **surface**
 (a ground patch, a screen or a cross-section) drawn exactly as in 2D; **Gravity** and
-**Global Climate** have **native 3D views** (orbits in space and a lit globe).
+**Global Climate** have **native 3D views** (orbits in space and a lit globe). The
+colliding galaxies in deep space run Gravity's 3D physics, so their tilted disks and
+tidal tails have real depth.
 
 ![The valley: the thunderstorm cross-section, the savanna and the town](images/world-valley.jpg)
 ![Using the Energy tool on the savanna in the world](images/world-tools.jpg)

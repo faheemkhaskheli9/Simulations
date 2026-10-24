@@ -237,7 +237,8 @@ part, or verified only in part · **Open**: not built yet. Test files are in `te
 ### Science, performance, reliability, usability, security, quality
 | ID | Status | Evidence / notes |
 |---|---|---|
-| W-SM-1…5 | Open | The optional 3D physics modes are not built yet |
+| W-SM-1…4 | Met | `gravity3d.test.js`: a 30° orbit closes within 0.01 AU in 1 yr and keeps its tilt within 0.1°; energy drift < 1e-6 and angular momentum vector to 1e-8; octree mean force error ≤ 3 % at θ = 0.6; golden fingerprints of every 2D scenario, recorded before the 3D mode, still match |
+| W-SM-5 | Open | The Atoms 3D mode is not built yet |
 | W-SM-6 | Met | `world-runtime.test.js` (bands within 0.5°, light at the model's declination) |
 | W-SM-7 | Open | Needs a "Sun" star in Stars. Earth's orbit → Climate is built and tested instead |
 | W-SM-8 | Met | `world-runtime.test.js` |

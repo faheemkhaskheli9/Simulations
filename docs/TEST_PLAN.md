@@ -42,6 +42,7 @@ npm run test:e2e             # real-browser tests
 | | collisions merge bodies conserving mass and momentum | SM-3 |
 | | bodies added near a star start on a bound orbit | SM-4 |
 | | every scenario loads and steps (finite values) | FT-1, RR-1 |
+| `gravity3d.test.js` | 3D mode: a 30° orbit closes in one year and keeps its tilt; energy and angular-momentum vector conserved; octree force error ≤ 3 % at θ = 0.6; every 2D scenario bit-identical to golden fingerprints; inclined-orbits and 3D galaxy scenarios; save/load and flattening | W-SM-1…4 |
 | `stellar.test.js` | present-day Sun is a G-type main-sequence star | SM-5 |
 | | lifetimes shrink steeply with mass | SM-5 |
 | | end states depend on initial mass | SM-6 |
@@ -100,7 +101,7 @@ npm run test:e2e             # real-browser tests
 | | undo/redo an added object; save → load a file; shared link parameters; CSV download | FT-24…27 |
 | | Model & assumptions dialog; lesson catalogue → lesson advancing on real clicks; `#learn/<id>` links; completion stored | M5 |
 
-Current result: **246 unit tests and 45 browser tests, all passing.**
+Current result: **258 unit tests and 45 browser tests, all passing.**
 
 ## 4. Browser smoke test
 

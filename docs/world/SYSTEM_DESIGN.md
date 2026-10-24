@@ -476,7 +476,7 @@ Where the implementation differs from the design above, and why:
 | `SitePanels` extracted from `app.js`; a separate `WorldApp` | The panels stay in `App`; `App.bindSim(sim, { history, driven })` binds the active site, and the world is a *stage* of the same app (`WorldStage`) | Review R1: smaller change, the 2D app is untouched in behaviour |
 | Camera as (place, target, distance, yaw, pitch) | (place, target, offset) with an eased up vector | Review R4: exact hand-over into rotated frames (the valley on the globe) |
 | Fly-to in the common ancestor's units | Each moment of a flight works in the deepest place whose extent contains the camera distance | Precision at both ends of a galaxy-to-atom flight |
-| Ray–instanced-sphere picking in 3D | Native Gravity picks on its orbital plane with the module's own `pick` | No 3D physics mode yet, so bodies lie on the plane |
+| Ray–instanced-sphere picking in 3D | Native Gravity picks on its orbital plane with the module's own `pick` | In the 3D physics mode a body is picked where it projects onto the plane |
 | Labels from a canvas text atlas; billboards | DOM buttons (markers) and spans (planet names) over the canvas | Review R7: accessible and simpler |
 | Lines with a width | 1 px lines | Review R10: WebGL2 ignores widths above 1 |
 | Stars → Climate first | Earth's orbit → Climate, Climate → Weather/Ecosystem/Epidemic, Weather → Ecosystem | Stars has no "Sun" star yet (review R9); Stars → Climate stays on the plan |

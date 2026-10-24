@@ -2,6 +2,7 @@ import { Simulation } from '../core/simulation.js';
 import { fmt, TAU } from '../core/math.js';
 import { pick } from '../core/serialize.js';
 import { BarnesHut } from '../core/barnes-hut.js';
+import { Octree } from '../core/octree.js';
 
 // Above this many massive bodies the Barnes–Hut tree beats the direct sum.
 const TREE_MIN = 64;
@@ -44,7 +45,7 @@ export class GravitySim extends Simulation {
     title: 'Gravity & Orbits',
     category: 'Space',
     description:
-      'N-body gravity: planets, moons, stars, black holes and galaxies. Fling bodies, add new ones in orbit, change masses, or turn on a dark-matter halo to flatten galactic rotation curves.',
+      'N-body gravity: planets, moons, stars, black holes and galaxies. Fling bodies, add new ones in orbit, change masses, turn on a dark-matter halo to flatten galactic rotation curves, or switch to full 3D for inclined orbits and tilted galaxies.',
     model: {
       summary: 'Newtonian N-body gravity in astronomical units (AU, years, solar masses), so G = 4π² and Earth orbits in one year.',
       equations: [
@@ -52,12 +53,12 @@ export class GravitySim extends Simulation {
         'Kick–drift–kick leapfrog: v += a·dt/2; x += v·dt; v += a·dt/2',
       ],
       assumptions: [
-        'Point masses in a 2D plane; no relativity, tides or radiation pressure.',
+        'Point masses in a 2D plane, or in full 3D with the 3D physics option (inclined orbits); no relativity, tides or radiation pressure.',
         'Plummer softening ε avoids infinite forces at close approach.',
         'Colliding bodies merge, conserving mass and momentum (inelastic).',
         'Test particles (galaxy stars, asteroids) feel gravity but exert none.',
         'An optional flat-rotation-curve halo stands in for dark matter.',
-        'Direct O(N²) sum for small systems; above 64 massive bodies a Barnes–Hut quadtree (opening angle θ) gives O(N log N) forces.',
+        'Direct O(N²) sum for small systems; above 64 massive bodies a Barnes–Hut quadtree (an octree in 3D, opening angle θ) gives O(N log N) forces.',
       ],
       references: [
         'Hockney & Eastwood, Computer Simulation Using Particles (1988), leapfrog integration',
@@ -80,6 +81,9 @@ export class GravitySim extends Simulation {
       { key: 'softening', label: 'Softening (AU)', type: 'range', min: 0.000001, max: 2, value: 0.00001, log: true },
       { key: 'maxStep', label: 'Max integration step (yr)', type: 'range', min: 0.0001, max: 0.05, value: 0.002, log: true },
       { key: 'theta', label: 'Tree opening angle θ (0 = exact)', type: 'range', min: 0, max: 1.2, step: 0.05, value: 0.6 },
+      // Off by default: the 2D paths below stay untouched, so every 2D scenario
+      // evolves bit-identically whether or not this mode exists.
+      { key: 'threeD', label: '3D physics (z, inclined orbits)', type: 'checkbox', value: false },
       { key: 'haloV', label: 'Dark-matter halo speed (AU/yr)', type: 'range', min: 0, max: 80, step: 0.5, value: 0 },
       { key: 'merge', label: 'Merge on collision', type: 'checkbox', value: true },
       // Bodies are drawn far larger than life, so collisions use an enlarged radius.
@@ -97,6 +101,8 @@ export class GravitySim extends Simulation {
       { id: 'galaxy', label: 'Spiral galaxy (test stars)' },
       { id: 'galaxyCollision', label: 'Galaxy collision' },
       { id: 'cluster', label: 'Star cluster (2000 self-gravitating stars)' },
+      { id: 'inclined', label: 'Inclined orbits (3D)' },
+      { id: 'galaxy3d', label: 'Galaxy collision in 3D (tilted disks)' },
       { id: 'lonelyStar', label: 'Lone star (launch your own planets)' },
       { id: 'empty', label: 'Empty space' },
     ];
@@ -104,6 +110,8 @@ export class GravitySim extends Simulation {
     this.chartKeys = ['energy', 'bodies'];
     this.tree = new BarnesHut();
     this.acc = [0, 0];
+    this.tree3 = new Octree();
+    this.acc3 = [0, 0, 0];
     this.loadScenario('solar');
   }
 
@@ -118,11 +126,13 @@ export class GravitySim extends Simulation {
       kind,
       name: extra.name ?? `${k.label.split(' (')[0]} ${nextId - 1}`,
       x, y, vx, vy, ax: 0, ay: 0,
+      z: extra.z ?? 0, vz: extra.vz ?? 0, az: 0,
       m: extra.m ?? k.mass,
       radius: extra.radius ?? k.radius,
       color: extra.color ?? k.color,
       px: extra.px ?? k.px,
       trail: [],
+      tz: [], // trail heights, one per trail point
       alive: true,
     };
   }
@@ -137,7 +147,7 @@ export class GravitySim extends Simulation {
     super.loadScenario(id);
     this.bodies = [];
     this.params.haloV = 0;
-    for (const key of ['softening', 'merge', 'trails', 'collisionScale']) this.params[key] = this.paramDefs.find((d) => d.key === key).value;
+    for (const key of ['softening', 'merge', 'trails', 'collisionScale', 'threeD']) this.params[key] = this.paramDefs.find((d) => d.key === key).value;
     const rng = this.rng;
     rng.seed(42);
     const G = G_SI_UNITS;
@@ -216,6 +226,32 @@ export class GravitySim extends Simulation {
       this.params.trails = false;
       this.makeCluster(0, 0, 2000, 200, 1);
       this.view = { x: -700, y: -700, w: 1400, h: 1400 };
+    } else if (id === 'inclined') {
+      // Circular orbits tilted out of the reference plane, and one retrograde.
+      this.params.threeD = true;
+      this.params.yearsPerSecond = 0.5;
+      this.params.maxStep = 0.002;
+      this.addBody(this.makeBody('star', 0, 0, 0, 0, { name: 'Sun', px: 8 }));
+      const orbits = [['Flat', 0.6, 0], ['Tilt 15°', 1, 15], ['Tilt 30°', 1.5, 30], ['Polar', 2.2, 90], ['Retrograde', 3, 150]];
+      for (const [name, a, inc] of orbits) {
+        const th = rng.range(0, TAU), v = circ(1, a), i = (inc * Math.PI) / 180;
+        const [x, y, z] = tilt(a * Math.cos(th), a * Math.sin(th), i, 0);
+        const [vx, vy, vz] = tilt(-v * Math.sin(th), v * Math.cos(th), i, 0);
+        this.addBody(this.makeBody('planet', x, y, vx, vy, { name, z, vz, px: 3 }));
+      }
+      this.fixMomentum();
+      this.view = { x: -4, y: -4, w: 8, h: 8 };
+    } else if (id === 'galaxy3d') {
+      // Two disks tilted against each other and against their orbit: the tidal
+      // tails leave the plane, which a 2D model cannot show.
+      this.params.threeD = true;
+      this.params.yearsPerSecond = 3;
+      this.params.maxStep = 0.01;
+      this.params.softening = 1;
+      this.placeGalaxy([-60, -22, -12], [9, 0, 1.5], 1e4, 900, 35, 1, 0.6, 0.3);
+      this.placeGalaxy([60, 22, 12], [-9, 0, -1.5], 6e3, 600, 28, -1, 1.1, 2.2);
+      this.fixMomentum();
+      this.view = { x: -110, y: -80, w: 220, h: 160 };
     } else if (id === 'lonelyStar') {
       this.params.yearsPerSecond = 0.5;
       this.params.maxStep = 0.002;
@@ -249,6 +285,22 @@ export class GravitySim extends Simulation {
   }
 
   /**
+   * A galaxy built flat at the origin, then tilted by `inc` about the line of
+   * nodes at angle `node` and moved to `at` with velocity `vel` (3D only).
+   */
+  placeGalaxy(at, vel, M, n, R, spin, inc, node) {
+    const first = this.bodies.length;
+    this.makeGalaxy(0, 0, 0, 0, M, n, R, spin);
+    for (let i = first; i < this.bodies.length; i++) {
+      const b = this.bodies[i];
+      [b.x, b.y, b.z] = tilt(b.x, b.y, inc, node);
+      [b.vx, b.vy, b.vz] = tilt(b.vx, b.vy, inc, node);
+      b.x += at[0]; b.y += at[1]; b.z += at[2];
+      b.vx += vel[0]; b.vy += vel[1]; b.vz += vel[2];
+    }
+  }
+
+  /**
    * Plummer-sphere star cluster (projected into the plane) with n stars drawn
    * from a 0.1–2 M☉ power law, in rough virial equilibrium.
    */
@@ -278,10 +330,18 @@ export class GravitySim extends Simulation {
   }
 
   fixMomentum() {
-    let px = 0, py = 0, m = 0;
-    for (const b of this.bodies) { px += b.m * b.vx; py += b.m * b.vy; m += b.m; }
+    let px = 0, py = 0, pz = 0, m = 0;
+    for (const b of this.bodies) { px += b.m * b.vx; py += b.m * b.vy; pz += b.m * b.vz; m += b.m; }
     if (!m) return;
-    for (const b of this.bodies) { b.vx -= px / m; b.vy -= py / m; }
+    for (const b of this.bodies) { b.vx -= px / m; b.vy -= py / m; b.vz -= pz / m; }
+  }
+
+  onParamChange(key, value) {
+    // Leaving 3D projects everything onto the orbital plane.
+    if (key === 'threeD' && !value) {
+      for (const b of this.bodies) { b.z = 0; b.vz = 0; b.az = 0; b.tz.fill(0); }
+      this.accDirty = true;
+    }
   }
 
   bounds() {
@@ -291,18 +351,19 @@ export class GravitySim extends Simulation {
   saveState() {
     return {
       view: this.view,
-      bodies: this.bodies.map((b) => pick(b, ['id', 'kind', 'name', 'x', 'y', 'vx', 'vy', 'm', 'radius', 'color', 'px'])),
+      bodies: this.bodies.map((b) => pick(b, ['id', 'kind', 'name', 'x', 'y', ...(this.params.threeD ? ['z'] : []), 'vx', 'vy', ...(this.params.threeD ? ['vz'] : []), 'm', 'radius', 'color', 'px'])),
     };
   }
 
   loadState(st) {
     this.view = st.view;
-    this.bodies = st.bodies.map((b) => ({ ...this.makeBody(b.kind, b.x, b.y, b.vx, b.vy), ...b, trail: [], alive: true }));
+    this.bodies = st.bodies.map((b) => ({ ...this.makeBody(b.kind, b.x, b.y, b.vx, b.vy), ...b, trail: [], tz: [], alive: true }));
     nextId = Math.max(nextId, ...this.bodies.map((b) => b.id + 1));
     this.accDirty = true;
   }
 
   computeAcc() {
+    if (this.params.threeD) { this.computeAcc3(); return; }
     const bs = this.bodies, G = this.G, eps2 = this.params.softening ** 2;
     const massive = [];
     for (const b of bs) { b.ax = 0; b.ay = 0; if (b.m > 0) massive.push(b); }
@@ -337,6 +398,63 @@ export class GravitySim extends Simulation {
     this.accDirty = false;
   }
 
+  /** The 3D counterpart of computeAcc: an octree instead of a quadtree, and z everywhere. */
+  computeAcc3() {
+    const bs = this.bodies, G = this.G, eps2 = this.params.softening ** 2;
+    const massive = [];
+    for (const b of bs) { b.ax = 0; b.ay = 0; b.az = 0; if (b.m > 0) massive.push(b); }
+    const theta = this.params.theta;
+    if (theta > 0 && massive.length >= TREE_MIN) {
+      const tree = this.tree3.build(massive), out = this.acc3;
+      for (let i = 0; i < massive.length; i++) {
+        const b = massive[i];
+        tree.accel(b.x, b.y, b.z, i, G, eps2, theta, out);
+        b.ax = out[0]; b.ay = out[1]; b.az = out[2];
+      }
+      for (const t of bs) {
+        if (t.m > 0) continue;
+        tree.accel(t.x, t.y, t.z, -1, G, eps2, theta, out);
+        t.ax = out[0]; t.ay = out[1]; t.az = out[2];
+      }
+    } else {
+      this.directAcc3(bs, massive, G, eps2);
+    }
+    const v0 = this.params.haloV;
+    if (v0 > 0 && massive.length) {
+      const c = massive.reduce((p, q) => (q.m > p.m ? q : p));
+      for (const b of bs) {
+        if (b === c) continue;
+        const dx = c.x - b.x, dy = c.y - b.y, dz = c.z - b.z;
+        const k = (v0 * v0) / (dx * dx + dy * dy + dz * dz + 1);
+        b.ax += dx * k; b.ay += dy * k; b.az += dz * k;
+      }
+    }
+    this.accDirty = false;
+  }
+
+  directAcc3(bs, massive, G, eps2) {
+    for (let i = 0; i < massive.length; i++) {
+      const a = massive[i];
+      for (let j = i + 1; j < massive.length; j++) {
+        const b = massive[j];
+        const dx = b.x - a.x, dy = b.y - a.y, dz = b.z - a.z;
+        const r2 = dx * dx + dy * dy + dz * dz + eps2;
+        const inv = G / (r2 * Math.sqrt(r2));
+        a.ax += dx * inv * b.m; a.ay += dy * inv * b.m; a.az += dz * inv * b.m;
+        b.ax -= dx * inv * a.m; b.ay -= dy * inv * a.m; b.az -= dz * inv * a.m;
+      }
+    }
+    for (const t of bs) {
+      if (t.m > 0) continue;
+      for (const s of massive) {
+        const dx = s.x - t.x, dy = s.y - t.y, dz = s.z - t.z;
+        const r2 = dx * dx + dy * dy + dz * dz + eps2;
+        const inv = (G * s.m) / (r2 * Math.sqrt(r2));
+        t.ax += dx * inv; t.ay += dy * inv; t.az += dz * inv;
+      }
+    }
+  }
+
   /** Exact pairwise sum: massive bodies attract each other; test particles feel them. */
   directAcc(bs, massive, G, eps2) {
     for (let i = 0; i < massive.length; i++) {
@@ -367,6 +485,7 @@ export class GravitySim extends Simulation {
     const n = Math.min(500, Math.max(1, Math.ceil(simDt / this.params.maxStep)));
     const h = simDt / n;
     if (this.accDirty) this.computeAcc();
+    if (this.params.threeD) { this.leapfrog3(n, h); this.time += simDt; return; }
     const bs = this.bodies;
     for (let s = 0; s < n; s++) {
       for (const b of bs) {
@@ -380,13 +499,28 @@ export class GravitySim extends Simulation {
     this.time += simDt;
   }
 
+  /** n kick–drift–kick steps of size h in 3D (separate so the 2D loop stays as it was). */
+  leapfrog3(n, h) {
+    for (let s = 0; s < n; s++) {
+      // Re-read each step: a merger replaces the array.
+      for (const b of this.bodies) {
+        b.vx += 0.5 * h * b.ax; b.vy += 0.5 * h * b.ay; b.vz += 0.5 * h * b.az;
+        b.x += h * b.vx; b.y += h * b.vy; b.z += h * b.vz;
+      }
+      this.computeAcc3();
+      for (const b of this.bodies) { b.vx += 0.5 * h * b.ax; b.vy += 0.5 * h * b.ay; b.vz += 0.5 * h * b.az; }
+      if (this.params.merge) this.collide();
+    }
+  }
+
   step(dt) {
     this.advance(dt * this.params.yearsPerSecond);
     if (this.params.trails) {
       for (const b of this.bodies) {
         if (b.m === 0 && this.bodies.length > 200) continue;
         b.trail.push(b.x, b.y);
-        if (b.trail.length > 400) b.trail.splice(0, 2);
+        b.tz.push(b.z);
+        if (b.trail.length > 400) { b.trail.splice(0, 2); b.tz.splice(0, 1); }
       }
     }
   }
@@ -402,14 +536,17 @@ export class GravitySim extends Simulation {
         const b = massive[j];
         if (!b.alive) continue;
         const rr = (a.radius + b.radius) * k;
-        if ((a.x - b.x) ** 2 + (a.y - b.y) ** 2 < rr * rr) {
+        // In 2D every z is 0, so the extra terms add exactly nothing.
+        if ((a.x - b.x) ** 2 + (a.y - b.y) ** 2 + (a.z - b.z) ** 2 < rr * rr) {
           // Perfectly inelastic merger conserving mass and momentum.
           const [big, small] = a.m >= b.m ? [a, b] : [b, a];
           const m = big.m + small.m;
           big.x = (big.x * big.m + small.x * small.m) / m;
           big.y = (big.y * big.m + small.y * small.m) / m;
+          big.z = (big.z * big.m + small.z * small.m) / m;
           big.vx = (big.vx * big.m + small.vx * small.m) / m;
           big.vy = (big.vy * big.m + small.vy * small.m) / m;
+          big.vz = (big.vz * big.m + small.vz * small.m) / m;
           big.radius = Math.cbrt(big.radius ** 3 + small.radius ** 3);
           big.m = m;
           small.alive = false;
@@ -423,7 +560,7 @@ export class GravitySim extends Simulation {
       for (const s of massive) {
         if (!s.alive) continue;
         const rr = s.radius * k;
-        if ((t.x - s.x) ** 2 + (t.y - s.y) ** 2 < rr * rr) { t.alive = false; changed = true; break; }
+        if ((t.x - s.x) ** 2 + (t.y - s.y) ** 2 + (t.z - s.z) ** 2 < rr * rr) { t.alive = false; changed = true; break; }
       }
     }
     if (changed) {
@@ -432,11 +569,11 @@ export class GravitySim extends Simulation {
     }
   }
 
-  dominantAttractor(x, y, exclude) {
+  dominantAttractor(x, y, exclude, z = 0) {
     let best = null, bestA = 0;
     for (const b of this.bodies) {
       if (b.m <= 0 || b === exclude) continue;
-      const a = b.m / ((b.x - x) ** 2 + (b.y - y) ** 2 + 1e-12);
+      const a = b.m / ((b.x - x) ** 2 + (b.y - y) ** 2 + (b.z - z) ** 2 + 1e-12);
       if (a > bestA) { bestA = a; best = b; }
     }
     return best;
@@ -451,6 +588,8 @@ export class GravitySim extends Simulation {
         const v = Math.sqrt((this.G * (host.m + b.m)) / r + (this.params.haloV ** 2));
         b.vx = host.vx - (v * dy) / r;
         b.vy = host.vy + (v * dx) / r;
+        // In 3D, start in the host's horizontal plane.
+        if (this.params.threeD) { b.z = host.z; b.vz = host.vz; }
       }
       return this.addBody(b);
     };
@@ -484,7 +623,7 @@ export class GravitySim extends Simulation {
   }
 
   move(b, x, y) {
-    b.x = x; b.y = y; b.trail = [];
+    b.x = x; b.y = y; b.trail = []; b.tz = [];
     this.accDirty = true;
   }
 
@@ -497,18 +636,20 @@ export class GravitySim extends Simulation {
   energy(x, y, r, amount) {
     const inside = this.bodies.filter((b) => (b.x - x) ** 2 + (b.y - y) ** 2 < r * r);
     if (!inside.length) return;
-    let m = 0, vx = 0, vy = 0;
-    for (const b of inside) { const w = b.m || 1e-12; m += w; vx += b.vx * w; vy += b.vy * w; }
-    vx /= m; vy /= m;
+    let m = 0, vx = 0, vy = 0, vz = 0;
+    for (const b of inside) { const w = b.m || 1e-12; m += w; vx += b.vx * w; vy += b.vy * w; vz += b.vz * w; }
+    vx /= m; vy /= m; vz /= m;
     const f = Math.exp(amount * 0.6);
     for (const b of inside) {
       b.vx = vx + (b.vx - vx) * f;
       b.vy = vy + (b.vy - vy) * f;
+      b.vz = vz + (b.vz - vz) * f;
     }
   }
 
   describe(b) {
-    const host = this.dominantAttractor(b.x, b.y, b);
+    const host = this.dominantAttractor(b.x, b.y, b, b.z);
+    const d3 = this.params.threeD;
     const fields = [
       { key: 'name', label: 'Name', type: 'text', value: b.name },
       { key: 'kind', label: 'Type', type: 'readonly', value: KINDS[b.kind]?.label ?? b.kind },
@@ -517,9 +658,11 @@ export class GravitySim extends Simulation {
       { key: 'radius', label: 'Radius (AU)', type: 'number', value: b.radius },
       { key: 'x', label: 'x (AU)', type: 'number', value: b.x },
       { key: 'y', label: 'y (AU)', type: 'number', value: b.y },
+      ...(d3 ? [{ key: 'z', label: 'z (AU)', type: 'number', value: b.z }] : []),
       { key: 'vx', label: 'vx (AU/yr)', type: 'number', value: b.vx },
       { key: 'vy', label: 'vy (AU/yr)', type: 'number', value: b.vy },
-      { key: 'speed', label: 'Speed (km/s)', type: 'readonly', value: fmt(Math.hypot(b.vx, b.vy) * 4.74) },
+      ...(d3 ? [{ key: 'vz', label: 'vz (AU/yr)', type: 'number', value: b.vz }] : []),
+      { key: 'speed', label: 'Speed (km/s)', type: 'readonly', value: fmt(Math.hypot(b.vx, b.vy, b.vz) * 4.74) },
     ];
     if (host) {
       const o = orbitalElements(b, host, this.G);
@@ -529,6 +672,7 @@ export class GravitySim extends Simulation {
         { key: 'e', label: 'Eccentricity', type: 'readonly', value: fmt(o.e) },
         { key: 'period', label: 'Period (yr)', type: 'readonly', value: o.a > 0 ? fmt(o.period) : '—' },
       );
+      if (d3) fields.push({ key: 'inclination', label: 'Inclination (°)', type: 'readonly', value: fmt(o.inclination) });
     }
     return { title: b.name, fields };
   }
@@ -538,7 +682,7 @@ export class GravitySim extends Simulation {
     else if (key === 'massEarth') b.m = Math.max(0, value * 3.0e-6);
     else if (key === 'm') b.m = Math.max(0, value);
     else if (key in b) b[key] = value;
-    if (key === 'x' || key === 'y') b.trail = [];
+    if (key === 'x' || key === 'y' || key === 'z') { b.trail = []; b.tz = []; }
     this.accDirty = true;
   }
 
@@ -548,10 +692,10 @@ export class GravitySim extends Simulation {
     let ke = 0, pe = 0;
     for (let i = 0; i < ms.length; i++) {
       const a = ms[i];
-      ke += 0.5 * a.m * (a.vx * a.vx + a.vy * a.vy);
+      ke += 0.5 * a.m * (a.vx * a.vx + a.vy * a.vy + a.vz * a.vz);
       for (let j = i + 1; j < ms.length; j++) {
         const b = ms[j];
-        pe -= (G * a.m * b.m) / Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2 + eps2);
+        pe -= (G * a.m * b.m) / Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2 + (a.z - b.z) ** 2 + eps2);
       }
     }
     return ke + pe;
@@ -615,16 +759,29 @@ export class GravitySim extends Simulation {
   }
 }
 
-/** Osculating orbital elements of body b relative to host. */
+/** Osculating orbital elements of body b relative to host (z, vz optional). */
 export function orbitalElements(b, host, G) {
-  const rx = b.x - host.x, ry = b.y - host.y;
-  const vx = b.vx - host.vx, vy = b.vy - host.vy;
+  const rx = b.x - host.x, ry = b.y - host.y, rz = (b.z ?? 0) - (host.z ?? 0);
+  const vx = b.vx - host.vx, vy = b.vy - host.vy, vz = (b.vz ?? 0) - (host.vz ?? 0);
   const mu = G * (host.m + b.m);
-  const r = Math.hypot(rx, ry), v2 = vx * vx + vy * vy;
+  const r = Math.hypot(rx, ry, rz), v2 = vx * vx + vy * vy + vz * vz;
   const eps = v2 / 2 - mu / r;
   const a = -mu / (2 * eps);
-  const h = rx * vy - ry * vx;
-  const e = Math.sqrt(Math.max(0, 1 + (2 * eps * h * h) / (mu * mu)));
+  // Specific angular momentum h = r × v; its tilt from +z is the inclination.
+  const hx = ry * vz - rz * vy, hy = rz * vx - rx * vz, hz = rx * vy - ry * vx;
+  const h2 = hx * hx + hy * hy + hz * hz;
+  const e = Math.sqrt(Math.max(0, 1 + (2 * eps * h2) / (mu * mu)));
   const period = a > 0 ? TAU * Math.sqrt((a * a * a) / mu) : Infinity;
-  return { a, e, period };
+  const inclination = h2 > 0 ? (Math.acos(Math.max(-1, Math.min(1, hz / Math.sqrt(h2)))) * 180) / Math.PI : 0;
+  return { a, e, period, inclination };
+}
+
+/**
+ * Rotate the in-plane vector (x, y, 0) by inclination `inc` (radians) about
+ * the line of nodes at angle `node` in the plane (Rodrigues' formula).
+ */
+export function tilt(x, y, inc, node) {
+  const ux = Math.cos(node), uy = Math.sin(node), c = Math.cos(inc), s = Math.sin(inc);
+  const k = (ux * x + uy * y) * (1 - c);
+  return [x * c + ux * k, y * c + uy * k, (ux * y - uy * x) * s];
 }
