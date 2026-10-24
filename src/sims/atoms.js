@@ -1,5 +1,5 @@
 import { Simulation } from '../core/simulation.js';
-import { SpatialHash } from '../core/spatial-hash.js';
+import { SpatialHash, SpatialHash3 } from '../core/spatial-hash.js';
 import { clamp, TAU } from '../core/math.js';
 import { pick } from '../core/serialize.js';
 
@@ -22,6 +22,8 @@ const BOND_K = 300;
 const COULOMB_K = 20;
 const COULOMB_CUT = 6;
 const FMAX = 2000;
+const SKIN = 0.4; // neighbour-list skin (σ) in the 3D mode
+const FCC_A = 1.55; // argon FCC lattice constant (σ): nearest neighbours near the LJ minimum, 2^(1/6)σ
 
 let nextId = 1;
 
@@ -30,6 +32,8 @@ let nextId = 1;
  * covalent chemistry (atoms with free valence form spring bonds when they meet
  * gently and break them when stretched too far). Shows gas → liquid → solid
  * phase changes, crystallisation of salt and formation of H₂, H₂O, CH₄ ...
+ * An opt-in 3D mode gives atoms z and vz in a box of depth D; its paths are
+ * separate, so the 2D model evolves exactly as before.
  */
 export class AtomsSim extends Simulation {
   static meta = {
@@ -37,9 +41,9 @@ export class AtomsSim extends Simulation {
     title: 'Atoms & Molecules',
     category: 'Matter',
     description:
-      'Molecular dynamics with Lennard-Jones forces, ionic charges and covalent bonding. Heat or cool regions to melt, boil or freeze matter, mix elements to form molecules, or transmute atoms in the inspector.',
+      'Molecular dynamics with Lennard-Jones forces, ionic charges and covalent bonding. Heat or cool regions to melt, boil or freeze matter, mix elements to form molecules, or transmute atoms in the inspector. Switch to 3D for a real argon crystal.',
     model: {
-      summary: '2D molecular dynamics in reduced units (σ ≈ 3 Å, one temperature unit ≈ 120 K) with van der Waals, ionic and simple covalent interactions.',
+      summary: '2D (or, with the 3D physics option, 3D) molecular dynamics in reduced units (σ ≈ 3 Å, one temperature unit ≈ 120 K) with van der Waals, ionic and simple covalent interactions.',
       equations: [
         'Lennard-Jones: V(r) = 4ε[(σ/r)¹² − (σ/r)⁶], cut off at 2.5σ',
         'Screened, cut-off Coulomb force between ions',
@@ -47,7 +51,8 @@ export class AtomsSim extends Simulation {
         'Pressure from the momentum atoms transfer to the walls',
       ],
       assumptions: [
-        'Two dimensions, so densities and phase-change temperatures differ from 3D.',
+        'Two dimensions by default, so densities and phase-change temperatures differ from 3D. The 3D mode is a closed box, 16σ deep; there argon holds an FCC crystal that melts above about 80 K (real argon: 84 K); a small crystal with free faces melts gradually.',
+        'In 3D the tools act through the depth of the box: Add places atoms on its middle plane, Inspect and Move take the nearest atom in front.',
         'Covalent bonds are springs that form when atoms with free valence meet gently and break when overstretched; no quantum chemistry or bond-angle terms beyond a soft repulsion between neighbours.',
         'Reaction energetics are simplified; bonding does not release realistic heat.',
         'Water, methane and other molecules are built from these rules, not from force fields.',
@@ -66,7 +71,9 @@ export class AtomsSim extends Simulation {
     this.atoms = [];
     this.W = 60;
     this.H = 40;
+    this.D = 16; // box depth in the 3D mode
     this.hash = new SpatialHash(3);
+    this.hash3 = new SpatialHash3(1.5);
     this.wallImpulse = 0;
     this.pressure = 0;
     this.defineParams([
@@ -79,6 +86,7 @@ export class AtomsSim extends Simulation {
       { key: 'bondEnergy', label: 'Bond strength (break stretch)', type: 'range', min: 1.1, max: 2.5, step: 0.05, value: 1.5 },
       { key: 'coulomb', label: 'Electrostatics', type: 'checkbox', value: true },
       { key: 'showBonds', label: 'Draw bonds', type: 'checkbox', value: true },
+      { key: 'threeD', label: '3D physics (z, box depth 16σ)', type: 'checkbox', value: false },
     ]);
     this.spawnKinds = [
       ...Object.entries(ELEMENTS).map(([id, e]) => ({ id, label: `${e.name} (${id})` })),
@@ -93,6 +101,8 @@ export class AtomsSim extends Simulation {
       { id: 'organic', label: 'Carbon + hydrogen soup' },
       { id: 'mixture', label: 'Noble-gas mixture with gravity' },
       { id: 'kit', label: 'Molecule kit (build by hand)' },
+      { id: 'crystal3d', label: 'Argon crystal in 3D (FCC) — heat to melt' },
+      { id: 'water3d', label: 'Hydrogen + oxygen → water, in 3D' },
     ];
     this.energyTool = { label: 'Heat', negLabel: 'Cool' };
     this.chartKeys = ['T', 'pressure'];
@@ -103,15 +113,19 @@ export class AtomsSim extends Simulation {
     return { x: 0, y: 0, w: this.W, h: this.H };
   }
 
-  makeAtom(el, x, y, T = this.params.targetT) {
+  makeAtom(el, x, y, T = this.params.targetT, z = this.D / 2) {
     const e = ELEMENTS[el];
     const sd = Math.sqrt(T / KELVIN_PER_UNIT / e.mass);
-    return {
+    const a = {
       id: nextId++, el, x, y,
       vx: this.rng.gaussian(0, sd), vy: this.rng.gaussian(0, sd),
       fx: 0, fy: 0, bonds: [], alive: true,
       charge: e.charge,
+      z: 0, vz: 0, fz: 0,
     };
+    // Only 3D atoms draw a third velocity, so the 2D random stream is unchanged.
+    if (this.params.threeD) { a.z = z; a.vz = this.rng.gaussian(0, sd); }
+    return a;
   }
 
   loadScenario(id) {
@@ -121,6 +135,7 @@ export class AtomsSim extends Simulation {
     const P = this.params;
     P.gravity = 0;
     P.thermostat = true;
+    P.threeD = id.endsWith('3d');
     const fill = (els, n, x0 = 1, y0 = 1, x1 = this.W - 1, y1 = this.H - 1) => {
       for (let i = 0; i < n; i++) this.placeRandom(this.rng.pick(els), x0, y0, x1, y1);
     };
@@ -157,20 +172,42 @@ export class AtomsSim extends Simulation {
       P.targetT = 5;
       for (const [el, x] of [['C', 15], ['N', 30], ['O', 45]]) this.atoms.push(this.makeAtom(el, x, 20));
       for (let i = 0; i < 14; i++) this.atoms.push(this.makeAtom('H', 6 + i * 4, i % 2 ? 34 : 6));
+    } else if (id === 'crystal3d') {
+      // A cube of 5×5×5 face-centred cubic cells (500 atoms), well below argon's melting point.
+      P.targetT = 40;
+      this.atoms = AtomsSim.fcc(5, FCC_A).map(([x, y, z]) => this.makeAtom('Ar', this.W / 2 + x, this.H / 2 + y, 40, this.D / 2 + z));
+      this.lattice = this.atoms.map((a) => [a.x, a.y, a.z]);
+    } else if (id === 'water3d') {
+      P.targetT = 400;
+      fill(['H'], 300);
+      fill(['O'], 150);
     }
+  }
+
+  /** Sites of an n×n×n block of FCC cells with lattice constant a, centred on the origin. */
+  static fcc(n, a) {
+    const out = [], c = ((n - 0.5) * a) / 2;
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) for (let k = 0; k < n; k++) {
+      for (const [u, v, w] of [[0, 0, 0], [0.5, 0.5, 0], [0.5, 0, 0.5], [0, 0.5, 0.5]]) {
+        out.push([(i + u) * a - c, (j + v) * a - c, (k + w) * a - c]);
+      }
+    }
+    return out;
   }
 
   saveState() {
     return {
       pressure: this.pressure,
-      atoms: this.atoms.map((a) => ({ ...pick(a, ['id', 'el', 'x', 'y', 'vx', 'vy', 'charge']), bonds: a.bonds.map((b) => b.id) })),
+      atoms: this.atoms.map((a) => ({ ...pick(a, ['id', 'el', 'x', 'y', ...(this.params.threeD ? ['z', 'vz'] : []), 'vx', 'vy', 'charge']), bonds: a.bonds.map((b) => b.id) })),
     };
   }
 
   loadState(st) {
     const byId = new Map();
     this.atoms = st.atoms.filter((a) => ELEMENTS[a.el]).map((a) => {
-      const at = { ...a, fx: 0, fy: 0, bonds: [], alive: true };
+      const at = { ...a, fx: 0, fy: 0, fz: 0, bonds: [], alive: true };
+      at.z = this.params.threeD && Number.isFinite(a.z) ? clamp(a.z, 0, this.D) : 0;
+      at.vz = this.params.threeD && Number.isFinite(a.vz) ? a.vz : 0;
       byId.set(at.id, at);
       return at;
     });
@@ -184,6 +221,7 @@ export class AtomsSim extends Simulation {
   }
 
   placeRandom(el, x0, y0, x1, y1) {
+    if (this.params.threeD) return this.placeRandom3(el, x0, y0, x1, y1);
     const s = ELEMENTS[el].sigma;
     for (let tries = 0; tries < 50; tries++) {
       const x = this.rng.range(x0, x1), y = this.rng.range(y0, y1);
@@ -197,11 +235,26 @@ export class AtomsSim extends Simulation {
     return null;
   }
 
+  placeRandom3(el, x0, y0, x1, y1, z0 = 1, z1 = this.D - 1) {
+    const s = ELEMENTS[el].sigma;
+    for (let tries = 0; tries < 50; tries++) {
+      const x = this.rng.range(x0, x1), y = this.rng.range(y0, y1), z = this.rng.range(z0, z1);
+      let ok = true;
+      for (const a of this.atoms) {
+        const d = (ELEMENTS[a.el].sigma + s) * 0.5;
+        if ((a.x - x) ** 2 + (a.y - y) ** 2 + (a.z - z) ** 2 < d * d) { ok = false; break; }
+      }
+      if (ok) { const at = this.makeAtom(el, x, y, undefined, z); this.atoms.push(at); return at; }
+    }
+    return null;
+  }
+
   bondLength(a, b) {
     return 0.4 * (ELEMENTS[a.el].sigma + ELEMENTS[b.el].sigma);
   }
 
   computeForces() {
+    if (this.params.threeD) { this.computeForces3(); return; }
     const atoms = this.atoms, P = this.params;
     let pe = 0;
     // Screen-style coordinates: +y is down, so gravity pulls toward larger y.
@@ -276,7 +329,113 @@ export class AtomsSim extends Simulation {
     this.potential = pe;
   }
 
+  /**
+   * Verlet neighbour list for the 3D mode: every pair within its cut-off plus a
+   * skin, with the pair's σ², ε and cut-off² precomputed. Rebuilt when an atom
+   * has moved more than half the skin, or atoms were added or removed.
+   */
+  buildPairs3() {
+    const atoms = this.atoms, n = atoms.length;
+    this.hash3.rebuild(atoms);
+    atoms.forEach((a, i) => { a.idx = i; });
+    const sMax = Math.max(...atoms.map((a) => ELEMENTS[a.el].sigma));
+    const I = [], J = [], S2 = [], E = [], R2 = [];
+    for (const a of atoms) {
+      const ea = ELEMENTS[a.el];
+      this.hash3.query(a.x, a.y, a.z, 1.25 * (ea.sigma + sMax) + SKIN, (b) => {
+        if (b.idx <= a.idx) return;
+        const eb = ELEMENTS[b.el];
+        const sigma = 0.5 * (ea.sigma + eb.sigma), rc = 2.5 * sigma;
+        const r2 = (b.x - a.x) ** 2 + (b.y - a.y) ** 2 + (b.z - a.z) ** 2;
+        if (r2 > (rc + SKIN) ** 2) return;
+        I.push(a.idx); J.push(b.idx); S2.push(sigma * sigma); E.push(Math.sqrt(ea.eps * eb.eps)); R2.push(rc * rc);
+      });
+    }
+    this.pairs = { i: Int32Array.from(I), j: Int32Array.from(J), s2: Float64Array.from(S2), eps: Float64Array.from(E), rc2: Float64Array.from(R2) };
+    this.pairAtoms = atoms;
+    this.pairN = n;
+    this.pairRef = Float64Array.from(atoms.flatMap((a) => [a.x, a.y, a.z]));
+  }
+
+  pairsStale() {
+    const atoms = this.atoms;
+    if (!this.pairs || this.pairAtoms !== atoms || this.pairN !== atoms.length) return true;
+    const ref = this.pairRef, lim = (SKIN / 2) ** 2;
+    for (let i = 0; i < atoms.length; i++) {
+      const a = atoms[i];
+      if ((a.x - ref[i * 3]) ** 2 + (a.y - ref[i * 3 + 1]) ** 2 + (a.z - ref[i * 3 + 2]) ** 2 > lim) return true;
+    }
+    return false;
+  }
+
+  /** The 3D counterpart of computeForces, over the neighbour list and with z everywhere. */
+  computeForces3() {
+    const atoms = this.atoms, P = this.params;
+    let pe = 0;
+    for (const a of atoms) { a.fx = 0; a.fy = ELEMENTS[a.el].mass * P.gravity * 0.05; a.fz = 0; }
+    if (this.pairsStale()) this.buildPairs3();
+    const { i: PI, j: PJ, s2: S2, eps: E, rc2: R2 } = this.pairs;
+    for (let k = 0; k < PI.length; k++) {
+      const a = atoms[PI[k]], b = atoms[PJ[k]];
+      const dx = b.x - a.x, dy = b.y - a.y, dz = b.z - a.z;
+      const r2 = dx * dx + dy * dy + dz * dz;
+      if (r2 > R2[k] || r2 === 0) continue;
+      if (a.bonds.length && a.bonds.includes(b)) continue;
+      const s2 = S2[k] / r2, s6 = s2 * s2 * s2, eps = E[k];
+      let f = (24 * eps * (2 * s6 * s6 - s6)) / r2;
+      f = clamp(f, -FMAX, FMAX);
+      pe += 4 * eps * (s6 * s6 - s6);
+      a.fx -= f * dx; a.fy -= f * dy; a.fz -= f * dz;
+      b.fx += f * dx; b.fy += f * dy; b.fz += f * dz;
+    }
+    if (P.coulomb) {
+      const charged = atoms.filter((a) => a.charge);
+      const shift = 1 / (COULOMB_CUT * COULOMB_CUT);
+      for (let i = 0; i < charged.length; i++) {
+        const a = charged[i];
+        for (let j = i + 1; j < charged.length; j++) {
+          const b = charged[j];
+          const dx = b.x - a.x, dy = b.y - a.y, dz = b.z - a.z;
+          const r2 = dx * dx + dy * dy + dz * dz;
+          if (r2 > COULOMB_CUT * COULOMB_CUT) continue;
+          const r = Math.sqrt(r2) || 1e-6;
+          let f = COULOMB_K * a.charge * b.charge * (1 / r2 - shift) / r;
+          f = clamp(f, -FMAX, FMAX);
+          pe += COULOMB_K * a.charge * b.charge * (1 / r - 1 / COULOMB_CUT);
+          a.fx -= f * dx; a.fy -= f * dy; a.fz -= f * dz;
+          b.fx += f * dx; b.fy += f * dy; b.fz += f * dz;
+        }
+      }
+    }
+    for (const a of atoms) {
+      for (const b of a.bonds) {
+        if (b.id <= a.id) continue;
+        const r0 = this.bondLength(a, b);
+        const dx = b.x - a.x, dy = b.y - a.y, dz = b.z - a.z;
+        const r = Math.hypot(dx, dy, dz) || 1e-6;
+        const f = (BOND_K * (r - r0)) / r;
+        pe += 0.5 * BOND_K * (r - r0) ** 2;
+        a.fx += f * dx; a.fy += f * dy; a.fz += f * dz;
+        b.fx -= f * dx; b.fy -= f * dy; b.fz -= f * dz;
+      }
+      if (a.bonds.length >= 2) {
+        for (let i = 0; i < a.bonds.length; i++) for (let j = i + 1; j < a.bonds.length; j++) {
+          const p = a.bonds[i], q = a.bonds[j];
+          const dmin = 1.6 * Math.max(this.bondLength(a, p), this.bondLength(a, q));
+          const dx = q.x - p.x, dy = q.y - p.y, dz = q.z - p.z;
+          const r = Math.hypot(dx, dy, dz) || 1e-6;
+          if (r >= dmin) continue;
+          const f = (40 * (r - dmin)) / r;
+          p.fx += f * dx; p.fy += f * dy; p.fz += f * dz;
+          q.fx -= f * dx; q.fy -= f * dy; q.fz -= f * dz;
+        }
+      }
+    }
+    this.potential = pe;
+  }
+
   updateBonds() {
+    if (this.params.threeD) { this.updateBonds3(); return; }
     const P = this.params;
     // Break over-stretched bonds.
     for (const a of this.atoms) {
@@ -304,6 +463,31 @@ export class AtomsSim extends Simulation {
     }
   }
 
+  updateBonds3() {
+    const P = this.params, atoms = this.atoms;
+    for (const a of atoms) {
+      for (let i = a.bonds.length - 1; i >= 0; i--) {
+        const b = a.bonds[i];
+        const r = Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z);
+        if (r > this.bondLength(a, b) * P.bondEnergy) this.unbond(a, b);
+      }
+    }
+    if (!P.bonding || this.pairsStale()) return;
+    // Bonding distances are well inside the LJ cut-off, so every candidate is in the list.
+    const { i: PI, j: PJ } = this.pairs;
+    for (let k = 0; k < PI.length; k++) {
+      const a = atoms[PI[k]], b = atoms[PJ[k]];
+      if (a.bonds.length >= ELEMENTS[a.el].valence || b.bonds.length >= ELEMENTS[b.el].valence) continue;
+      if (a.bonds.includes(b)) continue;
+      const r0 = this.bondLength(a, b);
+      const dx = b.x - a.x, dy = b.y - a.y, dz = b.z - a.z;
+      if (dx * dx + dy * dy + dz * dz > (r0 * 1.25) ** 2) continue;
+      const dv2 = (b.vx - a.vx) ** 2 + (b.vy - a.vy) ** 2 + (b.vz - a.vz) ** 2;
+      if (dv2 > 400) continue; // too energetic to stick
+      a.bonds.push(b); b.bonds.push(a);
+    }
+  }
+
   unbond(a, b) {
     a.bonds = a.bonds.filter((x) => x !== b);
     b.bonds = b.bonds.filter((x) => x !== a);
@@ -311,6 +495,11 @@ export class AtomsSim extends Simulation {
 
   temperatureUnits() {
     if (!this.atoms.length) return 0;
+    if (this.params.threeD) {
+      let ke = 0;
+      for (const a of this.atoms) ke += 0.5 * ELEMENTS[a.el].mass * (a.vx * a.vx + a.vy * a.vy + a.vz * a.vz);
+      return (2 * ke) / (3 * this.atoms.length); // 3D equipartition: <KE> = 3/2 kT
+    }
     let ke = 0;
     for (const a of this.atoms) ke += 0.5 * ELEMENTS[a.el].mass * (a.vx * a.vx + a.vy * a.vy);
     return ke / this.atoms.length; // 2D equipartition: <KE> = kT
@@ -319,7 +508,8 @@ export class AtomsSim extends Simulation {
   step() {
     const P = this.params, h = P.dt;
     if (!this.atoms.length) return;
-    if (!this.forcesReady) { this.computeForces(); this.forcesReady = true; }
+    if (!this.forcesReady) { this.pairs = null; this.computeForces(); this.forcesReady = true; }
+    if (P.threeD) { this.step3(); return; }
     let wall = 0;
     for (let s = 0; s < P.speed; s++) {
       for (const a of this.atoms) {
@@ -354,7 +544,70 @@ export class AtomsSim extends Simulation {
     this.pressure = this.pressure * 0.9 + p * 0.1;
   }
 
+  /** The 3D counterpart of step's loop: walls on all six faces, pressure over the box's area. */
+  step3() {
+    const P = this.params, h = P.dt, D = this.D;
+    let wall = 0;
+    for (let s = 0; s < P.speed; s++) {
+      for (const a of this.atoms) {
+        const m = ELEMENTS[a.el].mass, im = 1 / m, rad = ELEMENTS[a.el].sigma * 0.5;
+        a.vx += 0.5 * h * a.fx * im; a.vy += 0.5 * h * a.fy * im; a.vz += 0.5 * h * a.fz * im;
+        a.x += h * a.vx; a.y += h * a.vy; a.z += h * a.vz;
+        if (a.x < rad) { a.x = rad; if (a.vx < 0) { wall += 2 * m * -a.vx; a.vx = -a.vx; } }
+        if (a.x > this.W - rad) { a.x = this.W - rad; if (a.vx > 0) { wall += 2 * m * a.vx; a.vx = -a.vx; } }
+        if (a.y < rad) { a.y = rad; if (a.vy < 0) { wall += 2 * m * -a.vy; a.vy = -a.vy; } }
+        if (a.y > this.H - rad) { a.y = this.H - rad; if (a.vy > 0) { wall += 2 * m * a.vy; a.vy = -a.vy; } }
+        if (a.z < rad) { a.z = rad; if (a.vz < 0) { wall += 2 * m * -a.vz; a.vz = -a.vz; } }
+        if (a.z > D - rad) { a.z = D - rad; if (a.vz > 0) { wall += 2 * m * a.vz; a.vz = -a.vz; } }
+      }
+      this.computeForces3();
+      for (const a of this.atoms) {
+        const im = 1 / ELEMENTS[a.el].mass;
+        a.vx += 0.5 * h * a.fx * im; a.vy += 0.5 * h * a.fy * im; a.vz += 0.5 * h * a.fz * im;
+      }
+      if (s % 5 === 0) this.updateBonds3();
+      if (P.thermostat) {
+        const T = this.temperatureUnits();
+        const T0 = P.targetT / KELVIN_PER_UNIT;
+        if (T > 0) {
+          const lam = Math.sqrt(clamp(1 + (h / 0.5) * (T0 / T - 1), 0.8, 1.25));
+          for (const a of this.atoms) { a.vx *= lam; a.vy *= lam; a.vz *= lam; }
+        }
+      }
+      this.time += h;
+    }
+    const area = 2 * (this.W * this.H + this.W * D + this.H * D);
+    const p = wall / (P.speed * h * area);
+    this.pressure = this.pressure * 0.9 + p * 0.1;
+  }
+
+  onParamChange(key, value) {
+    if (key !== 'threeD') return;
+    if (value) {
+      // Entering 3D lifts flat atoms onto the middle plane, with a little thermal depth.
+      if (!this.atoms.every((a) => a.z === 0 && a.vz === 0)) return;
+      for (const a of this.atoms) {
+        const sd = Math.sqrt(this.params.targetT / KELVIN_PER_UNIT / ELEMENTS[a.el].mass);
+        a.z = this.D / 2 + this.rng.range(-0.3, 0.3);
+        a.vz = this.rng.gaussian(0, sd);
+      }
+    } else {
+      // Leaving 3D projects everything onto the plane.
+      for (const a of this.atoms) { a.z = 0; a.vz = 0; a.fz = 0; }
+    }
+    this.forcesReady = false;
+  }
+
   pick(x, y, r) {
+    if (this.params.threeD) {
+      // Of the atoms under the point, the one nearest the viewer (largest z).
+      let best = null;
+      const rr = Math.max(r, 0.6) ** 2;
+      for (const a of this.atoms) {
+        if ((a.x - x) ** 2 + (a.y - y) ** 2 < rr && (!best || a.z > best.z)) best = a;
+      }
+      return best;
+    }
     let best = null, bd = Math.max(r, 0.6) ** 2;
     for (const a of this.atoms) {
       const d = (a.x - x) ** 2 + (a.y - y) ** 2;
@@ -364,13 +617,14 @@ export class AtomsSim extends Simulation {
   }
 
   locate(a) {
-    return a.alive ? { x: a.x, y: a.y, r: ELEMENTS[a.el].sigma * 0.6 } : null;
+    return a.alive ? { x: a.x, y: a.y, z: a.z, r: ELEMENTS[a.el].sigma * 0.6 } : null;
   }
 
   add(kind, x, y) {
     const T = this.params.targetT;
-    const put = (el, px, py) => {
-      const a = this.makeAtom(el, clamp(px, 0.5, this.W - 0.5), clamp(py, 0.5, this.H - 0.5), T);
+    const zm = this.D / 2; // new atoms go on the middle plane in 3D
+    const put = (el, px, py, dz = 0) => {
+      const a = this.makeAtom(el, clamp(px, 0.5, this.W - 0.5), clamp(py, 0.5, this.H - 0.5), T, zm + dz);
       this.atoms.push(a);
       return a;
     };
@@ -381,8 +635,12 @@ export class AtomsSim extends Simulation {
       made = o;
     } else if (kind === 'CH4') {
       const c = put('C', x, y);
-      for (const [dx, dy] of [[0.65, 0], [-0.65, 0], [0, 0.65], [0, -0.65]]) {
-        const hh = put('H', x + dx, y + dy);
+      // A tetrahedron in 3D; in 2D its z offsets are dropped and the square shape is kept.
+      const arms = this.params.threeD
+        ? [[0.38, 0.38, 0.38], [-0.38, -0.38, 0.38], [-0.38, 0.38, -0.38], [0.38, -0.38, -0.38]]
+        : [[0.65, 0, 0], [-0.65, 0, 0], [0, 0.65, 0], [0, -0.65, 0]];
+      for (const [dx, dy, dz] of arms) {
+        const hh = put('H', x + dx, y + dy, dz);
         c.bonds.push(hh); hh.bonds.push(c);
       }
       made = c;
@@ -466,9 +724,11 @@ export class AtomsSim extends Simulation {
         { key: 'mass', label: 'Mass (amu)', type: 'readonly', value: e.mass },
         { key: 'bonds', label: 'Bonds / valence', type: 'readonly', value: `${a.bonds.length} / ${e.valence}` },
         { key: 'molecule', label: 'Molecule', type: 'readonly', value: mol.length > 1 ? AtomsSim.formula(mol) : '(free atom)' },
+        ...(this.params.threeD ? [{ key: 'z', label: 'z (σ)', type: 'number', value: a.z }] : []),
         { key: 'vx', label: 'vx', type: 'number', value: a.vx },
         { key: 'vy', label: 'vy', type: 'number', value: a.vy },
-        { key: 'ke', label: 'Kinetic energy (K)', type: 'readonly', value: Math.round(0.5 * e.mass * (a.vx ** 2 + a.vy ** 2) * KELVIN_PER_UNIT) },
+        ...(this.params.threeD ? [{ key: 'vz', label: 'vz', type: 'number', value: a.vz }] : []),
+        { key: 'ke', label: 'Kinetic energy (K)', type: 'readonly', value: Math.round(0.5 * e.mass * (a.vx ** 2 + a.vy ** 2 + a.vz ** 2) * KELVIN_PER_UNIT) },
         { key: 'breakBonds', label: 'Break all bonds', type: 'action' },
       ],
     };
@@ -481,6 +741,8 @@ export class AtomsSim extends Simulation {
       while (a.bonds.length > ELEMENTS[value].valence) this.unbond(a, a.bonds[a.bonds.length - 1]);
     } else if (key === 'breakBonds') {
       for (const b of [...a.bonds]) this.unbond(a, b);
+    } else if (key === 'z') {
+      a.z = this.params.threeD ? clamp(value, 0.3, this.D - 0.3) : 0;
     } else if (key in a) a[key] = value;
     this.forcesReady = false;
   }
@@ -512,11 +774,14 @@ export class AtomsSim extends Simulation {
       }
       ctx.stroke();
     }
-    for (const a of this.atoms) {
+    // In 3D, draw far atoms first and dimmer, looking down the z axis from the front.
+    const atoms = this.params.threeD ? [...this.atoms].sort((p, q) => p.z - q.z) : this.atoms;
+    for (const a of atoms) {
       const e = ELEMENTS[a.el];
       const [sx, sy] = view.toScreen(a.x, a.y);
       const r = Math.max(1.5, e.sigma * 0.5 * view.scale);
       ctx.fillStyle = e.color;
+      if (this.params.threeD) ctx.globalAlpha = 0.35 + 0.65 * clamp(a.z / this.D, 0, 1);
       ctx.beginPath(); ctx.arc(sx, sy, r, 0, TAU); ctx.fill();
       if (a.charge && r > 5) {
         ctx.fillStyle = '#000';
@@ -526,5 +791,6 @@ export class AtomsSim extends Simulation {
         ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';
       }
     }
+    ctx.globalAlpha = 1;
   }
 }

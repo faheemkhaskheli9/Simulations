@@ -39,3 +39,48 @@ export class SpatialHash {
     }
   }
 }
+
+// The same grid in three dimensions (cell coordinates within ±512 per axis).
+export class SpatialHash3 {
+  constructor(cellSize) {
+    this.cellSize = cellSize;
+    this.cells = new Map();
+  }
+
+  key(cx, cy, cz) {
+    return ((cx + 512) * 1024 + (cy + 512)) * 1024 + (cz + 512);
+  }
+
+  clear() {
+    this.cells.clear();
+  }
+
+  insert(item, x, y, z) {
+    const s = this.cellSize;
+    const k = this.key(Math.floor(x / s), Math.floor(y / s), Math.floor(z / s));
+    let bucket = this.cells.get(k);
+    if (!bucket) this.cells.set(k, (bucket = []));
+    bucket.push(item);
+  }
+
+  rebuild(items) {
+    this.clear();
+    for (const it of items) this.insert(it, it.x, it.y, it.z);
+  }
+
+  // Calls fn(item) for every item in cells overlapping the cube of half-size radius around (x, y, z).
+  query(x, y, z, radius, fn) {
+    const s = this.cellSize;
+    const x0 = Math.floor((x - radius) / s), x1 = Math.floor((x + radius) / s);
+    const y0 = Math.floor((y - radius) / s), y1 = Math.floor((y + radius) / s);
+    const z0 = Math.floor((z - radius) / s), z1 = Math.floor((z + radius) / s);
+    for (let cx = x0; cx <= x1; cx++) {
+      for (let cy = y0; cy <= y1; cy++) {
+        for (let cz = z0; cz <= z1; cz++) {
+          const bucket = this.cells.get(this.key(cx, cy, cz));
+          if (bucket) for (let i = 0; i < bucket.length; i++) fn(bucket[i]);
+        }
+      }
+    }
+  }
+}

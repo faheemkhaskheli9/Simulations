@@ -225,7 +225,7 @@ part, or verified only in part · **Open**: not built yet. Test files are in `te
 | W-FT-20…25 | Met | `world-sites.test.js` (lazy creation, tiers, unloading, half-texel hits, tool-call parity, brush size) |
 | W-FT-26 | Met | Selection ring (native) or highlight in the texture (surfaces); brush ring and force arrow on the site |
 | W-FT-27 | Met | `world-sites.test.js`; the panels clear a stale selection as in 2D |
-| W-FT-28 | Partial | Gravity and Global Climate native (P0); Ecosystem native as a terrain from fertility with instanced animals (`world-terrain.test.js`); Weather native as a volume with cloud and rain particles and a sky tint (`world-volume.test.js`); Atoms still a surface (P1) |
+| W-FT-28 | Partial | Gravity and Global Climate native (P0); Ecosystem native as a terrain from fertility with instanced animals (`world-terrain.test.js`); Weather native as a volume with cloud and rain particles and a sky tint (`world-volume.test.js`); Atoms native as a ball-and-stick box running the 3D mode (`world-molecules.test.js`); Atomic Structure and Cell still surfaces |
 | W-FT-29 | Met | `world.e2e.mjs` |
 | W-FT-40…43 | Met | `world-runtime.test.js` (fake clock) |
 | W-FT-60…64 | Met | `world-runtime.test.js`, `world-sites.test.js`, `world.e2e.mjs` (read-only driven parameter) |
@@ -238,7 +238,7 @@ part, or verified only in part · **Open**: not built yet. Test files are in `te
 | ID | Status | Evidence / notes |
 |---|---|---|
 | W-SM-1…4 | Met | `gravity3d.test.js`: a 30° orbit closes within 0.01 AU in 1 yr and keeps its tilt within 0.1°; energy drift < 1e-6 and angular momentum vector to 1e-8; octree mean force error ≤ 3 % at θ = 0.6; golden fingerprints of every 2D scenario, recorded before the 3D mode, still match |
-| W-SM-5 | Open | The Atoms 3D mode is not built yet |
+| W-SM-5 | Met | `atoms3d.test.js`: the 3D thermostat holds 600 K and 30 K within ±15 %; no atom ever exceeds its valence while H₂ and H₂O form in 3D; a 500-atom FCC argon crystal keeps > 97 % of its nearest-neighbour contacts at 40 K and loses them (< 60 %) at 200 K; neighbour-list forces equal a direct sum; golden fingerprints of every 2D scenario, recorded before the 3D mode, still match |
 | W-SM-6 | Met | `world-runtime.test.js` (bands within 0.5°, light at the model's declination) |
 | W-SM-7 | Open | Needs a "Sun" star in Stars. Earth's orbit → Climate is built and tested instead |
 | W-SM-8 | Met | `world-runtime.test.js` |

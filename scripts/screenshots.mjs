@@ -349,6 +349,10 @@ const SHOTS = {
     await openWorld(page, '#world/cell?view=70,0.25,0.15', 4000);
     await save(page, 'world-cell');
   },
+  async 'world-atoms'(page) {
+    await openWorld(page, '#world/atoms?view=7.5,0.4,0.3', 8000);
+    await save(page, 'world-atoms');
+  },
   async 'world-atlas'(page) {
     await openWorld(page, '#world/weather', 1500);
     await page.click('#atlas-btn');
