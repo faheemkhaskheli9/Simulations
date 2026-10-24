@@ -589,11 +589,19 @@ All six tools work by pointing at the active site: click a planet to inspect it,
 ball in the lab, add animals to the savanna, push the Moon, warm a patch of the globe.
 The brush shows as a ring on the surface. Most simulations appear on a **surface**
 (a ground patch or a screen) drawn exactly as in 2D; **Gravity**, **Global Climate**,
-**Ecosystem**, **Weather** and **Atoms & Molecules** have **native 3D views** (orbits in
-space, a lit globe, the savanna as a raised block of land whose fertile ground stands
+**Ecosystem**, **Weather**, **Atoms & Molecules**, **Cell Biology** and **Atomic Structure**
+have **native 3D views** (orbits in space, a lit globe, the savanna as a raised block of land whose fertile ground stands
 higher, with each animal standing on it and facing where it heads, the weather as a
 block of air, and the sample chamber as a box of atoms in 3D, drawn as ball-and-stick:
 free atoms are full-size spheres, bonded ones smaller balls joined by sticks).
+Under the microscope, the cell is a sphere: its membrane swells and shrinks with the
+cell and turns orange when stretched, molecules drift inside and around it, and the
+membrane proteins sit round its middle. In the atom, each electron shell is a faint
+sphere, the nucleus a ball of red protons and grey neutrons, and each electron circles
+its shell on a tilted orbit of its own; the element badge and the emission spectrum hang
+below it. Shells and orbits are a picture, not real paths: electrons are probability
+clouds. The tools act on the cell's middle (its equator) and on the atom's middle
+plane; click an electron to pick it wherever it is on its orbit.
 Feeding the land with the Energy tool raises it; a drought lowers it. In the weather
 block, the ground and its mountains and lakes run through the whole depth, clouds are
 soft puffs and rain (or snow, in freezing air) falls as streaks. The module's own
@@ -609,7 +617,8 @@ tidal tails have real depth.
 ![The sample chamber: hydrogen and oxygen in a 3D box, bonding into water](images/world-atoms.jpg)
 ![Using the Energy tool on the savanna in the world](images/world-tools.jpg)
 ![The mechanics lab at the science campus](images/world-lab.jpg)
-![A cell under the microscope, with the marker into the sample chamber](images/world-cell.jpg)
+![A cell under the microscope as a sphere, with the marker into the sample chamber](images/world-cell.jpg)
+![Carbon-12 in 3D: the nucleus, two shell spheres and electrons on tilted orbits](images/world-atom.jpg)
 
 ### Atlas and tour
 

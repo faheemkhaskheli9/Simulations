@@ -55,7 +55,7 @@ Execution order and acceptance criteria: [Future execution plan](#future-executi
 - [ ] WebGPU compute for grids (weather, fluids) and particles (atoms, galaxies)
 - [x] Barnes–Hut tree for gravity (used from 64 massive bodies; new 2000-star *Star cluster* scenario)
 - [x] Neighbour lists for molecular dynamics (the 3D mode of Atoms & Molecules)
-- [x] Optional 3D view with the same tools: the **3D world** (Gravity, Global Climate, Ecosystem, Weather and Atoms & Molecules in native 3D; the rest on surfaces)
+- [x] Optional 3D view with the same tools: the **3D world** (Gravity, Global Climate, Ecosystem, Weather, Atoms & Molecules, Cell Biology and Atomic Structure in native 3D; the rest on surfaces)
 - [x] A 3D gravity mode: `z`, `vz`, octree Barnes–Hut, *Inclined orbits* and *Galaxy collision in 3D* scenarios
 - [x] Native 3D for molecules: a 3D mode for Atoms & Molecules (FCC argon crystal, water in 3D), drawn as ball-and-stick in the world (the weather volume and the ecosystem terrain are done too)
 - [ ] Weather: 2D horizontal (map) mode, ice microphysics, lightning
@@ -92,7 +92,7 @@ Built as **Simulations World**, one 3D world containing every simulation: see th
 | Cell Biology | Each particle stands for many molecules; time is accelerated; no cell division yet | Mitosis, enzyme kinetics |
 | Mechanics | Circles only; no friction model beyond rolling damping | Rigid polygons, Coulomb friction |
 | Platform | No analytics | Privacy-friendly, opt-in usage metrics |
-| 3D world | Atomic Structure and Cell are 2D surfaces in 3D; 1 px lines; performance only measured on a software GPU | 3D gravity mode, native views, wide lines, reference-laptop benchmarks |
+| 3D world | The Cell and Atom views are render-only (their models stay 2D); 1 px lines; performance only measured on a software GPU | Orbit ellipses, wide lines, reference-laptop benchmarks |
 
 
 ## Future execution plan (2026-10-19)
@@ -236,7 +236,7 @@ Continue [#7](https://github.com/faheemkhaskheli9/Simulations/issues/7) and the
   visualization, and clear labeling wherever the underlying model remains 2D.
 - [ ] **F5.3: Molecules.** Add optional 3D MD, geometry/angle terms, and ball-and-stick views
   with numerical validation and explicit simplified chemistry limits.
-- [ ] **F5.4: Atomic Structure and Cell views.** Add shell/membrane representations without
+- [x] **F5.4: Atomic Structure and Cell views.** Add shell/membrane representations without
   implying that schematic electron shells are literal classical trajectories.
 - [ ] **F5.5: Interaction parity.** Preserve all six tools, selection feedback, saves,
   lessons, keyboard access, and 2D fallback for every native view.

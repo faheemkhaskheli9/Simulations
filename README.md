@@ -127,7 +127,7 @@ src/lessons/                guided lessons and challenges, and the runner that c
 src/ui/                     camera, chart, tools and application UI
 src/world/                  the 3D world: places, sites, couplings, saves and links
   engine/                   small WebGL2 engine: maths, rays, meshes, shaders, renderer, camera
-  native/                   native 3D views (Gravity, the climate globe)
+  native/                   native 3D views (Gravity, the climate globe, terrain, weather, molecules, cell, atom)
   ui/                       world controller, HUD, Atlas, tour, couplings panel
 tests/                      node:test suites (physics, contract, world) and browser tests (tests/e2e)
 docs/                       PRD, TRD, system design, module guide, test plan, roadmap, user guide, ADRs

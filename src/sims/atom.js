@@ -575,7 +575,13 @@ export class AtomSim extends Simulation {
       }
     }
     ctx.globalAlpha = 1;
-    // Element badge.
+    this.renderBadge(ctx);
+    this.renderSpectrum(ctx, ui);
+  }
+
+  /** Element badge: symbol, Z and A, charge and name. */
+  renderBadge(ctx) {
+    const A = this.Z + this.N;
     ctx.fillStyle = 'rgba(17,22,38,0.9)';
     ctx.fillRect(14, 14, 150, 70);
     ctx.strokeStyle = '#2b3550';
@@ -589,7 +595,6 @@ export class AtomSim extends Simulation {
     const charge = this.Z - this.electrons.length;
     ctx.fillText(charge === 0 ? 'neutral' : `ion ${charge > 0 ? '+' : ''}${charge}`, 90, 50);
     ctx.fillText(nameOf(this.Z).slice(0, 22), 24, 74);
-    this.renderSpectrum(ctx, ui);
   }
 
   renderSpectrum(ctx, ui) {

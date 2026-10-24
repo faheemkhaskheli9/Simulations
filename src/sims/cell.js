@@ -25,9 +25,9 @@ export const PROTEINS = {
   glut: { label: 'Glucose transporter (GLUT)', color: '#ffd34d' },
 };
 
-const CENTER = [30, 20];
+export const CENTER = [30, 20];
 const W = 60, H = 40;
-const R0 = 10;
+export const R0 = 10;
 // Membrane capacitance in model units: each net cation moved changes the voltage by this much.
 const MV_PER_ION = 2;
 
