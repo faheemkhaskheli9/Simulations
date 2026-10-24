@@ -188,7 +188,7 @@ No code in the module changes: add one entry to the place where the phenomenon h
 ```js
 // in a place's `sites` list; positions and sizes are in that place's unit
 { id: 'tides', sim: 'tides', scenario: 'spring', label: 'Tides', type: 'surface',
-  surface: 'ground',          // 'ground' (lying flat), 'plane' (a screen) or 'slab' (a cross-section)
+  surface: 'ground',          // 'ground' (lying flat) or 'plane' (a screen standing up)
   center: [4, 0.02, -3], width: 6,   // the height follows your module's bounds() aspect
   params: { speed: 2 },       // optional: parameters for this setting
   view: { offset: [0, 5, 6] } },     // optional: where the camera looks from (relative to center)

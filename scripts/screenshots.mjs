@@ -327,6 +327,10 @@ const SHOTS = {
     await openWorld(page, '#world/valley', 4000);
     await save(page, 'world-valley');
   },
+  async 'world-weather'(page) {
+    await openWorld(page, '#world/weather?view=40,0.55,0.3', 6000);
+    await save(page, 'world-weather');
+  },
   async 'world-tools'(page) {
     await openWorld(page, '#world/ecosystem', 3000);
     await page.keyboard.press('6');
