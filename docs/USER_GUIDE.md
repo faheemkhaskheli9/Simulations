@@ -577,8 +577,11 @@ far-away ones pause.
 All six tools work by pointing at the active site: click a planet to inspect it, drag a
 ball in the lab, add animals to the savanna, push the Moon, warm a patch of the globe.
 The brush shows as a ring on the surface. Most simulations appear on a **surface**
-(a ground patch, a screen or a cross-section) drawn exactly as in 2D; **Gravity** and
-**Global Climate** have **native 3D views** (orbits in space and a lit globe). The
+(a ground patch, a screen or a cross-section) drawn exactly as in 2D; **Gravity**,
+**Global Climate** and **Ecosystem** have **native 3D views** (orbits in space, a lit
+globe, and the savanna as a raised block of land whose fertile ground stands higher,
+with each animal standing on it and facing where it heads). Feeding the land with the
+Energy tool raises it; a drought lowers it. The
 colliding galaxies in deep space run Gravity's 3D physics, so their tilted disks and
 tidal tails have real depth.
 

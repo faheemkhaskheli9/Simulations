@@ -6,6 +6,7 @@ import { PLACES } from './layout.js';
 import { SurfaceSite } from './site.js';
 import { GravitySite } from './native/gravity3d.js';
 import { GlobeSite } from './native/globe.js';
+import { TerrainSite } from './native/terrain.js';
 import { CouplingSet } from './couplings.js';
 import { Scheduler } from './scheduler.js';
 import { SAVE_FORMAT } from '../core/serialize.js';
@@ -13,7 +14,7 @@ import { v3 } from './engine/math3d.js';
 
 export const WORLD_FORMAT = 'simulations-world3d';
 export const WORLD_VERSION = 1;
-export const SITE_TYPES = { surface: SurfaceSite, gravity: GravitySite, globe: GlobeSite };
+export const SITE_TYPES = { surface: SurfaceSite, gravity: GravitySite, globe: GlobeSite, terrain: TerrainSite };
 const UNLOAD_AFTER_S = 120;
 
 export class World {

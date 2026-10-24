@@ -2,8 +2,14 @@
 
 const cache = new Map();
 
-/** CSS colour ('#rgb', '#rrggbb' or 'rgb(r, g, b)') → [r, g, b, alpha] in 0…1. */
+/** CSS colour ('#rgb', '#rrggbb', 'rgb(r, g, b)' or 'hsl(h, s%, l%)') → [r, g, b, alpha] in 0…1. */
 export function hexColor(css, alpha = 1) {
+  // hsl() strings come from continuous values (e.g. an energy scale), so they are not cached.
+  const hsl = typeof css === 'string' && css.startsWith('hsl') && css.match(/hsla?\(([^)]+)\)/);
+  if (hsl) {
+    const [h, s, l] = hsl[1].split(',').map((v) => parseFloat(v));
+    return [...hslToRgb(h, s / 100, l / 100), alpha];
+  }
   let rgb = cache.get(css);
   if (!rgb) {
     rgb = [1, 1, 1];
@@ -19,4 +25,14 @@ export function hexColor(css, alpha = 1) {
     cache.set(css, rgb);
   }
   return [rgb[0], rgb[1], rgb[2], alpha];
+}
+
+/** HSL (hue in degrees, saturation and lightness in 0…1) → [r, g, b] in 0…1. */
+export function hslToRgb(h, s, l) {
+  const a = s * Math.min(l, 1 - l);
+  const f = (n) => {
+    const k = (n + h / 30) % 12;
+    return l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+  };
+  return [f(0), f(8), f(4)];
 }

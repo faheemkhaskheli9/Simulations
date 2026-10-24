@@ -1,6 +1,6 @@
 // Offline support. Network-first so a deploy is picked up on the next load; the cache is
 // only a fallback, filled as the app fetches its files (every module loads at startup).
-const CACHE = 'simulations-v3';
+const CACHE = 'simulations-v4';
 const SHELL = ['./', 'index.html', 'styles.css', 'src/main.js', 'manifest.webmanifest', 'icon.svg'];
 // The 3D world loads on demand, so its files are cached up front to work offline (W-TC-8).
 const WORLD = [
@@ -15,6 +15,7 @@ const WORLD = [
   'src/world/engine/renderer.js',
   'src/world/layout.js',
   'src/world/native/globe.js',
+  'src/world/native/terrain.js',
   'src/world/native/gravity3d.js',
   'src/world/places.js',
   'src/world/routes.js',

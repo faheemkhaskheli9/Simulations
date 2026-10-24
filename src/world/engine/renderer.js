@@ -68,6 +68,16 @@ export class Renderer {
     attrib(gl, this.instances.buffer, 2, 4, 32, 0, 1);
     attrib(gl, this.instances.buffer, 3, 4, 32, 16, 1);
     staticBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, s.indices);
+    // A coarse sphere for crowds (thousands of small instances, e.g. animals).
+    const low = sphere(8, 16);
+    this.lowVao = gl.createVertexArray();
+    gl.bindVertexArray(this.lowVao);
+    attrib(gl, staticBuffer(gl, gl.ARRAY_BUFFER, low.positions), 0, 3);
+    attrib(gl, staticBuffer(gl, gl.ARRAY_BUFFER, low.normals), 1, 3);
+    attrib(gl, this.instances.buffer, 2, 4, 32, 0, 1);
+    attrib(gl, this.instances.buffer, 3, 4, 32, 16, 1);
+    staticBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, low.indices);
+    this.lowCount = low.indices.length;
     this.pointVao = gl.createVertexArray();
     gl.bindVertexArray(this.pointVao);
     attrib(gl, this.pointBuf.buffer, 0, 4, 32, 0);
@@ -151,14 +161,50 @@ export class Renderer {
     this.drawCalls++;
   }
 
-  /** Instanced spheres; data holds 8 floats per sphere: x, y, z, radius, r, g, b, glow. */
-  spheres(data, count = data.length / 8) {
+  /**
+   * Upload (or replace, when `version` changed) a mesh of the caller's own, such
+   * as a terrain, under `key`; mesh() then draws it by that key. The mesh is
+   * { positions, normals, uvs, indices } as in meshes.js, at most 65 536 vertices.
+   */
+  dynamicMesh(key, make, version) {
+    const old = this.meshes[key];
+    if (old && old.version === version) return key;
+    const gl = this.gl, m = make();
+    let entry = old;
+    if (!entry) {
+      entry = { vao: gl.createVertexArray(), pos: gl.createBuffer(), nrm: gl.createBuffer(), uv: gl.createBuffer(), idx: gl.createBuffer() };
+      gl.bindVertexArray(entry.vao);
+      for (const [buf, loc, size] of [[entry.pos, 0, 3], [entry.nrm, 1, 3], [entry.uv, 2, 2]]) {
+        gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+        gl.enableVertexAttribArray(loc);
+        gl.vertexAttribPointer(loc, size, gl.FLOAT, false, 0, 0);
+      }
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, entry.idx);
+      this.meshes[key] = entry;
+    }
+    gl.bindVertexArray(entry.vao);
+    for (const [buf, data] of [[entry.pos, m.positions], [entry.nrm, m.normals], [entry.uv, m.uvs]]) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
+    }
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, m.indices, gl.DYNAMIC_DRAW);
+    gl.bindVertexArray(null);
+    entry.count = m.indices.length;
+    entry.version = version;
+    return key;
+  }
+
+  /**
+   * Instanced spheres; data holds 8 floats per sphere: x, y, z, radius, r, g, b, glow.
+   * `coarse` draws a low-poly sphere, for crowds of small ones.
+   */
+  spheres(data, count = data.length / 8, coarse = false) {
     if (!count) return;
     const gl = this.gl;
     this.use('spheres');
     this.instances.upload(data.subarray(0, count * 8));
-    gl.bindVertexArray(this.sphereVao);
-    gl.drawElementsInstanced(gl.TRIANGLES, this.meshes.sphere.count, gl.UNSIGNED_SHORT, 0, count);
+    gl.bindVertexArray(coarse ? this.lowVao : this.sphereVao);
+    gl.drawElementsInstanced(gl.TRIANGLES, coarse ? this.lowCount : this.meshes.sphere.count, gl.UNSIGNED_SHORT, 0, count);
     this.drawCalls++;
   }
 

@@ -430,10 +430,10 @@ export class EcosystemSim extends Simulation {
     }
     const d = this.img.data;
     for (let k = 0; k < this.grass.length; k++) {
-      const g = this.grass[k], f = this.fertile[k];
-      d[k * 4] = 60 + 70 * (1 - Math.min(f, 1)) - 30 * g;
-      d[k * 4 + 1] = 45 + 120 * g;
-      d[k * 4 + 2] = 25 + 10 * g;
+      const [r, g, b] = groundColor(this.grass[k], this.fertile[k]);
+      d[k * 4] = r;
+      d[k * 4 + 1] = g;
+      d[k * 4 + 2] = b;
       d[k * 4 + 3] = 255;
     }
     this.cctx.putImageData(this.img, 0, 0);
@@ -445,18 +445,26 @@ export class EcosystemSim extends Simulation {
     for (const a of this.animals) {
       const [sx, sy] = view.toScreen(a.x, a.y);
       const r = Math.max(1.5, (2 + 1.6 * a.genes.size) * view.scale);
-      let col;
-      if (mode === 'speed') col = `hsl(${240 - clamp((a.genes.speed - 0.3) / 3, 0, 1) * 240},90%,60%)`;
-      else if (mode === 'size') col = `hsl(${280 - clamp((a.genes.size - 0.4) / 2.2, 0, 1) * 280},80%,60%)`;
-      else if (mode === 'energy') col = `hsl(${clamp(a.energy / (100 * a.genes.size), 0, 1) * 120},90%,55%)`;
-      else col = a.species === 'herbivore' ? '#f4f0dc' : '#ff6a3d';
-      ctx.fillStyle = col;
+      ctx.fillStyle = animalColor(a, mode);
       ctx.beginPath(); ctx.arc(sx, sy, r, 0, TAU); ctx.fill();
       ctx.strokeStyle = a.species === 'carnivore' ? '#400' : '#333';
       ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + Math.cos(a.heading) * r * 1.6, sy + Math.sin(a.heading) * r * 1.6); ctx.stroke();
     }
   }
+}
+
+/** Unclamped RGB (0…255) of a grid cell from its plant cover and fertility, as drawn in 2D and on the 3D terrain. */
+export function groundColor(g, f) {
+  return [60 + 70 * (1 - Math.min(f, 1)) - 30 * g, 45 + 120 * g, 25 + 10 * g];
+}
+
+/** CSS colour of an animal for a "Colour animals by" mode. */
+export function animalColor(a, mode) {
+  if (mode === 'speed') return `hsl(${240 - clamp((a.genes.speed - 0.3) / 3, 0, 1) * 240},90%,60%)`;
+  if (mode === 'size') return `hsl(${280 - clamp((a.genes.size - 0.4) / 2.2, 0, 1) * 280},80%,60%)`;
+  if (mode === 'energy') return `hsl(${clamp(a.energy / (100 * a.genes.size), 0, 1) * 120},90%,55%)`;
+  return a.species === 'herbivore' ? '#f4f0dc' : '#ff6a3d';
 }
 
 export { GENES };

@@ -225,7 +225,7 @@ part, or verified only in part · **Open**: not built yet. Test files are in `te
 | W-FT-20…25 | Met | `world-sites.test.js` (lazy creation, tiers, unloading, half-texel hits, tool-call parity, brush size) |
 | W-FT-26 | Met | Selection ring (native) or highlight in the texture (surfaces); brush ring and force arrow on the site |
 | W-FT-27 | Met | `world-sites.test.js`; the panels clear a stale selection as in 2D |
-| W-FT-28 | Partial | Gravity and Global Climate native (P0); Atoms, Weather and Ecosystem still surfaces (P1) |
+| W-FT-28 | Partial | Gravity and Global Climate native (P0); Ecosystem native as a terrain from fertility with instanced animals (`world-terrain.test.js`); Atoms and Weather still surfaces (P1) |
 | W-FT-29 | Met | `world.e2e.mjs` |
 | W-FT-40…43 | Met | `world-runtime.test.js` (fake clock) |
 | W-FT-60…64 | Met | `world-runtime.test.js`, `world-sites.test.js`, `world.e2e.mjs` (read-only driven parameter) |
