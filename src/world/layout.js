@@ -92,8 +92,8 @@ export const PLACES = [
     view: { target: [0, 0, 0], offset: [0, 8, 70] },
     primary: 'cell',
     sites: [
-      { id: 'cell', sim: 'cell', scenario: 'respiration', label: 'Cell', type: 'surface', surface: 'plane',
-        center: [0, 0, 0], width: 60, view: { offset: [0, 0, 62] } },
+      { id: 'cell', sim: 'cell', scenario: 'respiration', label: 'Cell', type: 'membrane',
+        center: [0, 0, 0], width: 60, view: { offset: [14, 10, 58] } },
     ],
   },
   {
@@ -114,8 +114,8 @@ export const PLACES = [
     view: { target: [0, 0, 0], offset: [0, 0, 380] },
     primary: 'shells',
     sites: [
-      { id: 'shells', sim: 'atom', scenario: 'carbon12', label: 'Atomic structure', type: 'surface', surface: 'plane',
-        center: [0, 0, 0], width: 300, view: { offset: [0, 0, 330] } },
+      { id: 'shells', sim: 'atom', scenario: 'carbon12', label: 'Atomic structure', type: 'shells',
+        center: [0, 0, 0], width: 300, view: { offset: [70, 50, 300] } },
     ],
   },
 ];
@@ -130,7 +130,7 @@ export const TOUR = [
   { site: 'ecosystem', text: 'Rabbits graze and foxes hunt on the savanna; each animal carries genes that evolve.' },
   { site: 'epidemic', text: 'In the town, an infection spreads from person to person.' },
   { site: 'mechanics', text: 'At the science campus, a mechanics lab: collisions, pendulums and springs.' },
-  { site: 'cell', text: 'Under the microscope, a living cell takes up glucose and oxygen and makes ATP.' },
+  { site: 'cell', text: 'Under the microscope, a living cell takes up glucose and oxygen and makes ATP. Its membrane is a sphere; molecules drift inside and around it.' },
   { site: 'atoms', text: 'Zoom into the sample: in a box of hydrogen and oxygen, atoms jostle and bond into water, in three dimensions. Turn the camera to see the depth.' },
-  { site: 'shells', text: 'And one atom: a nucleus of protons and neutrons, with electrons in shells. That is 36 orders of magnitude from the colliding galaxies.' },
+  { site: 'shells', text: 'And one atom: a nucleus of protons and neutrons, with electrons circling in spherical shells. That is 36 orders of magnitude from the colliding galaxies.' },
 ];

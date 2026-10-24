@@ -33,7 +33,7 @@ the tests, as the [design review](REVIEW.md) (R15) proposed. GitHub issue #2 tra
 | W1 Engine core | ✅ Done | `math3d`, `ray`, `gl`, `meshes`, `materials`, `renderer`, `camera3d`, `places`, with Node tests | Wide lines (WebGL2 draws 1 px lines) |
 | W2 Sites, panels, tools | ✅ Done | `App.bindSim` instead of a separate `SitePanels` (R1); surface, gravity and globe sites; all six tools through the shared `ToolSession`; scheduler; lazy sites; contract, parity and layout tests | — |
 | W3 Shell and navigation | ✅ Done (**World Preview**) | `#world/…` routes, *Enter the 3D world*, breadcrumb, scale bar, markers, Atlas, tour, backdrops, world save/load, touched-site tracking, per-site undo, *Open in 2D*, WebGL2 fallback, slow-device offer, offline cache, 25 browser tests | — |
-| W4 Native 3D views | ◐ Partial | Climate globe; Gravity drawn natively in 3D (galaxies, Solar System, Earth & Moon); Gravity 3D physics mode (`z`, `vz`, octree Barnes–Hut, *Inclined orbits* and *Galaxy collision in 3D* scenarios, the latter in deep space); Ecosystem terrain from fertility with instanced animals; Weather volume (ground strip, cloud puffs, rain/snow streaks, sky tint); Atoms 3D mode (`z`, `vz`, neighbour list, *Argon crystal in 3D* and *water in 3D*) drawn as ball-and-stick in the sample chamber | Orbit ellipses, Cell and Atom spheres (both run as surfaces today) |
+| W4 Native 3D views | ◐ Partial | Climate globe; Gravity drawn natively in 3D (galaxies, Solar System, Earth & Moon); Gravity 3D physics mode (`z`, `vz`, octree Barnes–Hut, *Inclined orbits* and *Galaxy collision in 3D* scenarios, the latter in deep space); Ecosystem terrain from fertility with instanced animals; Weather volume (ground strip, cloud puffs, rain/snow streaks, sky tint); Atoms 3D mode (`z`, `vz`, neighbour list, *Argon crystal in 3D* and *water in 3D*) drawn as ball-and-stick in the sample chamber; the Cell as a membrane sphere (molecules at depths that agree with inside/outside, ellipsoid mitochondria, proteins round the equator); the Atom with shell spheres, a packed nucleus and electrons on tilted orbits, with the badge and spectrum on a plaque | Orbit ellipses |
 | W5 Connected science | ✅ Done | Five couplings: Earth's orbit → Climate, Climate → Weather, Climate → Ecosystem, Weather → Ecosystem, Climate → Epidemic; loop check, smoothing, clamping, panel, read-only driven parameters | Stars → Climate (needs a "Sun" star in Stars); a "Dim the Sun" lesson |
 | W6 Performance and release | ◐ Partial | Guided tour, lessons fly to their site, soak test with all couplings, User Guide chapter and screenshots, keyboard Atlas, live-region breadcrumb, reduced motion | Performance budgets on the reference laptop (W-PR-1…8), 30-minute memory run |
 
@@ -50,7 +50,7 @@ a floor for CI, not the reference-laptop targets of W-PR-1…8:
 | Weather (valley) | 32 ms (the Weather module's own step dominates) | 13 |
 | Mechanics, Cell, Atoms, Atom | 5–9 ms | 2–5 |
 
-First world frame: under 0.3 s after page load on a local server. World code: 134 KB
+First world frame: under 0.3 s after page load on a local server. World code: 176 KB
 (budget 250 KB, W-TC-6), checked by a test.
 
 ## Phases
@@ -116,7 +116,7 @@ shipped behind the *Enter the World* button.
 | 3 | Ecosystem ✅ | Terrain from fertility, instanced animals | W-FT-28 |
 | 4 | Weather ✅ | Extruded slab, cloud/rain particles, sky tint | WFR-24 |
 | 5 | Atoms & Molecules ✅ | Optional 3D MD mode, ball-and-stick, 3D crystal scenario | W-SM-5 |
-| 6 | Atomic Structure, Cell | Shell spheres / membrane sphere (render only) | — |
+| 6 | Atomic Structure, Cell ✅ | Shell spheres / membrane sphere (render only) | W-FT-28 |
 
 **Exit:** P0 native views (Climate, Gravity) shipped; others as they land, each behind
 the module's own tests.
@@ -170,7 +170,7 @@ Roughly **World Preview in ~8 weeks** and **World 1.0 in ~15 weeks**.
 
 ## Next tasks
 
-1. The Cell and Atom spheres (the last W4 views).
+1. Orbit ellipses for Gravity's 3D view (the last W4 item).
 2. A "Sun" star in Stars, the Stars → Climate coupling (W-SM-7) and a "Dim the Sun" lesson.
 3. Measure W-PR-1…8 (and W-PR-9, 3D Gravity at scale) on the reference laptop with the scripted tour; tune quality presets.
 4. Move Weather to a Web Worker so the valley stays above 30 fps (W-PR-3).

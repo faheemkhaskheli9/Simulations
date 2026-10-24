@@ -201,10 +201,10 @@ part, or verified only in part · **Open**: not built yet. Test files are in `te
 | W-TC-3 | Met | Sites draw only through `Renderer` (`mesh`, `spheres`, `points`, `lines`, `texture`) |
 | W-TC-4 | Met | World, places, sites, scheduler, couplings, routes and saves all run in the Node tests |
 | W-TC-5 | Partial | Tested in Chromium (CI); Firefox and Safari not yet checked by hand |
-| W-TC-6 | Met | 134 KB; `world-sites.test.js` enforces ≤ 250 KB |
+| W-TC-6 | Met | 176 KB; `world-sites.test.js` enforces ≤ 250 KB |
 | W-TC-7 | Met | All code written for the project |
-| W-TC-8 | Met | Every world file is pre-cached by `sw.js` (`simulations-v3`); a test keeps the list complete |
-| W-AR-1 | Met | Modules unchanged (only `ICE_T` exported from `climate.js`); `world-sites.test.js` shows every site evolves exactly like its 2D module |
+| W-TC-8 | Met | Every world file is pre-cached by `sw.js` (`simulations-v7`); a test keeps the list complete |
+| W-AR-1 | Met | Modules unchanged in behaviour (small exports for the native views, e.g. `ICE_T` from `climate.js`, `CENTER` and `R0` from `cell.js`, and the Atom badge split into `renderBadge`); `world-sites.test.js` shows every site evolves exactly like its 2D module |
 | W-AR-2 | Met | Sites call the contract; native views read public state |
 | W-AR-3 | Met | `world-sites.test.js` |
 | W-AR-4 | Met | Changed by review R1: the panels stay in `App`; `App.bindSim(sim, { history, driven })` binds the active site's simulation, and both apps share `src/ui/tools.js` |
@@ -225,7 +225,7 @@ part, or verified only in part · **Open**: not built yet. Test files are in `te
 | W-FT-20…25 | Met | `world-sites.test.js` (lazy creation, tiers, unloading, half-texel hits, tool-call parity, brush size) |
 | W-FT-26 | Met | Selection ring (native) or highlight in the texture (surfaces); brush ring and force arrow on the site |
 | W-FT-27 | Met | `world-sites.test.js`; the panels clear a stale selection as in 2D |
-| W-FT-28 | Partial | Gravity and Global Climate native (P0); Ecosystem native as a terrain from fertility with instanced animals (`world-terrain.test.js`); Weather native as a volume with cloud and rain particles and a sky tint (`world-volume.test.js`); Atoms native as a ball-and-stick box running the 3D mode (`world-molecules.test.js`); Atomic Structure and Cell still surfaces |
+| W-FT-28 | Met | Gravity and Global Climate native (P0); Ecosystem native as a terrain from fertility with instanced animals (`world-terrain.test.js`); Weather native as a volume with cloud and rain particles and a sky tint (`world-volume.test.js`); Atoms native as a ball-and-stick box running the 3D mode (`world-molecules.test.js`); Cell native as a membrane sphere whose molecules are inside it exactly when the module counts them inside (`world-membrane.test.js`); Atomic Structure native with shell spheres, a packed nucleus and electrons on tilted orbits that rays still pick (`world-shells.test.js`). Mechanics, Stars and Epidemic stay surfaces |
 | W-FT-29 | Met | `world.e2e.mjs` |
 | W-FT-40…43 | Met | `world-runtime.test.js` (fake clock) |
 | W-FT-60…64 | Met | `world-runtime.test.js`, `world-sites.test.js`, `world.e2e.mjs` (read-only driven parameter) |

@@ -9,6 +9,8 @@ import { GlobeSite } from './native/globe.js';
 import { TerrainSite } from './native/terrain.js';
 import { VolumeSite } from './native/volume.js';
 import { MoleculesSite } from './native/molecules.js';
+import { MembraneSite } from './native/membrane.js';
+import { ShellsSite } from './native/shells.js';
 import { CouplingSet } from './couplings.js';
 import { Scheduler } from './scheduler.js';
 import { SAVE_FORMAT } from '../core/serialize.js';
@@ -16,7 +18,7 @@ import { v3 } from './engine/math3d.js';
 
 export const WORLD_FORMAT = 'simulations-world3d';
 export const WORLD_VERSION = 1;
-export const SITE_TYPES = { surface: SurfaceSite, gravity: GravitySite, globe: GlobeSite, terrain: TerrainSite, volume: VolumeSite, molecules: MoleculesSite };
+export const SITE_TYPES = { surface: SurfaceSite, gravity: GravitySite, globe: GlobeSite, terrain: TerrainSite, volume: VolumeSite, molecules: MoleculesSite, membrane: MembraneSite, shells: ShellsSite };
 const UNLOAD_AFTER_S = 120;
 
 export class World {
