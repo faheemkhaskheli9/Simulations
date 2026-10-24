@@ -25,7 +25,7 @@ For how to use the app, see the [User Guide](USER_GUIDE.md).
 
 **Category:** Space · **Link:** `#gravity` · **Time unit:** yr
 
-N-body gravity: planets, moons, stars, black holes and galaxies. Fling bodies, add new ones in orbit, change masses, or turn on a dark-matter halo to flatten galactic rotation curves.
+N-body gravity: planets, moons, stars, black holes and galaxies. Fling bodies, add new ones in orbit, change masses, turn on a dark-matter halo to flatten galactic rotation curves, or switch to full 3D for inclined orbits and tilted galaxies.
 
 **Model.** Newtonian N-body gravity in astronomical units (AU, years, solar masses), so G = 4π² and Earth orbits in one year.
 
@@ -40,6 +40,8 @@ N-body gravity: planets, moons, stars, black holes and galaxies. Fling bodies, a
 | Spiral galaxy (test stars) | `#gravity/galaxy` |
 | Galaxy collision | `#gravity/galaxyCollision` |
 | Star cluster (2000 self-gravitating stars) | `#gravity/cluster` |
+| Inclined orbits (3D) | `#gravity/inclined` |
+| Galaxy collision in 3D (tilted disks) | `#gravity/galaxy3d` |
 | Lone star (launch your own planets) | `#gravity/lonelyStar` |
 | Empty space | `#gravity/empty` |
 
@@ -52,6 +54,7 @@ N-body gravity: planets, moons, stars, black holes and galaxies. Fling bodies, a
 | Softening (AU) | `softening` | 0.000001 – 2 (log scale) | 0.00001 |
 | Max integration step (yr) | `maxStep` | 0.0001 – 0.05 (log scale) | 0.002 |
 | Tree opening angle θ (0 = exact) | `theta` | 0 – 1.2 | 0.6 |
+| 3D physics (z, inclined orbits) | `threeD` | on / off | off |
 | Dark-matter halo speed (AU/yr) | `haloV` | 0 – 80 | 0 |
 | Merge on collision | `merge` | on / off | on |
 | Collision radius × | `collisionScale` | 1 – 500 (log scale) | 20 |
@@ -92,12 +95,12 @@ N-body gravity: planets, moons, stars, black holes and galaxies. Fling bodies, a
 
 ### Simplifications
 
-- Point masses in a 2D plane; no relativity, tides or radiation pressure.
+- Point masses in a 2D plane, or in full 3D with the 3D physics option (inclined orbits); no relativity, tides or radiation pressure.
 - Plummer softening ε avoids infinite forces at close approach.
 - Colliding bodies merge, conserving mass and momentum (inelastic).
 - Test particles (galaxy stars, asteroids) feel gravity but exert none.
 - An optional flat-rotation-curve halo stands in for dark matter.
-- Direct O(N²) sum for small systems; above 64 massive bodies a Barnes–Hut quadtree (opening angle θ) gives O(N log N) forces.
+- Direct O(N²) sum for small systems; above 64 massive bodies a Barnes–Hut quadtree (an octree in 3D, opening angle θ) gives O(N log N) forces.
 
 ### Further reading
 

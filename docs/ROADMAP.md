@@ -56,7 +56,8 @@ Execution order and acceptance criteria: [Future execution plan](#future-executi
 - [x] Barnes–Hut tree for gravity (used from 64 massive bodies; new 2000-star *Star cluster* scenario)
 - [ ] Neighbour lists for molecular dynamics
 - [x] Optional 3D view with the same tools: the **3D world** (Gravity and Global Climate in native 3D; every other module on a surface)
-- [ ] Native 3D for molecules, weather and the ecosystem; a 3D gravity mode with inclined orbits
+- [x] A 3D gravity mode: `z`, `vz`, octree Barnes–Hut, *Inclined orbits* and *Galaxy collision in 3D* scenarios
+- [ ] Native 3D for molecules, weather and the ecosystem
 - [ ] Weather: 2D horizontal (map) mode, ice microphysics, lightning
 
 ### M5 Education (P2)

@@ -13,7 +13,7 @@ export const PLACES = [
     decor: [{ kind: 'milkyway', radius: 50000, count: 9000 }, { kind: 'starfield', radius: 7e5, count: 1500 }],
     primary: 'galaxies',
     sites: [
-      { id: 'galaxies', sim: 'gravity', scenario: 'galaxyCollision', label: 'Colliding galaxies', type: 'gravity',
+      { id: 'galaxies', sim: 'gravity', scenario: 'galaxy3d', label: 'Colliding galaxies', type: 'gravity',
         at: [-160000, 30000, -60000], scale: 600, params: { yearsPerSecond: 0.6 }, view: { offset: [0, 75000, 115000] } },
     ],
   },
@@ -122,7 +122,7 @@ export const PLACES = [
 
 /** Stops of the guided tour, galaxy to atom (site ids with a caption). */
 export const TOUR = [
-  { site: 'galaxies', text: 'Two galaxies collide, far out in deep space. Each dot is a star; gravity tears out long tidal tails. Our Milky Way is the spiral behind you.' },
+  { site: 'galaxies', text: 'Two galaxies collide, far out in deep space, their disks tilted against each other. Each dot is a star; gravity tears out long tidal tails, above and below the plane. Our Milky Way is the spiral behind you.' },
   { site: 'nursery', text: 'In the Orion Arm of the Milky Way, gas clouds collapse into new stars. Big stars burn fast and die young.' },
   { site: 'planets', text: 'The Solar System: eight planets orbiting the Sun under Newtonian gravity. Drag a planet to change its orbit.' },
   { site: 'climate', text: 'The Earth: its climate is a balance between sunlight in and heat radiated out. Ice spreads where it is cold enough.' },
