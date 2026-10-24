@@ -54,10 +54,10 @@ Execution order and acceptance criteria: [Future execution plan](#future-executi
 - [ ] Run physics in Web Workers (typed-array state, transferable buffers)
 - [ ] WebGPU compute for grids (weather, fluids) and particles (atoms, galaxies)
 - [x] Barnes–Hut tree for gravity (used from 64 massive bodies; new 2000-star *Star cluster* scenario)
-- [ ] Neighbour lists for molecular dynamics
-- [x] Optional 3D view with the same tools: the **3D world** (Gravity and Global Climate in native 3D; every other module on a surface)
+- [x] Neighbour lists for molecular dynamics (the 3D mode of Atoms & Molecules)
+- [x] Optional 3D view with the same tools: the **3D world** (Gravity, Global Climate, Ecosystem, Weather and Atoms & Molecules in native 3D; the rest on surfaces)
 - [x] A 3D gravity mode: `z`, `vz`, octree Barnes–Hut, *Inclined orbits* and *Galaxy collision in 3D* scenarios
-- [ ] Native 3D for molecules (the weather volume and the ecosystem terrain are done)
+- [x] Native 3D for molecules: a 3D mode for Atoms & Molecules (FCC argon crystal, water in 3D), drawn as ball-and-stick in the world (the weather volume and the ecosystem terrain are done too)
 - [ ] Weather: 2D horizontal (map) mode, ice microphysics, lightning
 
 ### M5 Education (P2)
@@ -92,7 +92,7 @@ Built as **Simulations World**, one 3D world containing every simulation: see th
 | Cell Biology | Each particle stands for many molecules; time is accelerated; no cell division yet | Mitosis, enzyme kinetics |
 | Mechanics | Circles only; no friction model beyond rolling damping | Rigid polygons, Coulomb friction |
 | Platform | No analytics | Privacy-friendly, opt-in usage metrics |
-| 3D world | Gravity runs on its orbital plane (no inclinations yet); Atoms is a 2D surface in 3D; 1 px lines; performance only measured on a software GPU | 3D gravity mode, native views, wide lines, reference-laptop benchmarks |
+| 3D world | Atomic Structure and Cell are 2D surfaces in 3D; 1 px lines; performance only measured on a software GPU | 3D gravity mode, native views, wide lines, reference-laptop benchmarks |
 
 
 ## Future execution plan (2026-10-19)

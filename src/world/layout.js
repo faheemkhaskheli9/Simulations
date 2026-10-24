@@ -103,8 +103,8 @@ export const PLACES = [
     view: { target: [0, 0, 0], offset: [0, 0.6, 7.5] },
     primary: 'atoms',
     sites: [
-      { id: 'atoms', sim: 'atoms', scenario: 'water', label: 'Atoms & molecules', type: 'surface', surface: 'plane',
-        center: [0, 0, 0], width: 6, view: { offset: [0, 0, 6.5] } },
+      { id: 'atoms', sim: 'atoms', scenario: 'water3d', label: 'Atoms & molecules', type: 'molecules',
+        center: [0, 0, 0], width: 6, view: { offset: [1.6, 1.4, 6.2] } },
     ],
   },
   {
@@ -131,6 +131,6 @@ export const TOUR = [
   { site: 'epidemic', text: 'In the town, an infection spreads from person to person.' },
   { site: 'mechanics', text: 'At the science campus, a mechanics lab: collisions, pendulums and springs.' },
   { site: 'cell', text: 'Under the microscope, a living cell takes up glucose and oxygen and makes ATP.' },
-  { site: 'atoms', text: 'Zoom into the sample: water molecules jostle and bond.' },
+  { site: 'atoms', text: 'Zoom into the sample: in a box of hydrogen and oxygen, atoms jostle and bond into water, in three dimensions. Turn the camera to see the depth.' },
   { site: 'shells', text: 'And one atom: a nucleus of protons and neutrons, with electrons in shells. That is 36 orders of magnitude from the colliding galaxies.' },
 ];

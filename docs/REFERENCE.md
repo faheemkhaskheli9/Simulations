@@ -276,9 +276,9 @@ Build atoms from protons, neutrons and electrons. Shine light to excite electron
 
 **Category:** Matter · **Link:** `#atoms` · **Time unit:** τ
 
-Molecular dynamics with Lennard-Jones forces, ionic charges and covalent bonding. Heat or cool regions to melt, boil or freeze matter, mix elements to form molecules, or transmute atoms in the inspector.
+Molecular dynamics with Lennard-Jones forces, ionic charges and covalent bonding. Heat or cool regions to melt, boil or freeze matter, mix elements to form molecules, or transmute atoms in the inspector. Switch to 3D for a real argon crystal.
 
-**Model.** 2D molecular dynamics in reduced units (σ ≈ 3 Å, one temperature unit ≈ 120 K) with van der Waals, ionic and simple covalent interactions.
+**Model.** 2D (or, with the 3D physics option, 3D) molecular dynamics in reduced units (σ ≈ 3 Å, one temperature unit ≈ 120 K) with van der Waals, ionic and simple covalent interactions.
 
 ### Scenarios
 
@@ -291,6 +291,8 @@ Molecular dynamics with Lennard-Jones forces, ionic charges and covalent bonding
 | Carbon + hydrogen soup | `#atoms/organic` |
 | Noble-gas mixture with gravity | `#atoms/mixture` |
 | Molecule kit (build by hand) | `#atoms/kit` |
+| Argon crystal in 3D (FCC) — heat to melt | `#atoms/crystal3d` |
+| Hydrogen + oxygen → water, in 3D | `#atoms/water3d` |
 
 ### Parameters
 
@@ -305,6 +307,7 @@ Molecular dynamics with Lennard-Jones forces, ionic charges and covalent bonding
 | Bond strength (break stretch) | `bondEnergy` | 1.1 – 2.5 | 1.5 |
 | Electrostatics | `coulomb` | on / off | on |
 | Draw bonds | `showBonds` | on / off | on |
+| 3D physics (z, box depth 16σ) | `threeD` | on / off | off |
 
 ### Things you can add
 
@@ -345,7 +348,8 @@ Molecular dynamics with Lennard-Jones forces, ionic charges and covalent bonding
 
 ### Simplifications
 
-- Two dimensions, so densities and phase-change temperatures differ from 3D.
+- Two dimensions by default, so densities and phase-change temperatures differ from 3D. The 3D mode is a closed box, 16σ deep; there argon holds an FCC crystal that melts above about 80 K (real argon: 84 K); a small crystal with free faces melts gradually.
+- In 3D the tools act through the depth of the box: Add places atoms on its middle plane, Inspect and Move take the nearest atom in front.
 - Covalent bonds are springs that form when atoms with free valence meet gently and break when overstretched; no quantum chemistry or bond-angle terms beyond a soft repulsion between neighbours.
 - Reaction energetics are simplified; bonding does not release realistic heat.
 - Water, methane and other molecules are built from these rules, not from force fields.

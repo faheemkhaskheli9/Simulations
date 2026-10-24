@@ -396,7 +396,15 @@ forces, and atoms with free bonds join into molecules. Temperature, pressure and
 molecules present are measured live.
 
 **Scenarios:** argon gas, argon condensing, salt crystal, hydrogen + oxygen → water,
-carbon + hydrogen soup, noble-gas mixture with gravity, molecule kit.
+carbon + hydrogen soup, noble-gas mixture with gravity, molecule kit, and two in 3D:
+argon crystal in 3D and hydrogen + oxygen → water in 3D.
+
+**3D physics.** Tick *3D physics* to give the atoms depth: they move in a closed box
+16σ deep, and the temperature counts all three directions. In 2D the atoms near the
+front are drawn brighter; in the 3D world you can turn the box round. The tools act
+through the depth: *Add* puts atoms on the box's middle plane, *Inspect* and *Move* take
+the atom nearest the front, and *Energy* heats a column through the box. Untick it to
+flatten everything back onto the plane.
 
 **Try this**
 - *Argon condensing*: droplets form at 60 K. Raise *Target temperature* to boil them.
@@ -405,6 +413,9 @@ carbon + hydrogen soup, noble-gas mixture with gravity, molecule kit.
 - *Molecule kit*: drag hydrogens next to C, N and O with Move to build CH₄, NH₃ and H₂O.
 - Inspect an atom and change its **Element** to transmute it.
 - Turn on *Gravity* to see a gas settle into an atmosphere, densest at the bottom.
+- *Argon crystal in 3D*: 500 atoms in a face-centred cubic lattice at 40 K hold their
+  places. Raise *Target temperature* past about 80 K (real argon melts at 84 K) and the
+  crystal melts into a droplet.
 
 ### Mechanics Lab · Classical
 
@@ -578,9 +589,11 @@ All six tools work by pointing at the active site: click a planet to inspect it,
 ball in the lab, add animals to the savanna, push the Moon, warm a patch of the globe.
 The brush shows as a ring on the surface. Most simulations appear on a **surface**
 (a ground patch or a screen) drawn exactly as in 2D; **Gravity**, **Global Climate**,
-**Ecosystem** and **Weather** have **native 3D views** (orbits in space, a lit globe,
-the savanna as a raised block of land whose fertile ground stands higher, with each
-animal standing on it and facing where it heads, and the weather as a block of air).
+**Ecosystem**, **Weather** and **Atoms & Molecules** have **native 3D views** (orbits in
+space, a lit globe, the savanna as a raised block of land whose fertile ground stands
+higher, with each animal standing on it and facing where it heads, the weather as a
+block of air, and the sample chamber as a box of atoms in 3D, drawn as ball-and-stick:
+free atoms are full-size spheres, bonded ones smaller balls joined by sticks).
 Feeding the land with the Energy tool raises it; a drought lowers it. In the weather
 block, the ground and its mountains and lakes run through the whole depth, clouds are
 soft puffs and rain (or snow, in freezing air) falls as streaks. The module's own
@@ -592,6 +605,8 @@ tidal tails have real depth.
 
 ![The valley: the thunderstorm, the savanna and the town](images/world-valley.jpg)
 ![The thunderstorm as a block of air: cloud puffs over the ground strip, with the slice on the back wall](images/world-weather.jpg)
+
+![The sample chamber: hydrogen and oxygen in a 3D box, bonding into water](images/world-atoms.jpg)
 ![Using the Energy tool on the savanna in the world](images/world-tools.jpg)
 ![The mechanics lab at the science campus](images/world-lab.jpg)
 ![A cell under the microscope, with the marker into the sample chamber](images/world-cell.jpg)
