@@ -77,6 +77,7 @@ New code lives under `src/world/`; nothing in `src/sims/` or `src/core/` moves.
 | `src/world/site.js` | `Site` base (lazy sim, tiers, history) and `SurfaceSite` (module drawn into a texture) |
 | `src/world/native/gravity3d.js` | Native Gravity view: bodies, halos, trails, labels on the orbital plane |
 | `src/world/native/globe.js` | Native Global Climate view: band texture on a globe lit at the model's declination |
+| `src/world/native/terrain.js` | Native Ecosystem view: terrain raised from the fertility grid, plant-cover texture, instanced animals; rays hit the heightfield |
 | `src/world/scheduler.js` | Active and ambient stepping within a budget; catch-up; error isolation |
 | `src/world/couplings.js` | Coupling definitions, loop check, smoothing, clamping |
 | `src/world/world.js` | `World`: places, sites, tiers, following bodies, couplings, saves |
