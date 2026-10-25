@@ -22,6 +22,7 @@
 | Serialization | `node:test`, loops over the registry | `tests/serialize.test.js` | Every change |
 | Browser end-to-end | Playwright (Chromium) via `node:test` | `tests/e2e/app.e2e.mjs`, `tests/e2e/world.e2e.mjs` | CI on every push / PR (`npm run test:e2e`) |
 | 3D world (unit) | `node:test`, no DOM or GL | `tests/world-*.test.js` | Every change |
+| Long-run world checks | Node child processes; Playwright (Chromium) | `scripts/soak.mjs`, `scripts/memory.mjs` | Before release (`npm run soak`, `npm run soak:memory`) |
 | Manual exploratory | Checklist below | — | Before release |
 | Performance | Frame-time readout (`ms/frame` in the top bar) and headless timing | — | Before release |
 
@@ -31,6 +32,8 @@ Run everything with:
 npm test                     # unit, behaviour, contract, serialization
 npm install --no-save playwright && npx playwright install chromium
 npm run test:e2e             # real-browser tests
+npm run soak                 # every world site for 10 simulated minutes (W-RR-4), ~9 min on 4 cores
+npm run soak:memory          # the tour loops for 30 minutes; heap growth < 10 % (W-PR-7)
 ```
 
 ## 3. Automated test inventory
@@ -100,7 +103,7 @@ npm run test:e2e             # real-browser tests
 | `world-molecules.test.js` | Atoms box: module x, y (down) and z map into the place; rays hit the middle plane at the aimed point; atoms are balls at their depth, smaller when bonded; one six-sided stick per bond, on a cylinder round it; 2D atoms on the middle plane; tools act through the contract | W-FT-28, WFR-24 |
 | `world-membrane.test.js` | Cell sphere: module x, y (down) map into the place; rays hit the equator at the aimed point; a molecule is inside the membrane sphere exactly when the module counts it inside; depths are stable and 0 at the membrane; proteins on the equator, mitochondria inside; the sphere swells with the cell and turns orange when stretched; tools act through the contract | W-FT-28 |
 | `world-shells.test.js` | Atom: electrons on their shell sphere on stable, differently tilted orbits; nucleons fill the nucleus ball with Z protons; a ray through an electron picks it, other rays meet the middle plane at the aimed point; shells drawn as in 2D, plaque below the outermost; photons are fading points | W-FT-28 |
-| `world-runtime.test.js` | scheduler (fake clock: active step, budget, round-robin, catch-up cap, adaptation, error isolation); couplings (off by default, loops refused, smoothing, clamping, non-finite values ignored, coupled sites kept ambient, Earth's orbit cools the climate, rain → growth, seasons → weather); routes; saves (contents, round-trip with identical future, rejection of bad files with nothing changed, 2D saves open at their site); globe bands within 0.5° and lit at the declination; soak with every coupling | W-FT-40…43, W-FT-60…64, W-FT-80…84, W-SM-6, W-SM-8, W-RR-3, W-RR-4 |
+| `world-runtime.test.js` | scheduler (fake clock: active step, budget, round-robin, catch-up cap, adaptation, error isolation); couplings (off by default, loops refused, smoothing, clamping, non-finite values ignored, coupled sites kept ambient, Earth's orbit cools the climate, rain → growth, seasons → weather); routes; saves (contents, round-trip with identical future, rejection of bad files with nothing changed, 2D saves open at their site); globe bands within 0.5° and lit at the declination; soak with every coupling; a short run of the long soak script | W-FT-40…43, W-FT-60…64, W-FT-80…84, W-SM-6, W-SM-8, W-RR-3, W-RR-4 |
 | `e2e/app.e2e.mjs` | per module: every tool in the real UI with no console errors | FT-13, RR-* |
 | `e2e/world.e2e.mjs` | the world opens and draws; every tool on all 12 sites with no console errors; Atlas by keyboard (< 4 s flight); reduced motion; scrolling from deep space to one atom; per-site undo; world save → load; share link reproduces site, parameters and camera; driven parameter read-only; Open in 2D carries state; WebGL context loss recovered; lessons fly to their site; the tour; no-WebGL2 fallback | W-FT-6, W-FT-7, W-FT-29, W-FT-63, W-FT-80…86, W-UA-1, W-UA-3, W-RR-1 |
 | | welcome screen: one card and live thumbnail per simulation, opens a simulation, can be turned off | FT-28 |
@@ -146,6 +149,5 @@ browser dev-tools performance profiles on the reference machine.
 
 ## 8. Planned improvements
 
-- Long-run soak tests (10⁴ steps) checking bounded memory and finite state.
 - Visual regression snapshots for each scenario and each place of the 3D world.
 - A scripted-tour performance probe for the 3D world on the reference laptop (W-PR-1…8).

@@ -8,6 +8,8 @@
     "start": "node server.js",
     "test": "node --test tests/*.test.js",
     "test:e2e": "node --test tests/e2e/*.e2e.mjs",
+    "soak": "node scripts/soak.mjs",
+    "soak:memory": "node scripts/memory.mjs",
     "docs:reference": "node scripts/reference.mjs",
     "docs:screenshots": "node scripts/screenshots.mjs"
   },

@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | v1.0: implementation status per requirement in [§12](#12-implementation-status) |
-| **Last updated** | 2026-10-19 |
+| **Last updated** | 2026-10-25 |
 | **Related** | [PRD](PRD.md) · [System Design](SYSTEM_DESIGN.md) · [Plan](PLAN.md) · 2D [TRD](../TRD.md) · [ADRs](../adr/) |
 
 This document turns the [World PRD](PRD.md) into **testable technical requirements**.
@@ -243,11 +243,12 @@ part, or verified only in part · **Open**: not built yet. Test files are in `te
 | W-SM-7 | Open | Needs a "Sun" star in Stars. Earth's orbit → Climate is built and tested instead |
 | W-SM-8 | Met | `world-runtime.test.js` |
 | W-PR-1 | Partial | First world frame < 0.3 s in headless Chromium; not yet measured on the reference laptop |
-| W-PR-2…9 | Open | Only software-GPU (SwiftShader) numbers so far, see the [Plan](PLAN.md#measured-so-far) |
+| W-PR-2…6, W-PR-8, W-PR-9 | Open | Only software-GPU (SwiftShader) numbers so far, see the [Plan](PLAN.md#measured-so-far) |
+| W-PR-7 | Met | `npm run soak:memory` (`scripts/memory.mjs`): the tour looped for 30 minutes in headless Chromium with every coupling on; JS heap after GC 6.8 MB after the first loop, 6.7 MB at the end (−1.3 %); the peak of each loop (Weather active) was 8.9 MB both times. Heap only; GPU memory is W-PR-6 |
 | W-RR-1 | Met | `world.e2e.mjs` (WebGL2 disabled → Atlas → 2D) |
 | W-RR-2 | Partial | Implemented (offer after 5 s below 20 fps); not yet checked by hand |
 | W-RR-3 | Met | `world-runtime.test.js` (routes, couplings), save validation |
-| W-RR-4 | Partial | Soak test runs every site with all couplings and saves/loads; the 10-simulated-minute version is open |
+| W-RR-4 | Met | `npm run soak` (`scripts/soak.mjs`): each of the 12 sites active for 10 simulated minutes (18 000 frames) with all five couplings on; statistics, saved states and coupling values finite every simulated minute, no site stopped, and the world saved, loaded and matched site by site. A short run is in `world-runtime.test.js` |
 | W-UA-1 | Met | `world.e2e.mjs` |
 | W-UA-2 | Met | Arrows/WASD orbit, `+`/`-` zoom, Backspace up, H home, T tour, F focus, Esc leaves the tour |
 | W-UA-3 | Met | `world.e2e.mjs` |

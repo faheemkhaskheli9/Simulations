@@ -35,7 +35,7 @@ the tests, as the [design review](REVIEW.md) (R15) proposed. GitHub issue #2 tra
 | W3 Shell and navigation | ✅ Done (**World Preview**) | `#world/…` routes, *Enter the 3D world*, breadcrumb, scale bar, markers, Atlas, tour, backdrops, world save/load, touched-site tracking, per-site undo, *Open in 2D*, WebGL2 fallback, slow-device offer, offline cache, 25 browser tests | — |
 | W4 Native 3D views | ✅ Done | Climate globe; Gravity drawn natively in 3D (galaxies, Solar System, Earth & Moon) with orbit ellipses tilted by their inclination (*Show orbit ellipses*, on in the Solar System and Earth & Moon); Gravity 3D physics mode (`z`, `vz`, octree Barnes–Hut, *Inclined orbits* and *Galaxy collision in 3D* scenarios, the latter in deep space); Ecosystem terrain from fertility with instanced animals; Weather volume (ground strip, cloud puffs, rain/snow streaks, sky tint); Atoms 3D mode (`z`, `vz`, neighbour list, *Argon crystal in 3D* and *water in 3D*) drawn as ball-and-stick in the sample chamber; the Cell as a membrane sphere (molecules at depths that agree with inside/outside, ellipsoid mitochondria, proteins round the equator); the Atom with shell spheres, a packed nucleus and electrons on tilted orbits, with the badge and spectrum on a plaque | W-PR-9 is measured under W6 |
 | W5 Connected science | ✅ Done | Five couplings: Earth's orbit → Climate, Climate → Weather, Climate → Ecosystem, Weather → Ecosystem, Climate → Epidemic; loop check, smoothing, clamping, panel, read-only driven parameters | Stars → Climate (needs a "Sun" star in Stars); a "Dim the Sun" lesson |
-| W6 Performance and release | ◐ Partial | Guided tour, lessons fly to their site, soak test with all couplings, User Guide chapter and screenshots, keyboard Atlas, live-region breadcrumb, reduced motion | Performance budgets on the reference laptop (W-PR-1…8), 30-minute memory run |
+| W6 Performance and release | ◐ Partial | Guided tour, lessons fly to their site, 10-simulated-minute soak of every site with all couplings (`npm run soak`), 30-minute memory run (`npm run soak:memory`), User Guide chapter and screenshots, keyboard Atlas, live-region breadcrumb, reduced motion | Performance budgets on the reference laptop (W-PR-1…6, W-PR-8), hands-on browser and tablet checks |
 
 ### Measured so far
 
@@ -52,6 +52,17 @@ a floor for CI, not the reference-laptop targets of W-PR-1…8:
 
 First world frame: under 0.3 s after page load on a local server. World code: 176 KB
 (budget 250 KB, W-TC-6), checked by a test.
+
+Long runs (2026-10-25, 4-core container; both are independent of the GPU):
+
+- **Soak, W-RR-4** (`npm run soak`, about 9 minutes on 4 cores): every site active for
+  10 simulated minutes with all couplings on, all healthy and saved/loaded. Node time per
+  30 fps frame (whole world, the scheduler's 10 ms budget): 6.8–10.6 ms, 16 ms with
+  Weather active. A world save with every site touched: 570–890 KB.
+- **Memory, W-PR-7** (`npm run soak:memory`): 30 minutes of the tour looping in headless
+  Chromium (about 2¾ loops, as SwiftShader slows the frames), JS heap after GC
+  6.8 → 6.7 MB (−1.3 %). The heap rises to about 9 MB while Weather is active and falls
+  back when it unloads; the peak was the same in each loop.
 
 ## Phases
 

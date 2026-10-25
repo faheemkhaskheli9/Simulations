@@ -169,9 +169,10 @@ performance or worker workstreams.
   and molecular neighbor lists only after measuring their cost.
 - [ ] **F2.4: Add adaptive visual quality.** Reduce surface refresh rate, resolution, and
   decorative detail without silently changing experiment physics.
-- [ ] **F2.5: Finish reliability checks.** Complete the existing 10-simulated-minute soak,
-  30-minute memory check, cross-browser/tablet checks, context-loss recovery checks,
-  and useful user-visible failure/retry messages.
+- [ ] **F2.5: Finish reliability checks.** ~~10-simulated-minute soak~~ and ~~30-minute
+  memory check~~ are done (`npm run soak`, `npm run soak:memory`; see the
+  [World Plan](world/PLAN.md#measured-so-far)). Left: cross-browser/tablet checks,
+  context-loss recovery checks, and useful user-visible failure/retry messages.
 
 **Exit criteria:** publish hardware measurements against every applicable existing budget;
 pass worker parity tests and long-run checks; document unsupported devices and fallback
