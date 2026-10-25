@@ -9,6 +9,7 @@ import { CouplingSet, hasCycle, growthFromRain, recentRain, annualInsolation, CO
 import { parseWorldHash, formatWorldHash, resolveRoute, parseView, sitePath } from '../src/world/routes.js';
 import { globeTexture, bandForLatitude, rowLatitude, sunDirection, GLOBE_ROWS, GLOBE_COLS } from '../src/world/native/globe.js';
 import { ClimateSim } from '../src/sims/climate.js';
+import { soakSite } from '../scripts/soak.mjs';
 
 // ---------- scheduler ----------
 
@@ -322,4 +323,11 @@ test('soak: the whole world with every coupling on stays finite and saves (W-RR-
   copy.load(data);
   assert.equal(copy.couplings.enabled.size, COUPLINGS.length);
   assert.equal(Object.keys(data.sites).length, world.sites.size);
+});
+
+test('the long soak script passes a short run with every coupling on (W-RR-4)', () => {
+  const r = soakSite('weather', 4);
+  assert.deepEqual(r.problems, []);
+  assert.equal(r.frames, 120);
+  assert.ok(r.simulated > 3.9 && r.activeSimTime > 0);
 });
