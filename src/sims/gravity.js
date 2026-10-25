@@ -9,6 +9,7 @@ const TREE_MIN = 64;
 
 // Units: length = AU, time = years, mass = solar masses  =>  G = 4π².
 export const G_SI_UNITS = 4 * Math.PI * Math.PI;
+const ORBITS_UP_TO = 40; // bodies drawn with orbit ellipses
 
 const KINDS = {
   star: { label: 'Star (1 M☉)', mass: 1, radius: 0.00465, color: '#ffd76a', px: 7 },
@@ -91,6 +92,7 @@ export class GravitySim extends Simulation {
       { key: 'collisionScale', label: 'Collision radius ×', type: 'range', min: 1, max: 500, value: 20, log: true },
       { key: 'orbitOnAdd', label: 'New bodies start in orbit', type: 'checkbox', value: true },
       { key: 'trails', label: 'Show trails', type: 'checkbox', value: true },
+      { key: 'orbits', label: 'Show orbit ellipses', type: 'checkbox', value: false },
     ]);
     this.spawnKinds = Object.entries(KINDS).map(([id, k]) => ({ id, label: k.label }));
     this.scenarios = [
@@ -579,6 +581,44 @@ export class GravitySim extends Simulation {
     return best;
   }
 
+  /**
+   * Osculating orbit ellipses for the view: one per body bound to its
+   * orbitHost, as { body, host, points } with `points` from orbitEllipse.
+   * Test particles get one only in small systems (not the asteroid belt or a
+   * galaxy's stars), and a system of more than ORBITS_UP_TO massive bodies
+   * (a cluster) gets none.
+   */
+  orbitEllipses(n = 96) {
+    const massive = this.bodies.filter((b) => b.m > 0);
+    if (massive.length > ORBITS_UP_TO) return [];
+    const out = [];
+    for (const b of this.bodies.length > ORBITS_UP_TO ? massive : this.bodies) {
+      const host = this.orbitHost(b);
+      if (!host) continue;
+      const points = orbitEllipse(b, host, this.G, n);
+      if (points) out.push({ body: b, host, points });
+    }
+    return out;
+  }
+
+  /**
+   * The body `b` orbits: the lightest heavier body whose Hill sphere (about
+   * the heaviest body) holds it, else the heaviest body. The Moon orbits the
+   * Earth even though the Sun pulls on it harder. Null for the heaviest body.
+   */
+  orbitHost(b) {
+    let top = null;
+    for (const c of this.bodies) if (c !== b && (!top || c.m > top.m)) top = c;
+    if (!top || top.m <= b.m) return null;
+    let host = top;
+    const dist = (p, q) => Math.hypot(p.x - q.x, p.y - q.y, (p.z ?? 0) - (q.z ?? 0));
+    for (const c of this.bodies) {
+      if (c === b || c === top || c.m <= b.m || c.m >= host.m) continue;
+      if (dist(b, c) < dist(c, top) * Math.cbrt(c.m / (3 * top.m))) host = c;
+    }
+    return host;
+  }
+
   add(kind, x, y) {
     const spawn = (k, px, py) => {
       const b = this.makeBody(k, px, py);
@@ -712,6 +752,23 @@ export class GravitySim extends Simulation {
 
   render(ctx, view) {
     const bs = this.bodies;
+    if (this.params.orbits) {
+      ctx.lineWidth = 1;
+      ctx.globalAlpha = 0.5;
+      ctx.setLineDash([4, 4]);
+      for (const { body, points } of this.orbitEllipses()) {
+        ctx.strokeStyle = body.color;
+        ctx.beginPath();
+        for (let i = 0; i < points.length; i += 3) {
+          const [sx, sy] = view.toScreen(points[i], points[i + 1]);
+          if (i === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
+        }
+        ctx.closePath();
+        ctx.stroke();
+      }
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+    }
     if (this.params.trails) {
       ctx.lineWidth = 1;
       for (const b of bs) {
@@ -774,6 +831,39 @@ export function orbitalElements(b, host, G) {
   const period = a > 0 ? TAU * Math.sqrt((a * a * a) / mu) : Infinity;
   const inclination = h2 > 0 ? (Math.acos(Math.max(-1, Math.min(1, hz / Math.sqrt(h2)))) * 180) / Math.PI : 0;
   return { a, e, period, inclination };
+}
+
+/**
+ * The osculating Kepler ellipse of `b` about `host`, as `n` points
+ * [x, y, z, ...] in module coordinates (relative to the host's current
+ * position), or null when the orbit is unbound or degenerate. The ellipse
+ * lies in the plane of r × v, so in 3D it is tilted by the inclination.
+ */
+export function orbitEllipse(b, host, G, n = 96) {
+  const rx = b.x - host.x, ry = b.y - host.y, rz = (b.z ?? 0) - (host.z ?? 0);
+  const vx = b.vx - host.vx, vy = b.vy - host.vy, vz = (b.vz ?? 0) - (host.vz ?? 0);
+  const mu = G * (host.m + b.m);
+  const r = Math.hypot(rx, ry, rz), v2 = vx * vx + vy * vy + vz * vz;
+  if (!(mu > 0) || r === 0) return null;
+  const a = -mu / (2 * (v2 / 2 - mu / r));
+  const hx = ry * vz - rz * vy, hy = rz * vx - rx * vz, hz = rx * vy - ry * vx;
+  const h = Math.hypot(hx, hy, hz);
+  if (!(a > 0) || h === 0) return null;
+  // Eccentricity vector (v × h) / μ − r̂ points to the periapsis.
+  let ex = (vy * hz - vz * hy) / mu - rx / r, ey = (vz * hx - vx * hz) / mu - ry / r, ez = (vx * hy - vy * hx) / mu - rz / r;
+  const e = Math.hypot(ex, ey, ez);
+  if (e >= 0.999) return null;
+  // Perifocal basis P (to periapsis; along r for a near-circle) and Q = ĥ × P.
+  const [px, py, pz] = e > 1e-9 ? [ex / e, ey / e, ez / e] : [rx / r, ry / r, rz / r];
+  const qx = (hy * pz - hz * py) / h, qy = (hz * px - hx * pz) / h, qz = (hx * py - hy * px) / h;
+  const bAxis = a * Math.sqrt(1 - e * e), out = new Float64Array(n * 3);
+  for (let i = 0; i < n; i++) {
+    const E = (TAU * i) / n, c = a * (Math.cos(E) - e), s = bAxis * Math.sin(E);
+    out[i * 3] = host.x + c * px + s * qx;
+    out[i * 3 + 1] = host.y + c * py + s * qy;
+    out[i * 3 + 2] = (host.z ?? 0) + c * pz + s * qz;
+  }
+  return out;
 }
 
 /**
