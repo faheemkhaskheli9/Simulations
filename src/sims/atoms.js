@@ -25,7 +25,6 @@ const FMAX = 2000;
 const SKIN = 0.4; // neighbour-list skin (σ) in the 3D mode
 const FCC_A = 1.55; // argon FCC lattice constant (σ): nearest neighbours near the LJ minimum, 2^(1/6)σ
 
-let nextId = 1;
 
 /**
  * 2D molecular dynamics: Lennard-Jones atoms, Coulomb ions, and simple
@@ -117,7 +116,7 @@ export class AtomsSim extends Simulation {
     const e = ELEMENTS[el];
     const sd = Math.sqrt(T / KELVIN_PER_UNIT / e.mass);
     const a = {
-      id: nextId++, el, x, y,
+      id: this.nextId++, el, x, y,
       vx: this.rng.gaussian(0, sd), vy: this.rng.gaussian(0, sd),
       fx: 0, fy: 0, bonds: [], alive: true,
       charge: e.charge,
@@ -216,7 +215,7 @@ export class AtomsSim extends Simulation {
       if (at) at.bonds = a.bonds.map((id) => byId.get(id)).filter(Boolean);
     }
     this.pressure = st.pressure || 0;
-    nextId = Math.max(nextId, ...this.atoms.map((a) => a.id + 1));
+    this.nextId = Math.max(this.nextId, ...this.atoms.map((a) => a.id + 1));
     this.forcesReady = false;
   }
 

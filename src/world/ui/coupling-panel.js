@@ -39,12 +39,41 @@ export class CouplingPanel {
     this.box.replaceChildren(
       el('p', { className: 'muted small', textContent: 'Link the simulations: one site\'s state sets a parameter of another. All are off by default, so every site behaves exactly as in 2D.' }),
       ...rows,
+      this.experimentRow(),
     );
     this.update();
   }
 
+  /** Experiment mode switch (Roadmap F1.1): fixed ticks instead of the frame's time. */
+  experimentRow() {
+    const { world, app } = this.stage;
+    const box = el('input', { type: 'checkbox', checked: world.mode === 'experiment' });
+    box.id = 'experiment-mode';
+    box.addEventListener('change', () => {
+      if (box.checked) {
+        world.startExperiment();
+        app.status(`Experiment mode: ${world.participants().map((s) => s.label).join(', ')} step in fixed ticks`);
+      } else {
+        world.stopExperiment();
+        app.status('Interactive preview');
+      }
+      this.update();
+    });
+    this.experimentInfo = el('span', { className: 'coupling-value', id: 'experiment-info' });
+    return el('div', { className: 'coupling' },
+      el('label', { className: 'check' }, box, el('b', { textContent: 'Experiment mode' })),
+      el('div', { className: 'muted small', textContent: 'Step the active site and every coupled site in fixed ticks of 1/30 s, in a fixed order, whatever the frame rate or the camera. A slow computer runs the experiment later, never differently. Other sites hold still.' }),
+      this.experimentInfo);
+  }
+
   update() {
-    const set = this.stage.world.couplings;
+    const world = this.stage.world, e = world.experiment;
+    if (this.experimentInfo) {
+      this.experimentInfo.textContent = e
+        ? `tick ${e.ticks} · ${fmt(world.clock, 3)} s${e.lagging ? ' · running behind real time' : ''}`
+        : '';
+    }
+    const set = world.couplings;
     for (const [id, span] of this.values) {
       const d = set.get(id), v = set.values[id];
       span.textContent = set.enabled.has(id) ? `${d.param} = ${Number.isFinite(v) ? fmt(v, 3) : '…'} ${d.unit}` : '';

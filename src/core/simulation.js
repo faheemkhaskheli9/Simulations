@@ -27,6 +27,7 @@ export class Simulation {
 
   constructor({ seed = 12345 } = {}) {
     this.rng = new Random(seed);
+    this.nextId = 1; // entity ids, per instance so that no two worlds share a counter
     this.time = 0;
     this.params = {};
     this.paramDefs = [];

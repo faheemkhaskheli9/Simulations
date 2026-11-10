@@ -2,7 +2,6 @@ import { Simulation } from '../core/simulation.js';
 import { clamp, fmt, TAU } from '../core/math.js';
 import { pick } from '../core/serialize.js';
 
-let nextId = 1;
 
 const KINDS = {
   ball: { label: 'Ball (1 kg)', m: 1, r: 0.25, e: 0.8, color: '#6aa8ff' },
@@ -86,7 +85,7 @@ export class MechanicsSim extends Simulation {
   makeBall(kind, x, y, extra = {}) {
     const k = KINDS[kind] ?? KINDS.ball;
     const b = {
-      id: nextId++, kind, x, y, vx: 0, vy: 0, px: x, py: y,
+      id: this.nextId++, kind, x, y, vx: 0, vy: 0, px: x, py: y,
       m: k.m, r: k.r, e: k.e, color: k.color, fixed: !!k.fixed, alive: true, trail: [],
       ...extra,
     };
@@ -96,7 +95,7 @@ export class MechanicsSim extends Simulation {
 
   link(type, a, b, extra = {}) {
     const len = Math.hypot(a.x - b.x, a.y - b.y);
-    const l = { id: nextId++, type, a, b, len, k: 200, damping: 0.5, ...extra };
+    const l = { id: this.nextId++, type, a, b, len, k: 200, damping: 0.5, ...extra };
     this.links.push(l);
     return l;
   }
@@ -416,7 +415,7 @@ export class MechanicsSim extends Simulation {
     this.links = st.links
       .filter((l) => (l.type === 'rod' || l.type === 'spring') && byId.has(l.a) && byId.has(l.b))
       .map((l) => ({ ...l, a: byId.get(l.a), b: byId.get(l.b) }));
-    nextId = Math.max(nextId, ...this.balls.map((b) => b.id + 1), ...this.links.map((l) => l.id + 1));
+    this.nextId = Math.max(this.nextId, ...this.balls.map((b) => b.id + 1), ...this.links.map((l) => l.id + 1));
   }
 
   stats() {

@@ -132,9 +132,15 @@ to the active site but not ambient sites, caps and discards ambient accumulated 
 and world saves omit clocks and coupling runtime history. These may suit interactive
 preview behavior but must not define controlled experiment results.
 
-- [ ] **F1.1: Define execution modes.** Keep interactive preview and add experiment mode with
+- [x] **F1.1: Define execution modes.** Keep interactive preview and add experiment mode with
   a fixed simulation step, stable site order, explicit per-module time mappings, and
   coupling tick cadence. Define pause, speed, inactive-site, and backlog behavior.
+  *Done:* `src/world/execution.js`, *Experiment mode* in the Connected science panel,
+  World TRD W-FT-90…95, `tests/world-execution.test.js`. Found on the way: four modules
+  (Weather, Atoms, Ecosystem, Epidemic) advance a fixed amount per step, so in preview their
+  pace follows the frame rate; and entity ids came from module-wide counters, so two
+  identical worlds differed. Both are covered now; experiment mode already meets the
+  frame-rate, camera and active-site part of F1.2's exit criteria.
 - [ ] **F1.2: Decouple physics from rendering.** Camera position, frame rate, visibility,
   and frame-budget decisions must not change an experiment's state at a given tick.
   Slow hardware may finish later; experiment mode must not silently drop simulation time.
@@ -302,6 +308,6 @@ does not establish human-level intelligence or real-world transfer.
 - Track reproducibility failures, validation error, hardware performance, and pilot task
   completion. Avoid treating catalogue size or test count alone as product success.
 
-**Next implementation batch:** F1.1 timing contract → F1.2 scheduling regressions and
+**Next implementation batch:** ~~F1.1 timing contract~~ (done 2026-11-10) → F1.2 scheduling regressions and
 fixed-step execution → F1.3 versioned checkpoints → F1.4 shared validation → F1.5 provenance.
 Then ship the smallest F3 paired comparison while completing measured F2 improvements.

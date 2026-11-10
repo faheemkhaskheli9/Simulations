@@ -33,7 +33,6 @@ const SOLAR = [
   ['Neptune', 30.07, 5.15e-5, 1.64e-4, '#5577ff', 4],
 ];
 
-let nextId = 1;
 
 /**
  * N-body gravity with a symplectic leapfrog integrator. Massive bodies attract
@@ -124,9 +123,9 @@ export class GravitySim extends Simulation {
   makeBody(kind, x, y, vx = 0, vy = 0, extra = {}) {
     const k = KINDS[kind] ?? KINDS.planet;
     return {
-      id: nextId++,
+      id: this.nextId++,
       kind,
-      name: extra.name ?? `${k.label.split(' (')[0]} ${nextId - 1}`,
+      name: extra.name ?? `${k.label.split(' (')[0]} ${this.nextId - 1}`,
       x, y, vx, vy, ax: 0, ay: 0,
       z: extra.z ?? 0, vz: extra.vz ?? 0, az: 0,
       m: extra.m ?? k.mass,
@@ -360,7 +359,7 @@ export class GravitySim extends Simulation {
   loadState(st) {
     this.view = st.view;
     this.bodies = st.bodies.map((b) => ({ ...this.makeBody(b.kind, b.x, b.y, b.vx, b.vy), ...b, trail: [], tz: [], alive: true }));
-    nextId = Math.max(nextId, ...this.bodies.map((b) => b.id + 1));
+    this.nextId = Math.max(this.nextId, ...this.bodies.map((b) => b.id + 1));
     this.accDirty = true;
   }
 

@@ -86,7 +86,6 @@ export function spectrumColor(nm) {
   return `rgb(${Math.round(255 * r)},${Math.round(255 * g)},${Math.round(255 * b)})`;
 }
 
-let nextId = 1;
 
 /**
  * A single atom: nucleus of protons and neutrons, electrons in shells. Photons
@@ -184,7 +183,7 @@ export class AtomSim extends Simulation {
     const n = clamp(Math.round(count), 0, MAX_Z + 10);
     const shells = this.groundShells(n);
     this.electrons = shells.map((shell, i) => ({
-      id: nextId++, n: shell, ground: shell, angle: (i * 2.39996) % TAU, alive: true,
+      id: this.nextId++, n: shell, ground: shell, angle: (i * 2.39996) % TAU, alive: true,
     }));
   }
 
@@ -293,7 +292,7 @@ export class AtomSim extends Simulation {
     // which then cascades down emitting a recombination spectrum.
     const charge = this.Z - this.electrons.length;
     if (P.recombination && charge > 0 && this.occupancy(MAX_LEVEL) < this.capacity(MAX_LEVEL) && this.rng.next() < 1 - Math.exp(-0.4 * charge * dt)) {
-      const e = { id: nextId++, n: MAX_LEVEL, ground: MAX_LEVEL, angle: this.rng.range(0, TAU), alive: true };
+      const e = { id: this.nextId++, n: MAX_LEVEL, ground: MAX_LEVEL, angle: this.rng.range(0, TAU), alive: true };
       this.electrons.push(e);
       this.regroundElectrons();
       e.n = MAX_LEVEL; // arrives at the top before cascading
@@ -378,7 +377,7 @@ export class AtomSim extends Simulation {
     if (kind === 'neutron') { this.setNucleus(this.Z, this.N + 1); return this.nucleus; }
     if (kind === 'photon') { this.shine(1); return null; }
     if (this.electrons.length >= MAX_Z + 10) return null;
-    const e = { id: nextId++, n: 1, ground: 1, angle: Math.atan2(y, x), alive: true };
+    const e = { id: this.nextId++, n: 1, ground: 1, angle: Math.atan2(y, x), alive: true };
     this.electrons.push(e);
     this.regroundElectrons();
     return e;
@@ -494,7 +493,7 @@ export class AtomSim extends Simulation {
       id: e.id, n: clamp(e.n | 0, 1, MAX_LEVEL), ground: clamp(e.ground | 0, 1, MAX_LEVEL), angle: +e.angle || 0, alive: true,
     }));
     this.particles = [];
-    nextId = Math.max(nextId, ...this.electrons.map((e) => e.id + 1));
+    this.nextId = Math.max(this.nextId, ...this.electrons.map((e) => e.id + 1));
   }
 
   ionizationEnergy() {

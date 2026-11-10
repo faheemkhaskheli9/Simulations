@@ -10,7 +10,6 @@ const GENES = {
   fertility: { label: 'Fertility', min: 0.2, max: 2, herb: 1, carn: 0.8 },
 };
 
-let nextId = 1;
 
 /**
  * Agent-based ecosystem with natural selection. Grass regrows on a grid,
@@ -102,7 +101,7 @@ export class EcosystemSim extends Simulation {
   makeAnimal(species, x, y, genes) {
     const g = genes ?? Object.fromEntries(Object.entries(GENES).map(([k, d]) => [k, d[species === 'herbivore' ? 'herb' : 'carn'] * this.rng.range(0.85, 1.15)]));
     const a = {
-      id: nextId++, species, x, y, heading: this.rng.range(0, TAU),
+      id: this.nextId++, species, x, y, heading: this.rng.range(0, TAU),
       genes: g, energy: 60 * g.size, age: 0, alive: true, generation: 1,
     };
     this.animals.push(a);
@@ -160,7 +159,7 @@ export class EcosystemSim extends Simulation {
       for (const [k, d] of Object.entries(GENES)) genes[k] = clamp(Number(a.genes?.[k]) || d.herb, d.min, d.max);
       return { ...a, genes, alive: true };
     });
-    nextId = Math.max(nextId, ...this.animals.map((a) => a.id + 1));
+    this.nextId = Math.max(this.nextId, ...this.animals.map((a) => a.id + 1));
   }
 
   grassAt(x, y) {
@@ -281,7 +280,7 @@ export class EcosystemSim extends Simulation {
         a.energy *= 0.5;
         const genes = {};
         for (const [k, d] of Object.entries(GENES)) genes[k] = clamp(g[k] * (1 + this.rng.gaussian(0, P.mutation)), d.min, d.max);
-        const child = { id: nextId++, species: a.species, x: a.x + this.rng.range(-3, 3), y: a.y + this.rng.range(-3, 3), heading: this.rng.range(0, TAU), genes, energy: a.energy, age: 0, alive: true, generation: a.generation + 1 };
+        const child = { id: this.nextId++, species: a.species, x: a.x + this.rng.range(-3, 3), y: a.y + this.rng.range(-3, 3), heading: this.rng.range(0, TAU), genes, energy: a.energy, age: 0, alive: true, generation: a.generation + 1 };
         babies.push(child);
         this.births++;
       }
