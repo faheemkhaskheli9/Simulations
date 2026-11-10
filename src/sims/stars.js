@@ -3,7 +3,6 @@ import { blackbodyColor, clamp, fmt, rgb, TAU } from '../core/math.js';
 import { evolve, mainSequenceLifetime, sampleSalpeter } from './stellar-model.js';
 import { pick } from '../core/serialize.js';
 
-let nextId = 1;
 
 /**
  * A stellar neighbourhood (light-years across) where nebulae collapse into
@@ -83,9 +82,9 @@ export class StarsSim extends Simulation {
 
   makeStar(mass, x, y, age = 0) {
     const s = {
-      id: nextId++, mass, x, y, age,
+      id: this.nextId++, mass, x, y, age,
       vx: this.rng.gaussian(0, 0.3), vy: this.rng.gaussian(0, 0.3), // ly/Myr
-      alive: true, name: `Star ${nextId - 1}`,
+      alive: true, name: `Star ${this.nextId - 1}`,
     };
     s.state = evolve(mass, age);
     this.stars.push(s);
@@ -93,7 +92,7 @@ export class StarsSim extends Simulation {
   }
 
   makeNebula(x, y, mass = 600, r = 18) {
-    const n = { id: nextId++, x, y, mass, r, alive: true, blobs: [], name: `Nebula ${nextId - 1}`, trigger: 0 };
+    const n = { id: this.nextId++, x, y, mass, r, alive: true, blobs: [], name: `Nebula ${this.nextId - 1}`, trigger: 0 };
     for (let i = 0; i < 14; i++) n.blobs.push([this.rng.gaussian(0, 0.4), this.rng.gaussian(0, 0.4), this.rng.range(0.4, 0.9), this.rng.range(0, 360)]);
     this.nebulae.push(n);
     return n;
@@ -141,7 +140,7 @@ export class StarsSim extends Simulation {
     this.stars = st.stars.map((s) => ({ ...s, alive: true, state: evolve(s.mass, s.age) }));
     this.nebulae = st.nebulae.map((n) => ({ ...n, alive: true }));
     this.shocks = st.shocks || [];
-    nextId = Math.max(nextId, ...this.stars.map((s) => s.id + 1), ...this.nebulae.map((n) => n.id + 1));
+    this.nextId = Math.max(this.nextId, ...this.stars.map((s) => s.id + 1), ...this.nebulae.map((n) => n.id + 1));
   }
 
   step(dt) {

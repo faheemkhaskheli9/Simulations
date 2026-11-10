@@ -12,7 +12,6 @@ export const STATES = {
   D: { label: 'Deceased', color: '#555' },
 };
 
-let nextId = 1;
 
 /**
  * Agent-based SEIR epidemic: people move between home and a few hubs, infect
@@ -89,7 +88,7 @@ export class EpidemicSim extends Simulation {
 
   makePerson(x, y, state = 'S') {
     const p = {
-      id: nextId++, x, y, hx: x, hy: y, vx: 0, vy: 0, state, t: 0, alive: true,
+      id: this.nextId++, x, y, hx: x, hy: y, vx: 0, vy: 0, state, t: 0, alive: true,
       still: this.rng.next(), // personal propensity to stay home
       trip: null,
     };
@@ -125,7 +124,7 @@ export class EpidemicSim extends Simulation {
   loadState(st) {
     this.hubs = st.hubs;
     this.people = st.people.filter((p) => STATES[p.state]).map((p) => ({ ...p, alive: true }));
-    nextId = Math.max(nextId, ...this.people.map((p) => p.id + 1));
+    this.nextId = Math.max(this.nextId, ...this.people.map((p) => p.id + 1));
   }
 
   tick(dt) {

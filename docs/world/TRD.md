@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | v1.0: implementation status per requirement in [§12](#12-implementation-status) |
-| **Last updated** | 2026-10-25 |
+| **Last updated** | 2026-11-10 |
 | **Related** | [PRD](PRD.md) · [System Design](SYSTEM_DESIGN.md) · [Plan](PLAN.md) · 2D [TRD](../TRD.md) · [ADRs](../adr/) |
 
 This document turns the [World PRD](PRD.md) into **testable technical requirements**.
@@ -83,6 +83,12 @@ optional 3D modes listed in §5, back-end services, accounts, analytics, WebXR.
 | W-FT-41 | Ambient sites step only within the remaining per-frame budget (default 10 ms), round-robin, with catch-up capped at 4 × frame dt | T (fake clock) |
 | W-FT-42 | The budget adapts down when frame time stays above 20 ms for 1 s and recovers gradually | T (fake clock) |
 | W-FT-43 | A throwing `step` or `render` freezes only that site and is logged once | T |
+| W-FT-90 | The world has two execution modes: interactive preview (W-FT-40…42, the default) and experiment mode, switched at any time without changing any site's state | T, M/T (e2e) |
+| W-FT-91 | In experiment mode every tick steps each participating site by exactly the fixed tick (default 1/30 s) in layout order. Participants are the sites chosen at the start (default: the active site and every coupled site) plus the sites of couplings enabled later; all other sites hold still | T |
+| W-FT-92 | Every module declares how it maps world seconds to its own time: `rate` (time × a parameter) or `per-step` (a fixed amount per step, so its pace follows the tick) | T |
+| W-FT-93 | Experiment mode never drops simulation time: pause stops intake, speed multiplies it, ticks a frame cannot afford wait in a backlog, and beyond `maxBacklog` (0.5 s) the world runs slower than real time and says so | T (fake clock) |
+| W-FT-94 | In experiment mode couplings tick every `round(1 / tick)` ticks | T |
+| W-FT-95 | In experiment mode, identical starting states and interventions give identical site states and coupling values at equal ticks, whatever the frame times, frame budget, camera or active site | T |
 
 ### 4.4 Couplings
 | ID | Requirement | Verification |
@@ -228,6 +234,7 @@ part, or verified only in part · **Open**: not built yet. Test files are in `te
 | W-FT-28 | Met | Gravity and Global Climate native (P0); Ecosystem native as a terrain from fertility with instanced animals (`world-terrain.test.js`); Weather native as a volume with cloud and rain particles and a sky tint (`world-volume.test.js`); Atoms native as a ball-and-stick box running the 3D mode (`world-molecules.test.js`); Cell native as a membrane sphere whose molecules are inside it exactly when the module counts them inside (`world-membrane.test.js`); Atomic Structure native with shell spheres, a packed nucleus and electrons on tilted orbits that rays still pick (`world-shells.test.js`). Mechanics, Stars and Epidemic stay surfaces |
 | W-FT-29 | Met | `world.e2e.mjs` |
 | W-FT-40…43 | Met | `world-runtime.test.js` (fake clock) |
+| W-FT-90…95 | Met | `world-execution.test.js` (equal snapshots at equal ticks across irregular frames, a fake-clock budget, a changed active site and changing visible sets; backlog without loss; pause and speed; a declared time mapping per module checked against one step), `world.e2e.mjs` (switch and tick counter). Entity ids are now numbered per simulation instance, not per module, so two worlds built the same way are identical |
 | W-FT-60…64 | Met | `world-runtime.test.js`, `world-sites.test.js`, `world.e2e.mjs` (read-only driven parameter) |
 | W-FT-80…83 | Met | `world-runtime.test.js`, `world.e2e.mjs` |
 | W-FT-84 | Met | `world-runtime.test.js`, `world.e2e.mjs` (share link reopens site, parameters and camera) |

@@ -196,6 +196,22 @@ test('a parameter driven by a coupling is read-only and says why (W-FT-63)', asy
   await page.close();
 });
 
+test('experiment mode steps the coupled sites in fixed ticks and back (Roadmap F1.1, W-FT-90)', async () => {
+  const { page, errors } = await openWorld('#world/valley/weather');
+  await page.check('#couplings input[type=checkbox] >> nth=1'); // Climate → Weather
+  await page.check('#experiment-mode');
+  assert.equal(await page.evaluate(() => app.stage.world.mode), 'experiment');
+  assert.deepEqual(await page.evaluate(() => app.stage.world.participants().map((s) => s.id)), ['climate', 'weather']);
+  await page.waitForFunction(() => app.stage.world.experiment.ticks >= 30, null, { timeout: 30000 });
+  await page.waitForFunction(() => /tick \d+/.test(document.querySelector('#experiment-info').textContent));
+  const t = await page.evaluate(() => { const e = app.stage.world.experiment; return { ticks: e.ticks, clock: app.stage.world.clock, tick: e.tick }; });
+  assert.ok(Math.abs(t.clock - t.ticks * t.tick) < 1e-9, 'the clock is ticks × tick');
+  await page.uncheck('#experiment-mode');
+  assert.equal(await page.evaluate(() => app.stage.world.mode), 'preview');
+  assert.deepEqual(errors, []);
+  await page.close();
+});
+
 test('Open in 2D carries the site state into the classic view (W-FT-29)', async () => {
   const { page } = await openWorld('#world/planets');
   await page.click('#play');

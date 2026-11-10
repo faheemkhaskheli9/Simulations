@@ -31,7 +31,6 @@ export const R0 = 10;
 // Membrane capacitance in model units: each net cation moved changes the voltage by this much.
 const MV_PER_ION = 2;
 
-let nextId = 1;
 
 /**
  * A single animal cell. Molecules random-walk (Brownian diffusion); the
@@ -111,7 +110,7 @@ export class CellSim extends Simulation {
   // ---------- setup ----------
 
   makeParticle(sp, x, y) {
-    const p = { id: nextId++, sp, x, y, alive: true };
+    const p = { id: this.nextId++, sp, x, y, alive: true };
     this.particles.push(p);
     return p;
   }
@@ -133,7 +132,7 @@ export class CellSim extends Simulation {
   }
 
   addProtein(type, angle) {
-    const p = { id: nextId++, type, angle, active: true, alive: true, clock: 0 };
+    const p = { id: this.nextId++, type, angle, active: true, alive: true, clock: 0 };
     this.proteins.push(p);
     return p;
   }
@@ -155,7 +154,7 @@ export class CellSim extends Simulation {
     const mitos = (n) => {
       for (let i = 0; i < n; i++) {
         const a = (i / n) * TAU + 0.4, r = 5.5;
-        this.mitos.push({ id: nextId++, x: CENTER[0] + r * Math.cos(a), y: CENTER[1] + r * Math.sin(a), angle: a, active: true, alive: true });
+        this.mitos.push({ id: this.nextId++, x: CENTER[0] + r * Math.cos(a), y: CENTER[1] + r * Math.sin(a), angle: a, active: true, alive: true });
       }
     };
     // Resting ion gradients: K⁺ concentrated inside, Na⁺ outside.
@@ -429,7 +428,7 @@ export class CellSim extends Simulation {
       return this.addProtein(kind, Math.atan2(y - CENTER[1], x - CENTER[0]));
     }
     if (kind === 'mito' && this.isInside(x, y)) {
-      const m = { id: nextId++, x, y, angle: 0, active: true, alive: true };
+      const m = { id: this.nextId++, x, y, angle: 0, active: true, alive: true };
       this.mitos.push(m);
       return m;
     }
@@ -547,7 +546,7 @@ export class CellSim extends Simulation {
     this.particles = st.particles.filter((p) => SPECIES[p.sp]).map((p) => ({ ...p, alive: true }));
     this.proteins = st.proteins.filter((p) => PROTEINS[p.type]).map((p) => ({ ...p, alive: true }));
     this.mitos = st.mitos.map((m) => ({ ...m, alive: true }));
-    nextId = Math.max(nextId, ...[...this.particles, ...this.proteins, ...this.mitos].map((o) => o.id + 1));
+    this.nextId = Math.max(this.nextId, ...[...this.particles, ...this.proteins, ...this.mitos].map((o) => o.id + 1));
   }
 
   status() {

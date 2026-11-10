@@ -650,6 +650,27 @@ passing right now.
 
 ![The Connected science panel with three couplings on](images/world-couplings.jpg)
 
+#### Experiment mode
+
+Normally the world is an **interactive preview**: the site you are looking at runs every
+frame, and the others run in the time left over, so how far each one gets depends on your
+computer and on where the camera is. That is fine for exploring, but not for an experiment
+you want to repeat.
+
+Tick **Experiment mode** at the bottom of the Connected science panel to run the world in
+fixed **ticks** of 1/30 s instead:
+
+- The active site and every site a coupling uses step by exactly one tick each time, always
+  in the same order, whichever site you look at. Other sites hold still.
+- Couplings pass their values once every 30 ticks (one world second).
+- **Pause** and the **speed** slider work as usual. A slow computer never skips time: ticks
+  it cannot run yet wait, and the panel says *running behind real time*. The result is the
+  same, it only arrives later.
+- The panel shows the tick count and the world time.
+
+So the same starting state and the same changes give the same result after the same number
+of ticks. Untick it to go back to the interactive preview; every site keeps its state.
+
 ### Saving and sharing the world
 
 - **Save** writes the whole world to one file: every site you changed, the couplings that
