@@ -220,6 +220,9 @@ export class World {
   // ---------- persistence (W-FT-80…83) ----------
 
   serialize(camera = null) {
+    // Newly enabled couplings can introduce a participant before its first tick.
+    // Materialize these default states so the checkpoint is self-contained.
+    if (this.experiment) for (const site of this.participants()) site.ensure();
     const sites = {};
     // Include every initialized simulation: physics advances without marking a
     // site 'touched'. Otherwise saving an experiment loses those evolved states.

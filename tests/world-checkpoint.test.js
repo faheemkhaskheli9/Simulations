@@ -90,14 +90,30 @@ test('invalid v2 runtime is rejected without modifying the active world', () => 
   }
 });
 
+test('new couplings enabled mid-experiment are included even before the first tick', () => {
+  const w = new World(SIMULATIONS);
+  w.setActive(w.sites.get('planets'));
+  w.startExperiment();
+  w.couplings.set('orbit-climate', true);
+  const data = copy(w.serialize());
+  assert.ok(data.sites.planets && data.sites.climate);
+  const loaded = new World(SIMULATIONS);
+  loaded.load(data);
+  assert.deepEqual(copy(loaded.serialize()), data);
+  w.runTicks(31);
+  loaded.runTicks(31);
+  assert.deepEqual(copy(loaded.serialize()), copy(w.serialize()));
+});
+
 test('preview clock and scheduler continuation survive v2 save/loading', () => {
-  const a = new World(SIMULATIONS, undefined, { scheduler: { budgetMs: 1 } });
+  const fixedNow = () => 0;
+  const a = new World(SIMULATIONS, undefined, { scheduler: { budgetMs: 1e9, now: fixedNow } });
   a.setActive(a.sites.get('mechanics'));
   a.assignTiers(new Set([a.sites.get('weather')]), 0);
   a.step(0.03, 2);
   a.step(0.03, 2);
   const saved = copy(a.serialize());
-  const b = new World(SIMULATIONS, undefined, { scheduler: { budgetMs: 1 } });
+  const b = new World(SIMULATIONS, undefined, { scheduler: { budgetMs: 1e9, now: fixedNow } });
   b.load(saved);
   assert.equal(b.mode, 'preview');
   assert.deepEqual(copy(b.serialize()), saved);

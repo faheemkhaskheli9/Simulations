@@ -154,7 +154,9 @@ preview behavior but must not define controlled experiment results.
   *Checkpoint v2 (2026-11-12):* saves every initialized site's existing simulation
   snapshot (including model RNG state where supported), experiment participants,
   fixed-tick clock and backlog, preview scheduler state, and coupling smoothing/
-  rain-window history. V1 imports still load. Scheduled interventions do not yet
+  rain-window history. V1 imports still load. Participants added by a coupling
+  are also materialized at save time, even before their first tick.
+  Scheduled interventions do not yet
   exist in the runtime and must be implemented before this item is complete.
   See `tests/world-checkpoint.test.js` for new regression cases.
 - [ ] **F1.4: Validate all mutation paths.** Apply shared parameter types, finite-value checks,
