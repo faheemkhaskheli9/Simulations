@@ -46,9 +46,13 @@ export const TIME_MAPS = {
  * Null for a module without a declared mapping.
  */
 export function timeMapping(sim, tick = EXPERIMENT_DEFAULTS.tick) {
+  // Reject invalid time scales before dividing per-step advances by the tick.
+  if (!(Number.isFinite(tick) && tick > 0)) throw new RangeError('tick must be finite and positive');
   const map = TIME_MAPS[sim.meta.id];
   if (!map) return null;
   const perSecond = map.kind === 'rate' ? map.factor(sim.params) : map.amount(sim.params) / tick;
+  // A bad parameter must not leak Infinity/NaN into experiment provenance.
+  if (!Number.isFinite(perSecond)) throw new RangeError('time mapping must be finite');
   return { kind: map.kind, unit: sim.timeUnit, perSecond };
 }
 
