@@ -6,7 +6,13 @@
  */
 export function parseHash(hash) {
   const [path, query = ''] = hash.replace(/^#/, '').split('?');
-  const [simId = '', scenarioId = ''] = path.split('/').map(decodeURIComponent);
+  let simId, scenarioId;
+  try {
+    [simId = '', scenarioId = ''] = path.split('/').map(decodeURIComponent);
+  } catch {
+    // A malformed percent escape is user-controlled input, not an app error.
+    return { simId: '', scenarioId: '', params: {} };
+  }
   const params = Object.fromEntries(new URLSearchParams(query));
   return { simId, scenarioId, params };
 }
@@ -20,11 +26,16 @@ export function buildHash(simId, scenarioId, params = {}) {
 export function coerceParams(paramDefs, raw) {
   const out = {};
   for (const d of paramDefs) {
-    if (!(d.key in raw)) continue;
+    if (!Object.hasOwn(raw, d.key)) continue;
     const s = raw[d.key];
-    if (d.type === 'checkbox') out[d.key] = s === 'true' || s === '1';
-    else if (d.type === 'select') { if (d.options.some((o) => o.value === s)) out[d.key] = s; }
-    else {
+    if (d.type === 'checkbox') {
+      if (s === 'true' || s === '1') out[d.key] = true;
+      else if (s === 'false' || s === '0') out[d.key] = false;
+    } else if (d.type === 'select') {
+      if (d.options.some((o) => o.value === s)) out[d.key] = s;
+    } else {
+      // Number('') and Number(null) both return zero: neither is a valid link value.
+      if (typeof s !== 'string' || !s.trim()) continue;
       const v = Number(s);
       if (Number.isFinite(v)) out[d.key] = Math.min(d.max, Math.max(d.min, v));
     }
