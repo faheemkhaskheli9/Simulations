@@ -144,6 +144,10 @@ preview behavior but must not define controlled experiment results.
 - [ ] **F1.2: Decouple physics from rendering.** Camera position, frame rate, visibility,
   and frame-budget decisions must not change an experiment's state at a given tick.
   Slow hardware may finish later; experiment mode must not silently drop simulation time.
+  *Progress (2026-11-11):* interactive preview now applies speed to both active
+  and ambient sites, including capped catch-up, with standalone scheduler
+  regression tests. Preview still deliberately caps ambient work; F1.2 remains
+  open for broader execution and failure-path validation.
 - [ ] **F1.3: Complete checkpoints.** Version the format and save relevant evolved sites,
   RNG states, world clock, pending time, scheduler continuation data, coupling smoothing
   values and history, and scheduled interventions. Preserve legacy-save loading.

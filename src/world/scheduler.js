@@ -34,20 +34,24 @@ export class Scheduler {
   }
 
   /**
-   * One frame: the active site steps by dt × speed; ambient sites share the
-   * remaining budget. Returns the ids of the ambient sites that stepped.
+   * One frame: all eligible sites advance in the same scaled world time.
+   * Ambient sites share the remaining budget, with a cap of four scaled frames.
+   * Returns the ids of ambient sites that stepped.
    */
   step(sites, active, dt, speed = 1) {
-    if (active?.sim && !active.error) this.run(active, dt * speed);
+    if (!Number.isFinite(dt) || !Number.isFinite(speed) || dt <= 0 || speed <= 0) return [];
+    const scaledDt = dt * speed;
+    if (!Number.isFinite(scaledDt)) return [];
+    if (active?.sim && !active.error) this.run(active, scaledDt);
     const ambient = sites.filter((s) => s !== active && s.tier === 'ambient' && s.sim && !s.error);
-    for (const s of ambient) s.acc += dt;
+    for (const s of ambient) s.acc += scaledDt;
     const start = this.now(), stepped = [];
     const n = ambient.length;
     for (let k = 0; k < n; k++) {
       const s = ambient[(this.cursor + k) % n];
       if (this.now() - start + (s.cost || 0) > this.budget && stepped.length > 0) break;
       if (this.now() - start > this.budget) break;
-      const h = Math.min(s.acc, CATCH_UP * dt);
+      const h = Math.min(s.acc, CATCH_UP * scaledDt);
       s.acc = 0;
       if (h > 0 && this.run(s, h)) stepped.push(s.id);
     }
