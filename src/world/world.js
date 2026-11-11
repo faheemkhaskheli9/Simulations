@@ -14,11 +14,13 @@ import { ShellsSite } from './native/shells.js';
 import { CouplingSet } from './couplings.js';
 import { Scheduler } from './scheduler.js';
 import { experimentSettings } from './execution.js';
+import { saveRuntime, readRuntime } from './checkpoint.js';
+import { hasCycle } from './couplings.js';
 import { SAVE_FORMAT } from '../core/serialize.js';
 import { v3 } from './engine/math3d.js';
 
 export const WORLD_FORMAT = 'simulations-world3d';
-export const WORLD_VERSION = 1;
+export const WORLD_VERSION = 2;
 export const SITE_TYPES = { surface: SurfaceSite, gravity: GravitySite, globe: GlobeSite, terrain: TerrainSite, volume: VolumeSite, molecules: MoleculesSite, membrane: MembraneSite, shells: ShellsSite };
 const UNLOAD_AFTER_S = 120;
 
@@ -219,8 +221,10 @@ export class World {
 
   serialize(camera = null) {
     const sites = {};
+    // Include every initialized simulation: physics advances without marking a
+    // site 'touched'. Otherwise saving an experiment loses those evolved states.
     for (const s of this.sites.values()) {
-      if (!s.touched) continue;
+      if (!s.sim && !s.touched) continue;
       sites[s.id] = s.sim ? s.sim.serialize() : s.blob;
     }
     return {
@@ -230,6 +234,7 @@ export class World {
       active: this.active?.id ?? null,
       couplings: [...this.couplings.enabled],
       sites,
+      runtime: saveRuntime(this),
     };
   }
 
@@ -240,10 +245,13 @@ export class World {
    */
   load(data) {
     if (!data || data.format !== WORLD_FORMAT) throw new Error('Not a Simulations world file');
-    if (!(data.version >= 1)) throw new Error('Unknown world file version');
+    if (!Number.isInteger(data.version) || data.version < 1) throw new Error('Unknown world file version');
     if (data.version > WORLD_VERSION) throw new Error('World file is from a newer version');
+    if (!data.sites || typeof data.sites !== 'object' || Array.isArray(data.sites)) {
+      throw new Error('Invalid world site states');
+    }
     const restored = [];
-    for (const [id, blob] of Object.entries(data.sites ?? {})) {
+    for (const [id, blob] of Object.entries(data.sites)) {
       const site = this.sites.get(id);
       if (!site) throw new Error(`Unknown site "${id}"`);
       const sim = new site.Sim();
@@ -252,14 +260,34 @@ export class World {
     }
     if (data.active && !this.sites.has(data.active)) throw new Error(`Unknown site "${data.active}"`);
     const couplings = Array.isArray(data.couplings) ? data.couplings : [];
+    if (data.version === 2 && !Array.isArray(data.couplings)) throw new Error('Invalid checkpoint couplings');
+    const uniqueCouplings = new Set(couplings);
+    if (uniqueCouplings.size !== couplings.length) throw new Error('Duplicate checkpoint couplings');
     for (const id of couplings) if (!this.couplings.get(id)) throw new Error(`Unknown coupling "${id}"`);
+    if (hasCycle(couplings.map((id) => {
+      const d = this.couplings.get(id);
+      return [d.from, d.to];
+    }))) throw new Error('Checkpoint couplings contain a cycle');
     if (data.camera && !this.tree.get(data.camera.place)) throw new Error(`Unknown place "${data.camera.place}"`);
+    const runtime = readRuntime(data, this, couplings); // all validation precedes mutations
 
     for (const s of this.sites.values()) this.reset(s);
     for (const [site, sim] of restored) this.adopt(site, sim);
     for (const id of [...this.couplings.enabled]) this.couplings.set(id, false);
     for (const id of couplings) this.couplings.set(id, true);
-    return { active: this.sites.get(data.active) ?? null, camera: data.camera ?? null };
+    this.couplings.values = runtime?.couplingValues ?? {};
+    this.couplings.memo = runtime?.couplingMemo ?? {};
+    this.clock = runtime?.clock ?? 0;
+    this.lastTick = runtime?.lastTick ?? 0;
+    this.experiment = runtime?.experiment ?? null;
+    this.scheduler.cursor = runtime?.scheduler.cursor ?? 0;
+    this.scheduler.budget = runtime?.scheduler.budget ?? this.scheduler.baseBudget;
+    this.scheduler.slowFor = runtime?.scheduler.slowFor ?? 0;
+    for (const [id, amount] of Object.entries(runtime?.scheduler.ambientPending ?? {})) this.sites.get(id).acc = amount;
+    this.active = this.sites.get(data.active) ?? null;
+    if (this.active) this.setActive(this.active);
+    this.updateFollow();
+    return { active: this.active, camera: data.camera ?? null };
   }
 
   /** Open a 2D save file at the matching site (W-FT-83). Returns that site. */
@@ -293,6 +321,9 @@ export class World {
     site.error = null;
     site.drawn = false;
     site.tier = 'unloaded';
+    site.acc = 0;
+    site.cost = 0;
+    site.logged = false;
     site.history.clear();
   }
 }

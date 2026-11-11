@@ -102,7 +102,7 @@ optional 3D modes listed in §5, back-end services, accounts, analytics, WebXR.
 ### 4.5 Persistence, routes, education
 | ID | Requirement | Verification |
 |---|---|---|
-| W-FT-80 | World save format `simulations-world3d` v1 contains camera, active site, enabled couplings and the 2D save blob of each touched site | T |
+| W-FT-80 | World save format `simulations-world3d` v2 retains v1 fields and includes every initialized site's 2D snapshot plus execution/checkpoint continuation state; v1 loads remain supported | T |
 | W-FT-81 | Loading a world file validates the format, version, place and site ids, and each site blob with the existing 2D validation | T |
 | W-FT-82 | Save → load reproduces every touched site such that subsequent evolution is identical (as 2D MQ-6) | T |
 | W-FT-83 | A 2D save file loaded into the world opens the matching site with that state | T |
@@ -236,7 +236,7 @@ part, or verified only in part · **Open**: not built yet. Test files are in `te
 | W-FT-40…43 | Met | `world-runtime.test.js` (fake clock) |
 | W-FT-90…95 | Met | `world-execution.test.js` (equal snapshots at equal ticks across irregular frames, a fake-clock budget, a changed active site and changing visible sets; backlog without loss; pause and speed; a declared time mapping per module checked against one step), `world.e2e.mjs` (switch and tick counter). Entity ids are now numbered per simulation instance, not per module, so two worlds built the same way are identical |
 | W-FT-60…64 | Met | `world-runtime.test.js`, `world-sites.test.js`, `world.e2e.mjs` (read-only driven parameter) |
-| W-FT-80…83 | Met | `world-runtime.test.js`, `world.e2e.mjs` |
+| W-FT-80…83 | Partial | `world-runtime.test.js`, `world.e2e.mjs`, and new `world-checkpoint.test.js` cover v2 continuation and v1 compatibility; full F1.3 scheduled intervention replay remains open |
 | W-FT-84 | Met | `world-runtime.test.js`, `world.e2e.mjs` (share link reopens site, parameters and camera) |
 | W-FT-85 | Met | `world.e2e.mjs` (per-site history) |
 | W-FT-86 | Met | `world.e2e.mjs` (a lesson flies to its site; `lesson.site` may name one) |

@@ -258,7 +258,7 @@ export class WorldStage {
     const data = this.world.serialize(this.camera);
     const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
     download(`world-${stamp}.json`, JSON.stringify(data));
-    this.app.status(`World saved (${Object.keys(data.sites).length} changed site${Object.keys(data.sites).length === 1 ? '' : 's'})`);
+    this.app.status(`World checkpoint saved (${Object.keys(data.sites).length} site states, ${this.world.mode} mode)`);
   }
 
   /** Load a world file, or a 2D save into its site (W-FT-81, W-FT-83). */

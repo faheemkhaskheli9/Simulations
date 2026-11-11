@@ -151,6 +151,12 @@ preview behavior but must not define controlled experiment results.
 - [ ] **F1.3: Complete checkpoints.** Version the format and save relevant evolved sites,
   RNG states, world clock, pending time, scheduler continuation data, coupling smoothing
   values and history, and scheduled interventions. Preserve legacy-save loading.
+  *Checkpoint v2 (2026-11-12):* saves every initialized site's existing simulation
+  snapshot (including model RNG state where supported), experiment participants,
+  fixed-tick clock and backlog, preview scheduler state, and coupling smoothing/
+  rain-window history. V1 imports still load. Scheduled interventions do not yet
+  exist in the runtime and must be implemented before this item is complete.
+  See `tests/world-checkpoint.test.js` for new regression cases.
 - [ ] **F1.4: Validate all mutation paths.** Apply shared parameter types, finite-value checks,
   bounds, enum validation, and unknown-key policy to UI, API, imports, and couplings.
   Validate complete imports before mutation; set documented size/entity limits.
@@ -312,6 +318,5 @@ does not establish human-level intelligence or real-world transfer.
 - Track reproducibility failures, validation error, hardware performance, and pilot task
   completion. Avoid treating catalogue size or test count alone as product success.
 
-**Next implementation batch:** ~~F1.1 timing contract~~ (done 2026-11-10) → F1.2 scheduling regressions and
-fixed-step execution → F1.3 versioned checkpoints → F1.4 shared validation → F1.5 provenance.
+**Next implementation batch:** ~~F1.1 timing contract~~ (done 2026-11-10) → F1.2 remaining preview/experiment regression work → ~~F1.3 versioned checkpoint foundation~~ (implemented 2026-11-12; scheduled interventions outstanding) → F1.4 shared validation → F1.5 provenance.
 Then ship the smallest F3 paired comparison while completing measured F2 improvements.
