@@ -453,15 +453,17 @@ export class App {
       this.status(`${name} is not a Simulations save file`, true);
       return;
     }
-    const previous = this.sim;
+    // Some module loadState methods can throw after changing fields. Always
+    // deserialize into a detached instance before replacing the live 2D world.
+    let restored;
     try {
-      if (this.sim.constructor !== S) this.loadSim(S);
-      this.sim.deserialize(data);
+      restored = new S();
+      restored.deserialize(data);
     } catch (err) {
-      if (previous.constructor !== this.sim.constructor) this.loadSim(previous.constructor);
       this.status(`Could not load ${name}: ${err.message}`, true);
       return;
     }
+    this.bindSim(restored);
     $('#scenario-select').value = this.sim.scenarioId;
     history.replaceState(null, '', buildHash(this.sim.meta.id, this.sim.scenarioId, this.lockQuery()));
     this.selected = null;

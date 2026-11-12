@@ -90,6 +90,23 @@ test('save to a file and load it back', async () => {
   await page.close();
 });
 
+test('failed import of a known simulation leaves the active 2D state unchanged', async () => {
+  const { page, errors } = await openPage('#gravity/solar');
+  await page.click('#play'); // deterministic snapshot
+  const snapshot = await page.evaluate(() => JSON.stringify(app.sim.serialize()));
+  const corrupt = JSON.parse(snapshot);
+  corrupt.params.gScale = 2;
+  corrupt.state.bodies = null; // loadState throws after other fields have been assigned
+  await page.setInputFiles('#load-file', {
+    name: 'corrupt.json', mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify(corrupt)),
+  });
+  await page.waitForFunction(() => document.querySelector('#status').textContent.includes('Could not load'));
+  assert.equal(await page.evaluate(() => JSON.stringify(app.sim.serialize())), snapshot);
+  assert.deepEqual(errors, []);
+  await page.close();
+});
+
 test('shared links restore parameters', async () => {
   const { page } = await openPage('#gravity/solar?gScale=2.5&trails=false');
   const p = await page.evaluate(() => window.app.sim.params);
