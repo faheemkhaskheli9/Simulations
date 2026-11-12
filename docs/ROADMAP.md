@@ -147,7 +147,11 @@ preview behavior but must not define controlled experiment results.
   *Progress (2026-11-11):* interactive preview now applies speed to both active
   and ambient sites, including capped catch-up, with standalone scheduler
   regression tests. Preview still deliberately caps ambient work; F1.2 remains
-  open for broader execution and failure-path validation.
+  open for broader execution and failure-path validation. The preview world clock
+  now follows scaled simulation time and fires couplings for each elapsed world
+  second; invalid speed/frame inputs do not advance that clock (2026-11-12).
+  Experiment intake above the runnable backlog is held as deferred time rather
+  than discarded; the backlog threshold caps runnable time, not owed time.
 - [ ] **F1.3: Complete checkpoints.** Version the format and save relevant evolved sites,
   RNG states, world clock, pending time, scheduler continuation data, coupling smoothing
   values and history, and scheduled interventions. Preserve legacy-save loading.
@@ -156,10 +160,18 @@ preview behavior but must not define controlled experiment results.
   fixed-tick clock and backlog, preview scheduler state, and coupling smoothing/
   rain-window history. V1 imports still load. Participants added by a coupling
   are also materialized at save time, even before their first tick.
-  Scheduled interventions do not yet
-  exist in the runtime and must be implemented before this item is complete.
+  Version 2 now also retains deferred overflow time across save/resume, with
+  backward-compatible loading for older v2 checkpoints (2026-11-12).
+  Scheduled interventions do not yet exist in the runtime and must be implemented
+  before this item is complete.
   See `tests/world-checkpoint.test.js` for new regression cases.
-- [ ] **F1.4: Validate all mutation paths.** Apply shared parameter types, finite-value checks,
+- [ ] **F1.4: Validate all mutation paths.** The public `Simulation.setParam`
+  now rejects unknown, invalid-type, nonfinite and out-of-range values
+  (2026-11-12); 2D file imports are validated on detached instances before
+  replacing live state, so failed `loadState` cannot corrupt the current
+  world. Remaining: internal property writes, imported state/entity limits,
+  the API boundary and complete cross-module mutation auditing.
+  Apply shared parameter types, finite-value checks,
   bounds, enum validation, and unknown-key policy to UI, API, imports, and couplings.
   Validate complete imports before mutation; set documented size/entity limits.
 - [ ] **F1.5: Record provenance.** Store schema version, model version, code revision when
