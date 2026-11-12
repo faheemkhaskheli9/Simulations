@@ -12,10 +12,13 @@ capability/portal *preflight only*; and a lazy `#game/<id>` browser inspector.
 All are game-only and do not alter the scientific simulation laws. Game JS modules
 are included in the offline service-worker cache.
 
-**Still required before G0 is complete:** explicit domain adapter and unit-conversion
-tests (G0.06), shared F1 clock integration/semantics (G0.10), full cross-browser
-and malformed-input e2e acceptance (G0.11), performance/device evidence and
-final ADRs (G0.12). Powers are not executable, cross-universe portals are blocked,
+The local SI frame/domain adapter (`src/omniverse/frames.js`) and unit tests
+now cover G0.06; the capability/portal preflight covers G0.08. Game Lab
+navigation, switching and safe import have passed the browser suite.
+
+**Still required before G0 is complete:** shared F1 clock integration/semantics
+(G0.10), exhaustive cross-browser and malformed-input e2e acceptance (G0.11),
+performance/device evidence and final ADRs (G0.12). Powers are not executable, cross-universe portals are blocked,
 and the inspector is not a playable world. Browser tests and release acceptance
 must not be inferred from a successful Node unit run.
 
