@@ -147,7 +147,7 @@ export class World {
     const ids = new Set(sites ?? [this.active?.id, ...this.couplings.involved()].filter(Boolean));
     for (const id of ids) if (!this.sites.has(id)) throw new Error(`Unknown site "${id}"`);
     if (!ids.size) throw new Error('An experiment needs at least one site');
-    this.experiment = { ...opts, ids, ticks: 0, pending: 0, lagging: false };
+    this.experiment = { ...opts, ids, ticks: 0, pending: 0, deferred: 0, lagging: false };
     for (const id of ids) this.sites.get(id).ensure();
     this.clock = 0;
     this.lastTick = 0;
@@ -200,24 +200,34 @@ export class World {
    */
   advance(real) {
     const e = this.experiment;
-    const want = e.pending + Math.max(0, real);
-    e.lagging = want > e.maxBacklog;
-    e.pending = Math.min(want, e.maxBacklog);
+    if (!e) throw new Error('Not in experiment mode');
+    if (!Number.isFinite(real) || real < 0) throw new RangeError('Experiment intake must be finite and non-negative');
+    // Keep runnable time bounded, but never discard owed simulation time.
+    // Excess intake is represented by a scalar deferred duration, not an event queue.
+    const total = e.deferred + real;
+    if (!Number.isFinite(total)) throw new RangeError('Experiment backlog overflow');
+    const admitted = Math.min(total, Math.max(0, e.maxBacklog - e.pending));
+    e.pending += admitted;
+    e.deferred = total - admitted;
     const now = this.scheduler.now, start = now();
     let ran = 0;
     while (e.pending >= e.tick * (1 - 1e-9)) {
       if (ran > 0 && now() - start > e.budgetMs) break;
       this.tickOnce();
       e.pending = Math.max(0, e.pending - e.tick);
+      const transfer = Math.min(e.deferred, Math.max(0, e.maxBacklog - e.pending));
+      e.pending += transfer;
+      e.deferred = Math.max(0, e.deferred - transfer);
       ran++;
     }
+    e.lagging = e.deferred > 0;
     this.updateFollow();
     return ran;
   }
 
-  /** World seconds that are owed but not yet run (0 in preview). */
+  /** All world seconds still owed, including time held outside the runnable queue. */
   get backlog() {
-    return this.experiment?.pending ?? 0;
+    return this.experiment ? this.experiment.pending + this.experiment.deferred : 0;
   }
 
   // ---------- persistence (W-FT-80…83) ----------

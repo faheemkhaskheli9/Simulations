@@ -25,6 +25,7 @@ test('v2 saves evolved but untouched sites and the complete execution clock', ()
   assert.equal(data.runtime.mode, 'experiment');
   assert.equal(data.runtime.experiment.ticks, 38);
   assert.ok(data.runtime.experiment.pending > 0);
+  assert.equal(data.runtime.experiment.deferred, 0);
   assert.ok(data.sites.weather && data.sites.climate && data.sites.epidemic);
   assert.ok(data.runtime.couplingMemo['weather-ecosystem'].window.length > 0);
   assert.equal(w.sites.get('weather').touched, false, 'physics is independent of user edits');
@@ -74,6 +75,8 @@ test('invalid v2 runtime is rejected without modifying the active world', () => 
     (r) => { r.runtime.clock = -2; },
     (r) => { r.runtime.experiment.pending = -1; },
     (r) => { r.runtime.experiment.pending = 100; },
+    (r) => { r.runtime.experiment.deferred = -1; },
+    (r) => { r.runtime.experiment.deferred = 'nan'; },
     (r) => { r.runtime.experiment.ids.push('unknown'); },
     (r) => { delete r.sites.climate; },
     (r) => { r.runtime.couplingMemo['weather-ecosystem'].window = [NaN]; },
@@ -121,4 +124,22 @@ test('preview clock and scheduler continuation survive v2 save/loading', () => {
   a.assignTiers(new Set([a.sites.get('weather')]), 1);
   for (let i = 0; i < 5; i++) { a.step(0.02, 2); b.step(0.02, 2); }
   assert.deepEqual(copy(b.serialize()), copy(a.serialize()));
+});
+
+test('deferred experiment time survives save/load and resumes to identical state', () => {
+  let time = 0;
+  const original = new World(SIMULATIONS, undefined, { scheduler: { now: () => ++time } });
+  original.setActive(original.sites.get('mechanics'));
+  original.startExperiment({ budgetMs: 0.5 });
+  original.step(1.5);
+  assert.ok(original.experiment.deferred > 0);
+  const saved = copy(original.serialize());
+  const resumed = new World(SIMULATIONS, undefined, { scheduler: { now: () => ++time } });
+  resumed.load(saved);
+  assert.deepEqual(copy(resumed.serialize()), saved);
+  original.experiment.budgetMs = 1e9;
+  resumed.experiment.budgetMs = 1e9;
+  original.step(0);
+  resumed.step(0);
+  assert.deepEqual(copy(resumed.serialize()), copy(original.serialize()));
 });

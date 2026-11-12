@@ -14,9 +14,9 @@
 //     couplings enabled later; all other sites hold still;
 //   - couplings tick every `couplingEvery` ticks (one world second);
 //   - pause stops intake; speed multiplies intake; nothing is ever skipped:
-//     ticks a frame cannot afford wait in a backlog, and once the backlog holds
-//     `maxBacklog` world seconds the world runs slower than real time instead of
-//     dropping simulation time.
+//     ticks a frame cannot afford wait in a bounded runnable backlog; excess
+//     requested time is held as a deferred duration and admitted as ticks finish.
+//     If processing falls behind, the world runs slower than real time.
 // So the state after N ticks depends only on the starting state, the settings
 // and the interventions, not on how the ticks were spread over frames.
 

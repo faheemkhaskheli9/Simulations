@@ -90,12 +90,28 @@ test('a slow frame never drops simulation time: the backlog waits and the world 
     assert.equal(w.experiment.ticks, i + 1);
   }
   assert.ok(w.experiment.lagging, 'reports that it runs slower than real time');
-  assert.ok(w.backlog <= EXPERIMENT_DEFAULTS.maxBacklog + 1e-12);
-  // Once the frames get cheap again, the whole backlog runs.
+  assert.ok(w.experiment.pending <= EXPERIMENT_DEFAULTS.maxBacklog + 1e-12, 'runnable backlog is bounded');
+  assert.ok(w.experiment.deferred > 0, 'excess intake is held for later');
+  assert.ok(w.backlog > EXPERIMENT_DEFAULTS.maxBacklog, 'no requested time is discarded');
+  // Once the frames get cheap again, the entire deferred backlog runs.
   w.experiment.budgetMs = 1e9;
   const owed = Math.round(w.backlog / TICK);
   w.step(0);
   assert.equal(w.experiment.ticks, 10 + owed);
+  assert.ok(w.backlog < TICK);
+});
+
+test('large experiment frames conserve accepted simulation time across the backlog cap', () => {
+  let t = 0;
+  const w = valley({ scheduler: { now: () => ++t }, experiment: { budgetMs: 0.5 } });
+  const incoming = 2.5;
+  w.step(incoming);
+  assert.ok(w.experiment.deferred > 0);
+  assert.ok(Math.abs(w.clock + w.backlog - incoming) < 1e-8, 'no input time lost');
+  w.experiment.budgetMs = 1e9;
+  w.step(0);
+  assert.ok(Math.abs(w.clock + w.backlog - incoming) < 1e-8);
+  assert.equal(w.experiment.ticks, 75);
   assert.ok(w.backlog < TICK);
 });
 

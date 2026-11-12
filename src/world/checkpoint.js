@@ -35,6 +35,7 @@ export function saveRuntime(world) {
       ids: [...e.ids],
       ticks: e.ticks,
       pending: e.pending,
+      deferred: e.deferred,
       lagging: e.lagging,
     } : null,
     scheduler: {
@@ -117,12 +118,14 @@ export function readRuntime(data, world, enabled) {
     }
     const ticks = number(e.ticks, 'experiment ticks');
     const pending = number(e.pending, 'experiment pending');
+    // Optional for older v2 checkpoints written before deferred intake existed.
+    const deferred = number(e.deferred ?? 0, 'experiment deferred');
     if (!Number.isSafeInteger(ticks) || pending > settings.maxBacklog + 1e-8
         || Math.abs(clock - ticks * settings.tick) > 1e-8 * Math.max(1, clock)
         || typeof e.lagging !== 'boolean') {
       throw new Error('Invalid checkpoint experiment clock or backlog');
     }
-    experiment = { ...settings, ids, ticks, pending, lagging: e.lagging };
+    experiment = { ...settings, ids, ticks, pending, deferred, lagging: e.lagging };
   } else if (r.experiment !== null) {
     throw new Error('Invalid checkpoint preview experiment state');
   }
