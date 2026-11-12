@@ -4,6 +4,7 @@ const CACHE = 'simulations-v8';
 const SHELL = ['./', 'index.html', 'styles.css', 'src/main.js', 'manifest.webmanifest', 'icon.svg'];
 // The 3D world loads on demand, so its files are cached up front to work offline (W-TC-8).
 const WORLD = [
+  'src/world/checkpoint.js',
   'src/world/couplings.js',
   'src/world/engine/camera3d.js',
   'src/world/engine/colors.js',
