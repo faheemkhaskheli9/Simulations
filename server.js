@@ -1,7 +1,7 @@
 // Tiny dependency-free static file server: `node server.js [port]`.
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
-import { extname, resolve, relative, isAbsolute } from 'node:path';
+import { extname, resolve, relative, isAbsolute, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
@@ -12,7 +12,7 @@ createServer(async (req, res) => {
   let pathname;
   try {
     pathname = decodeURIComponent(new URL(req.url, 'http://x').pathname);
-    if (pathname.includes('\\0')) throw new URIError('NUL in path');
+    if (pathname.includes(String.fromCharCode(0))) throw new URIError('NUL in path');
   } catch {
     res.writeHead(400).end('Bad request');
     return;
@@ -20,7 +20,7 @@ createServer(async (req, res) => {
   const path = pathname.replace(/^[/\\\\]+/, '');
   const file = resolve(root, path.endsWith('/') || !path ? `${path}index.html` : path);
   const rel = relative(root, file);
-  if (rel === '..' || rel.startsWith('../') || rel.startsWith('..\\\\') || isAbsolute(rel)) {
+  if (rel === '..' || rel.startsWith(`..${sep}`) || isAbsolute(rel)) {
     res.writeHead(403).end('Forbidden');
     return;
   }

@@ -30,6 +30,8 @@ test('invalid URL encoding returns HTTP 400 without crashing the server', { time
     });
     const invalid = await fetch(`http://127.0.0.1:${port}/%E0%A4%A`);
     assert.equal(invalid.status, 400);
+    const nul = await fetch(`http://127.0.0.1:${port}/%00`);
+    assert.equal(nul.status, 400);
     const valid = await fetch(`http://127.0.0.1:${port}/index.html`);
     assert.equal(valid.status, 200, 'server stays alive');
     assert.match(await valid.text(), /<html/i);
