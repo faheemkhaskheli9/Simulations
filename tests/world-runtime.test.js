@@ -146,10 +146,10 @@ test("Earth's orbit → Climate uses 3D distance (inclined orbits)", () => {
   const earth = planets.bodies.find((b) => b.name === 'Earth');
   const sun = planets.bodies.find((b) => b.name === 'Sun');
   const baselineR2 = (earth.x - sun.x) ** 2 + (earth.y - sun.y) ** 2;
-  earth.z = (sun.z ?? 0) + 0.5;
+  earth.z = (sun.z ?? 0) + 0.3;
   assert.ok(world.couplings.set('orbit-climate', true));
   world.couplings.tick();
-  const expected = 1361 / (baselineR2 + 0.25);
+  const expected = 1361 / (baselineR2 + 0.09);
   const actual = world.sites.get('climate').sim.params.solar;
   assert.ok(Math.abs(actual - expected) < 1e-8, `3D solar flux: ${actual} vs ${expected}`);
 });
