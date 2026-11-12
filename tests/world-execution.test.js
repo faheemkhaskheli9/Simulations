@@ -118,6 +118,25 @@ test('pause stops intake, speed multiplies it, and the leftover carries over', (
   assert.equal(w.experiment.ticks, 7);
 });
 
+test('preview clock and coupling cadence follow simulation speed, not render time', () => {
+  const world = new World(SIMULATIONS);
+  let ticks = 0;
+  world.couplings.tick = () => { ticks++; };
+  world.step(0.75, 2);
+  assert.equal(world.clock, 1.5);
+  assert.equal(world.lastTick, 1);
+  assert.equal(ticks, 1);
+  world.step(0.75, 2);
+  assert.equal(world.clock, 3);
+  assert.equal(world.lastTick, 3);
+  assert.equal(ticks, 3);
+  for (const [dt, speed] of [[1, 0], [-1, 1], [NaN, 1], [1, Infinity], [1, NaN], [Infinity, 1]]) {
+    world.step(dt, speed);
+  }
+  assert.equal(world.clock, 3, 'invalid frame inputs do not advance the clock');
+  assert.equal(ticks, 3);
+});
+
 test('couplings tick once per world second of ticks', () => {
   const w = valley();
   w.runTicks(Math.round(1 / TICK) - 1);

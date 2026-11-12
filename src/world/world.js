@@ -120,13 +120,16 @@ export class World {
    * and whole ticks run (W-FT-93).
    */
   step(dt, speed = 1) {
-    if (this.experiment) {
-      return this.advance(dt * speed);
-    }
+    const elapsed = dt * speed;
+    if (!Number.isFinite(dt) || dt < 0 || !Number.isFinite(speed) || speed <= 0 || !Number.isFinite(elapsed)) return 0;
+    // A zero-dt experiment call may drain queued ticks; zero-dt preview changes nothing.
+    if (this.experiment) return this.advance(elapsed);
+    if (dt === 0) return 0;
     this.scheduler.step(this.siteList, this.active, dt, speed);
-    this.clock += dt;
-    if (this.clock - this.lastTick >= 1) {
-      this.lastTick = this.clock;
+    this.clock += elapsed;
+    // Preview is approximate, but its coupling cadence still follows scaled world time.
+    while (this.clock - this.lastTick >= 1) {
+      this.lastTick += 1;
       this.couplings.tick();
     }
     this.updateFollow();
