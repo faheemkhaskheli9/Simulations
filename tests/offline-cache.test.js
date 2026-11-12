@@ -25,3 +25,20 @@ test('offline precache covers the complete world module dependency graph', () =>
     }
   }
 });
+
+
+test('offline precache includes game inspector and every OMNIVERSE-local static import', () => {
+  const worker = readFileSync(resolve(ROOT, 'sw.js'), 'utf8');
+  const block = worker.match(/const GAME = \[([\s\S]*?)\];/);
+  assert.ok(block, 'GAME precache manifest exists');
+  const cached = new Set([...block[1].matchAll(/'([^']+\.js)'/g)].map((match) => match[1]));
+  assert.ok(cached.has('src/omniverse/ui/game-stage.js'));
+  for (const file of cached) {
+    const content = readFileSync(resolve(ROOT, file), 'utf8');
+    for (const [, dependency] of content.matchAll(/(?:from\s*|import\s*\()\s*['"]([^'"]+\.js)['"]/g)) {
+      if (!dependency.startsWith('.')) continue;
+      const target = relative(ROOT, resolve(ROOT, dirname(file), dependency)).split(sep).join('/');
+      if (target.startsWith('src/omniverse/')) assert.ok(cached.has(target), file + ' imports uncached ' + target);
+    }
+  }
+});

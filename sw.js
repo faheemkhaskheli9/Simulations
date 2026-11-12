@@ -3,6 +3,14 @@
 const CACHE = 'simulations-v8';
 const SHELL = ['./', 'index.html', 'styles.css', 'src/main.js', 'manifest.webmanifest', 'icon.svg'];
 // The 3D world loads on demand, so its files are cached up front to work offline (W-TC-8).
+const GAME = [
+  'src/omniverse/schema.js',
+  'src/omniverse/validate.js',
+  'src/omniverse/universes.js',
+  'src/omniverse/evaluate.js',
+  'src/omniverse/session.js',
+  'src/omniverse/ui/game-stage.js',
+];
 const WORLD = [
   'src/world/checkpoint.js',
   'src/world/couplings.js',
@@ -36,7 +44,7 @@ const WORLD = [
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll([...SHELL, ...WORLD])).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll([...SHELL, ...WORLD, ...GAME])).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (e) => {

@@ -70,6 +70,7 @@ export class App {
       if (this.stage) this.stage.focusSim(simSelect.value);
       else location.hash = simSelect.value;
     });
+    $('#game-btn').addEventListener('click', () => { location.hash = '#game/prime'; });
     $('#world-btn').addEventListener('click', () => {
       if (this.stage) this.stage.openIn2D();
       else location.hash = '#world';
@@ -141,6 +142,7 @@ export class App {
       this.view.zoomAt(e.clientX - r.left, e.clientY - r.top, Math.exp(-e.deltaY * 0.0015));
     }, { passive: false });
     window.addEventListener('keydown', (e) => {
+      if (this.gameStage?.visible) return; // The rule inspector owns its own controls.
       this.pointer.shift = e.shiftKey;
       if (e.target.closest('input, select, textarea, dialog')) return;
       if (e.ctrlKey || e.metaKey) {
@@ -164,6 +166,11 @@ export class App {
   }
 
   routeFromHash() {
+    if (/^#game(\/|\?|$)/.test(location.hash)) {
+      this.enterGame(location.hash);
+      return;
+    }
+    this.gameStage?.hide();
     if (/^#world(\/|\?|$)/.test(location.hash)) {
       this.enterWorld(location.hash);
       return;
@@ -341,6 +348,30 @@ export class App {
     s.classList.toggle('error', isError);
     clearTimeout(this.statusTimer);
     this.statusTimer = setTimeout(() => { s.textContent = ''; }, isError ? 6000 : 2500);
+  }
+
+  // ---------- separate, fiction-labeled OMNIVERSE inspector ----------
+
+  async enterGame(hash) {
+    if (this.stage) this.exitWorld();
+    if (this.gameStage) {
+      this.gameStage.show(hash);
+      return;
+    }
+    if (this.enteringGame) return;
+    this.enteringGame = true;
+    try {
+      const { GameStage } = await import('../omniverse/ui/game-stage.js');
+      if (!/^#game(\/|\?|$)/.test(location.hash)) return; // Route changed during lazy loading.
+      this.gameStage = new GameStage(this);
+      this.gameStage.show(location.hash);
+    } catch (err) {
+      console.error(err);
+      this.status('OMNIVERSE inspector could not start: ' + err.message, true);
+      location.hash = '#gravity';
+    } finally {
+      this.enteringGame = false;
+    }
   }
 
   // ---------- the 3D world ----------
@@ -732,6 +763,10 @@ export class App {
   frame(now) {
     const dt = Math.min(0.05, (now - this.lastFrame) / 1000);
     this.lastFrame = now;
+    if (this.gameStage?.visible) {
+      requestAnimationFrame((t) => this.frame(t)); // Pause science while inspecting fictional rules.
+      return;
+    }
     if (!this.sim && !this.stage) {
       requestAnimationFrame((t) => this.frame(t)); // the world is still loading
       return;
