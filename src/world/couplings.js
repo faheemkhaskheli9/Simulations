@@ -29,7 +29,7 @@ export const COUPLINGS = [
     read(sim) {
       const e = sim.bodies.find((b) => b.name === 'Earth'), s = sim.bodies.find((b) => b.name === 'Sun');
       if (!e || !s) return null;
-      const r2 = (e.x - s.x) ** 2 + (e.y - s.y) ** 2;
+      const r2 = (e.x - s.x) ** 2 + (e.y - s.y) ** 2 + ((e.z ?? 0) - (s.z ?? 0)) ** 2;
       return r2 > 0 ? S0 / r2 : null;
     },
   },
