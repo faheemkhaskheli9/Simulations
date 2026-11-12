@@ -19,7 +19,8 @@ jobs:
       - run: npm test
 
   e2e:
-    runs-on: ubuntu-latest
+    # Playwright 1.56 does not support ubuntu-26.04 dependency provisioning.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
