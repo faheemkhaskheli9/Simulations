@@ -48,7 +48,21 @@ export class Simulation {
     for (const d of defs) if (!(d.key in this.params)) this.params[d.key] = d.value;
   }
 
+  /** Single validation boundary for interactive parameters and coupling writes.
+   * Numeric values are not rounded to UI slider steps: coupled models need finer precision.
+   * Scenario-internal preset overrides intentionally remain separate from this API.
+   */
   setParam(key, value) {
+    const def = this.paramDefs.find((d) => d.key === key);
+    if (!def) throw new RangeError(`Unknown parameter "${key}" for ${this.meta.id}`);
+    const valid = def.type === 'checkbox'
+      ? typeof value === 'boolean'
+      : def.type === 'select'
+        ? def.options.some((o) => o.value === value)
+        : typeof value === 'number' && Number.isFinite(value)
+          && (def.min === undefined || value >= def.min)
+          && (def.max === undefined || value <= def.max);
+    if (!valid) throw new RangeError(`Invalid value for ${this.meta.id}.${key}`);
     this.params[key] = value;
     this.onParamChange(key, value);
   }
