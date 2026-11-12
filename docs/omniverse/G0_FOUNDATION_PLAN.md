@@ -1,7 +1,27 @@
 # OMNIVERSE — G0: Detailed Foundation Plan
 
-**Status:** Planned, not implemented. **Priority:** P0. **Estimate:** 15–23 engineer-days of focused G0 work, plus shared F1 dependencies if unfinished. **Date:** 2026-10-23.  
+**Status:** Partially implemented (2026-11-12); release gate remains open. **Priority:** P0. **Estimate:** 15–23 engineer-days of focused G0 work, plus shared F1 dependencies if unfinished. **Date:** 2026-10-23.  
 **Parent:** [OMNIVERSE plan](../MULTIVERSE_GAME_PLAN.md) · [Epic #12](https://github.com/faheemkhaskheli9/Simulations/issues/12) · [Shared F1/F2 roadmap](../ROADMAP.md#future-execution-plan-2026-10-19)
+
+## Implementation checkpoint (2026-11-12)
+
+The first independently testable G0 packet has landed: strict v1 manifests and RulePacks
+(`src/omniverse/schema.js`, `validate.js`); the Prime/Drift/Flux registry; a pure
+gravity/time-field evaluator; an isolated GameSession and atomic imports; safe
+capability/portal *preflight only*; and a lazy `#game/<id>` browser inspector.
+All are game-only and do not alter the scientific simulation laws. Game JS modules
+are included in the offline service-worker cache.
+
+**Still required before G0 is complete:** explicit domain adapter and unit-conversion
+tests (G0.06), shared F1 clock integration/semantics (G0.10), full cross-browser
+and malformed-input e2e acceptance (G0.11), performance/device evidence and
+final ADRs (G0.12). Powers are not executable, cross-universe portals are blocked,
+and the inspector is not a playable world. Browser tests and release acceptance
+must not be inferred from a successful Node unit run.
+
+**Current test baseline:** 350 Node tests passed on commit `8089343`.
+Later commits add additional tests; their independent results must be checked
+before signing off.
 
 ## 1. Deliverable and boundaries
 

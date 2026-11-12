@@ -26,6 +26,18 @@ npm start          # serves http://localhost:8080  (or: node server.js 3000)
 npm test           # runs the physics, contract, save/load and lesson tests (Node ≥ 18)
 ```
 
+## Experimental OMNIVERSE Game Lab
+
+Choose **Game Lab** in the top bar or open `#game/prime`, `#game/drift`, or
+`#game/flux` to inspect fictional, deterministic gravity and time fields. You
+can change local coordinates, advance a logical tick, and export/import a separate
+game session. Science simulations pause while the inspector is open and resume
+when you return.
+
+**Status:** G0 rules inspector only — not a playable universe, and not a
+scientific model of alternate physics. Powers, portals and generated worlds
+remain on the [OMNIVERSE game plan](docs/MULTIVERSE_GAME_PLAN.md).
+
 ## Why
 
 Most science is taught with static diagrams and equations, but the interesting part is how
