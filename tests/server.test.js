@@ -14,7 +14,7 @@ async function unusedPort() {
   return port;
 }
 
-test('invalid URL encoding returns HTTP 400 without crashing the server', { timeout: 10000 }, async () => {
+test('static server rejects unsafe requests without disrupting public files', { timeout: 10000 }, async () => {
   const port = await unusedPort();
   const child = spawn(process.execPath, ['server.js', String(port)], { stdio: ['ignore', 'pipe', 'pipe'] });
   let output = '';
@@ -28,12 +28,23 @@ test('invalid URL encoding returns HTTP 400 without crashing the server', { time
       child.once('error', (err) => { clearTimeout(timer); reject(err); });
       child.once('exit', (code) => { clearTimeout(timer); reject(new Error(`server exited: ${code}`)); });
     });
-    const invalid = await fetch(`http://127.0.0.1:${port}/%E0%A4%A`);
-    assert.equal(invalid.status, 400);
-    const nul = await fetch(`http://127.0.0.1:${port}/%00`);
-    assert.equal(nul.status, 400);
-    const valid = await fetch(`http://127.0.0.1:${port}/index.html`);
+    const base = `http://127.0.0.1:${port}`;
+    for (const path of ['/%E0%A4%A', '/%ZZ', '/%00']) {
+      assert.equal((await fetch(`${base}${path}`)).status, 400, path);
+    }
+    for (const path of ['/.gitignore', '/%2egitignore', '/.git/config', '/public%2f.gitignore']) {
+      assert.equal((await fetch(`${base}${path}`)).status, 403, path);
+    }
+    const post = await fetch(`${base}/`, { method: 'POST' });
+    assert.equal(post.status, 405);
+    assert.equal(post.headers.get('allow'), 'GET, HEAD');
+    const head = await fetch(`${base}/index.html`, { method: 'HEAD' });
+    assert.equal(head.status, 200);
+    assert.equal(await head.text(), '');
+    assert.equal((await fetch(`${base}/does-not-exist-98765.txt`)).status, 404);
+    const valid = await fetch(`${base}/index.html`);
     assert.equal(valid.status, 200, 'server stays alive');
+    assert.match(valid.headers.get('content-type'), /^text\\/html/);
     assert.match(await valid.text(), /<html/i);
   } finally {
     child.kill();
