@@ -44,7 +44,7 @@ test('static server rejects unsafe requests without disrupting public files', { 
     assert.equal((await fetch(`${base}/does-not-exist-98765.txt`)).status, 404);
     const valid = await fetch(`${base}/index.html`);
     assert.equal(valid.status, 200, 'server stays alive');
-    assert.match(valid.headers.get('content-type'), /^text\\/html/);
+    assert.ok(valid.headers.get('content-type')?.startsWith('text/html'));
     assert.match(await valid.text(), /<html/i);
   } finally {
     child.kill();
