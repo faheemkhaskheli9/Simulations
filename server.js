@@ -1,6 +1,6 @@
 // Tiny dependency-free static file server: `node server.js [port]`.
 import { createServer } from 'node:http';
-import { readFile, realpath } from 'node:fs/promises';
+import { readFile, realpath, stat } from 'node:fs/promises';
 import { extname, resolve, relative, isAbsolute, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -45,9 +45,19 @@ createServer(async (req, res) => {
       res.writeHead(403).end('Forbidden');
       return;
     }
+    const headers = { 'content-type': types[extname(actual)] ?? 'application/octet-stream' };
+    // HEAD must not read the file body into memory; stat also rejects directories.
+    if (req.method === 'HEAD') {
+      const info = await stat(actual);
+      if (!info.isFile()) {
+        res.writeHead(404).end('Not found');
+        return;
+      }
+      res.writeHead(200, { ...headers, 'content-length': info.size }).end();
+      return;
+    }
     const body = await readFile(actual);
-    res.writeHead(200, { 'content-type': types[extname(actual)] ?? 'application/octet-stream' })
-      .end(req.method === 'HEAD' ? undefined : body);
+    res.writeHead(200, headers).end(body);
   } catch {
     res.writeHead(404).end('Not found');
   }
